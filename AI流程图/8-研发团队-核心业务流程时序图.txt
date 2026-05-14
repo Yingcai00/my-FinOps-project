@@ -1,0 +1,140 @@
+## FinOps核心业务流程时序图
+
+### 流程1：资产入库到成本项生成
+
+sequenceDiagram
+    participant 资产系统
+    participant AssetController
+    participant AssetService
+    participant AssetMapper
+    participant CostItemService
+    participant CostItemMapper
+
+    资产系统->>AssetController: POST /api/assets/sync
+    AssetController->>AssetService: syncAssets(assetList)
+    AssetService->>AssetMapper: batchInsert(assetList)
+    AssetMapper-->>AssetService: 返回插入结果
+    AssetService->>CostItemService: generateCostItems(assetList)
+    CostItemService->>CostItemService: 构建成本项数据（资产细分-公用）
+    CostItemService->>CostItemMapper: batchInsert(costItems)
+    CostItemMapper-->>CostItemService: 返回插入结果
+    CostItemService-->>AssetService: 返回生成结果
+    AssetService-->>AssetController: SyncResultDTO
+    AssetController-->>资产系统: 200 OK { "success": true, "count": N }
+
+### 流程2：成本池创建与成本计算
+
+sequenceDiagram
+    participant Client
+    participant CostController
+    participant CostPoolService
+    participant CostPoolMapper
+    participant CostCalculationEngine
+    participant CostItemMapper
+
+    Client->>CostController: POST /api/cost-pools
+    CostController->>CostPoolService: createCostPool(poolDTO)
+    CostPoolService->>CostPoolMapper: insert(pool)
+    CostPoolMapper-->>CostPoolService: 返回成本池ID
+    
+    Note over CostPoolService,CostItemMapper: 关联成本项
+    CostPoolService->>CostPoolMapper: associateCostItems(poolId, itemIds)
+    CostPoolMapper-->>CostPoolService: 关联成功
+    
+    Note over CostPoolService,CostItemMapper: 触发成本计算
+    CostPoolService->>CostCalculationEngine: calculate(poolId)
+    CostCalculationEngine->>CostItemMapper: sumCostByPool(poolId)
+    CostItemMapper-->>CostCalculationEngine: 返回总成本
+    CostCalculationEngine->>CostCalculationEngine: 计算资源总量和单价
+    CostCalculationEngine->>CostPoolMapper: updatePrice(poolId, unitPrice)
+    CostPoolMapper-->>CostCalculationEngine: 更新成功
+    CostCalculationEngine-->>CostPoolService: CalculationResult
+    CostPoolService-->>CostController: CostPoolDTO
+    CostController-->>Client: 201 Created { "id": N, "unitPrice": X }
+
+### 流程3：规格定价配置
+
+sequenceDiagram
+    participant Client
+    participant ProductController
+    participant ProductService
+    participant ProductMapper
+    participant PricingService
+    participant CostPoolMapper
+
+    Client->>ProductController: POST /api/products/{productId}/price
+    ProductController->>ProductService: updatePrice(productId, priceDTO)
+    ProductService->>ProductMapper: getProduct(productId)
+    ProductMapper-->>ProductService: 返回产品信息
+    
+    Note over ProductService,CostPoolMapper: 获取成本池单价
+    ProductService->>CostPoolMapper: getCostPool(poolId)
+    CostPoolMapper-->>ProductService: 返回成本池信息
+    
+    Note over ProductService,CostPoolMapper: 应用定价规则计算
+    ProductService->>PricingService: calculatePrice(product, costPool, rule)
+    PricingService->>PricingService: 执行定价公式计算
+    PricingService-->>ProductService: 计算后的价格
+    ProductService->>ProductMapper: updatePrice(productId, price)
+    ProductMapper-->>ProductService: 更新成功
+    ProductService-->>ProductController: ProductDTO
+    ProductController-->>Client: 200 OK { "price": X }
+
+### 流程4：每日使用记录处理
+
+sequenceDiagram
+    participant 云管系统
+    participant UsageController
+    participant UsageRecordService
+    participant UsageRecordMapper
+    participant BillingService
+
+    云管系统->>UsageController: POST /api/usage/records
+    UsageController->>UsageRecordService: batchSave(records)
+    UsageRecordService->>UsageRecordMapper: batchInsert(records)
+    UsageRecordMapper-->>UsageRecordService: 返回插入结果
+    
+    Note over UsageRecordService,BillingService: 异步触发费用计算
+    UsageRecordService->>BillingService: calculateDailyUsage(date)
+    BillingService->>UsageRecordMapper: getRecordsByDate(date)
+    UsageRecordMapper-->>BillingService: 返回使用记录列表
+    BillingService->>BillingService: 遍历计算每笔费用
+    BillingService->>BillingService: 汇总部门费用
+    BillingService->>BillingService: 生成账单
+    BillingService-->>UsageRecordService: 计算完成
+    UsageRecordService-->>UsageController: SaveResultDTO
+    UsageController-->>云管系统: 200 OK { "success": true }
+
+### 流程5：账单生成
+
+sequenceDiagram
+    participant Client
+    participant BillController
+    participant BillService
+    participant BillMapper
+    participant UsageRecordMapper
+
+    Client->>BillController: POST /api/bills/generate
+    BillController->>BillService: generateBill(params)
+    BillService->>UsageRecordMapper: getRecordsByPeriod(deptId, startDate, endDate)
+    UsageRecordMapper-->>BillService: 返回使用记录
+    BillService->>BillService: 计算总费用
+    BillService->>BillService: 分摊公摊成本
+    BillService->>BillMapper: insertBill(bill)
+    BillMapper-->>BillService: 返回账单ID
+    BillService->>BillMapper: insertBillItems(billId, items)
+    BillMapper-->>BillService: 插入成功
+    BillService-->>BillController: BillDTO
+    BillController-->>Client: 200 OK { "billId": N, "totalAmount": X }
+
+### 关键接口清单
+
+| API路径 | HTTP方法 | Controller | 功能描述 |
+|---------|----------|------------|----------|
+| /api/assets/sync | POST | AssetController | 同步资产数据 |
+| /api/cost-pools | POST | CostController | 创建成本池 |
+| /api/cost-pools/{id}/items | PUT | CostController | 关联成本项 |
+| /api/products/{id}/price | PUT | ProductController | 更新规格价格 |
+| /api/usage/records | POST | UsageController | 上报使用记录 |
+| /api/bills/generate | POST | BillController | 生成账单 |
+| /api/bills/{id} | GET | BillController | 查询账单详情 |

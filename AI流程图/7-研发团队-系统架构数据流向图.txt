@@ -1,0 +1,101 @@
+## FinOps系统架构数据流向图
+
+### 系统分层架构
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              展示层 (UI Layer)                              │
+│   asset-ledger-management.html | cost-pool-management.html | pricing-*     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                              控制层 (Controller)                           │
+│   AuthController | BillController | CostController | ProductController     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                              服务层 (Service)                              │
+│   BillService | ConfigurationService | CostItemService | ProductService    │
+│   UsageRecordService | UserService                                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                              数据访问层 (Mapper)                           │
+│   BillItemMapper | CostItemMapper | ProductMapper | UsageRecordMapper      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                              数据层 (Database)                             │
+│   bill | bill_item | cost_item | product | product_cost_relation           │
+│   usage_record | configuration | department | user                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 核心数据流向
+
+#### 1. 资产管理数据流
+```
+资产系统 → [同步接口] → FinOps系统 → AssetController → AssetService → AssetMapper → asset表
+                                                               ↓
+                                                  CostItemService → CostItemMapper → cost_item表（自动生成）
+```
+
+#### 2. 成本计算数据流
+```
+cost_item表 ← CostItemMapper ← CostItemService ← CostController
+                                              ↓
+                                   CostPoolService → CostPoolMapper → cost_pool表
+                                              ↓
+                                   CostCalculationEngine → 计算单价
+                                              ↓
+                                   PricingService → 更新规格单价
+```
+
+#### 3. 定价管理数据流
+```
+云管系统 → [同步接口] → FinOps系统 → ProductController → ProductService → ProductMapper → product表
+                                                                     ↓
+                                                         ProductCostRelationMapper → product_cost_relation表
+                                                                     ↓
+                                                         PricingService → 应用定价规则
+```
+
+#### 4. 计费与账单数据流
+```
+云管系统 → [上报接口] → FinOps系统 → UsageController → UsageRecordService → UsageRecordMapper → usage_record表
+                                                                           ↓
+                                                              BillingService → 费用计算
+                                                                           ↓
+                                                              BillMapper → bill表 + bill_item表
+                                                                           ↓
+                                                              生成部门账单
+```
+
+### 外部系统集成
+
+| 系统名称 | 集成方式 | 数据流向 | 频率 |
+|---------|---------|---------|------|
+| 资产系统 | REST API | 资产系统 → FinOps | 每日定时 |
+| 云管系统 | REST API | 云管系统 ↔ FinOps | 实时/定时 |
+| 部门系统 | 数据同步 | 部门系统 → FinOps | 每日定时 |
+
+### 核心业务实体关系
+
+```
+┌─────────────┐      1:N      ┌─────────────┐
+│   Asset     │───────────────│ CostItem    │
+│  资产明细   │               │   成本项    │
+└─────────────┘               └──────┬──────┘
+                                      │
+                                      N:N
+                                      │
+                              ┌──────▼──────┐
+                              │ CostPool    │
+                              │   成本池    │
+                              └──────┬──────┘
+                                      │
+                                      1:N
+                                      │
+                              ┌──────▼──────┐
+                              │  Product    │
+                              │   服务规格   │
+                              └──────┬──────┘
+                                      │
+                                      1:N
+                                      │
+                              ┌──────▼──────┐
+                              │UsageRecord  │
+                              │  使用记录   │
+                              └─────────────┘
+```

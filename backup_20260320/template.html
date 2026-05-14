@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 页面标题</title>
+    <!-- 通用样式 -->
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <!-- 头部 -->
+    <div id="header-container"></div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div id="sidebar-container"></div>
+        
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 页面内容 -->
+            <div class="card">
+                <div class="card-title">页面标题</div>
+                <!-- 页面具体内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入通用JavaScript -->
+    <script src="js/common.js"></script>
+    
+    <!-- 页面初始化 -->
+    <script>
+        // 加载头部组件
+        fetch('components/header.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+            });
+
+        // 加载侧边栏组件
+        fetch('components/sidebar.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('sidebar-container').innerHTML = html;
+                // 侧边栏加载完成后初始化
+                setTimeout(() => {
+                    FinOps.initSidebar();
+                }, 100);
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>FinOps财务运营管理平台 - 定价管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-success {
+            background-color: #52c41a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #73d13d;
+        }
+
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff7875;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6e6e6;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btns .btn {
+            padding: 4px 12px;
+            font-size: 13px;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 搜索筛选区域 */
+        .search-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        /* 搜索下拉框 */
+        .search-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-select input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-select input:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .search-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            border: 1px solid #d9d9d9;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            display: none;
+            margin-top: 2px;
+        }
+
+        .search-options.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .search-option-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-option-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .search-options div {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-options div:hover {
+            background-color: #f0f0f0;
+        }
+
+        .highlight {
+            background-color: #fff2cc;
+            color: #d48806;
+            font-weight: 500;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .filter-item input,
+        .filter-item select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-item input:focus,
+        .filter-item select:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        /* 状态标签 */
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-inactive {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffa39e;
+        }
+
+        /* 服务名称高亮 */
+        .service-name-highlight {
+            font-weight: 600;
+            color: #1890ff;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        .sub-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sub-menu-item {
+            display: block;
+            padding: 10px 20px 10px 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sub-menu-item:hover, .sub-menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        /* 配置链接样式 */
+        .config-link {
+            color: #1890ff;
+            cursor: pointer;
+        }
+
+        .config-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 配置详情样式 */
+        .config-detail-item {
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fafafa;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background-color: #fafafa;
+            border-radius: 0 0 12px 12px;
+        }
+
+        /* 表单样式优化 */
+        .form-row {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group {
+            width: 100%;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        /* 按钮样式优化 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-primary:active {
+            background-color: #096dd9;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6e6e6;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* 价格策略区域 */
+        .pricing-strategy-section {
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .pricing-strategy-header {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .strategy-option {
+            margin-bottom: 12px;
+        }
+
+        .strategy-option label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        /* 表格容器 */
+        .table-container {
+            overflow-x: auto;
+            margin: 16px 0;
+            position: relative;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            table-layout: fixed;
+        }
+
+        /* 表格列宽 */
+        table th:nth-child(1),
+        table td:nth-child(1) {
+            width: 100px;
+        }
+        table th:nth-child(2),
+        table td:nth-child(2) {
+            width: 120px;
+        }
+        table th:nth-child(3),
+        table td:nth-child(3) {
+            width: 120px;
+        }
+        table th:nth-child(4),
+        table td:nth-child(4) {
+            width: 120px;
+        }
+        table th:nth-child(5),
+        table td:nth-child(5) {
+            width: 150px;
+        }
+        table th:nth-child(6),
+        table td:nth-child(6) {
+            width: 180px;
+        }
+        table th:nth-child(7),
+        table td:nth-child(7) {
+            width: 80px;
+        }
+        table th:nth-child(8),
+        table td:nth-child(8) {
+            width: 80px;
+        }
+        table th:nth-child(9),
+        table td:nth-child(9) {
+            width: 80px;
+        }
+        table th:nth-child(10),
+        table td:nth-child(10) {
+            width: 120px;
+        }
+        table th:nth-child(11),
+        table td:nth-child(11) {
+            width: 100px;
+        }
+        table th:nth-child(12),
+        table td:nth-child(12) {
+            width: 100px;
+        }
+        table th:nth-child(13),
+        table td:nth-child(13) {
+            width: 100px;
+        }
+        table th:nth-child(14),
+        table td:nth-child(14) {
+            width: 100px;
+        }
+        table th:nth-child(15),
+        table td:nth-child(15) {
+            width: 100px;
+        }
+        table th:nth-child(16),
+        table td:nth-child(16) {
+            width: 80px;
+        }
+        table th:nth-child(17),
+        table td:nth-child(17) {
+            width: 100px;
+            position: sticky;
+            right: 0;
+            background-color: white;
+            z-index: 10;
+        }
+
+        /* 支持手动调整列宽 */
+        table th {
+            position: relative;
+        }
+
+        table th:hover::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #1890ff;
+        }
+
+        /* 表格内容换行 */
+        table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
+                菜单导航
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="asset-ledger-management.html" class="menu-item">
+                        <span>B类资产管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="cost-overview.html" class="menu-item">
+                        <span>成本管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
+                        </li>
+                        <li>
+                            <a href="cost-pool-management.html" class="sub-menu-item">成本池管理</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="pricing-management.html" class="menu-item active">
+                        <span>定价管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="metering-management.html" class="menu-item">
+                        <span>计量管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="bill-management.html" class="menu-item">
+                        <span>账单管理</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <div class="content">
+
+            <!-- 定价管理模块 -->
+            <div class="card">
+                <!-- 账期选择器 -->
+                <div class="month-selector-row" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 0 20px; padding-top: 20px;">
+                    <label style="font-weight: 600; color: #333; font-size: 14px;">账期</label>
+                    <input type="month" id="filterMonth" value="2026-02" max="2026-02" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; background-color: white;">
+                    <span class="month-indicator">
+                        <span class="month-badge current" id="monthBadge" style="background-color: #52c41a; color: white; padding: 6px 16px; border-radius: 4px; font-size: 12px; font-weight: 500;">当前月</span>
+                    </span>
+                </div>
+
+                <!-- 横线分隔 -->
+                <div style="border-top: 1px solid #f0f0f0;"></div>
+
+                <!-- 搜索筛选 -->
+                <div class="search-filter" style="padding: 20px;">
+                    <div class="filter-item">
+                        <label>服务</label>
+                        <div class="search-select">
+                            <input type="text" id="searchService" placeholder="请输入服务分类-服务名称" oninput="filterServiceOptions()" onclick="filterServiceOptions()">
+                            <div id="serviceOptions" class="search-options"></div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>规格簇</label>
+                        <div class="search-select">
+                            <input type="text" id="searchCluster" placeholder="请输入规格簇" oninput="filterClusterOptions()" onclick="filterClusterOptions()">
+                            <div id="clusterOptions" class="search-options"></div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>规格名称</label>
+                        <input type="text" id="searchSpecName" placeholder="请输入规格名称">
+                    </div>
+                    <div class="filter-item">
+                        <label>关联成本池</label>
+                        <select id="filterCostPool">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>计费资源</label>
+                        <select id="filterBillingResource">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="filter-item" style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" onclick="searchServices()">查询</button>
+                        <button class="btn btn-default" onclick="resetFilter()" style="margin-left: 8px;">重置</button>
+                    </div>
+                </div>
+
+                <!-- 横线分隔 -->
+                <div style="border-top: 1px solid #f0f0f0;"></div>
+
+                <!-- 服务列表 -->
+                <div style="padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h2 class="card-title" style="margin: 0;"></h2>
+                        <div class="action-btns">
+                            <button class="btn btn-success" onclick="exportServices()">导出Excel</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                <tr>
+                    <th>规格编码</th>
+                    <th>服务</th>
+                    <th>规格簇</th>
+                    <th>规格名称</th>
+                    <th>配置</th>
+                    <th>关联成本池</th>
+                    <th>计费资源</th>
+                    <th>服务费</th>
+                    <th>单价</th>
+                    <th>阿里云参考价</th>
+                    <th>单位</th>
+                    <th>账期</th>
+                    <th>描述</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+                            <tbody id="serviceTableBody">
+                                <!-- 数据由JS动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑服务弹窗 -->
+    <div class="modal" id="serviceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">添加服务</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="serviceId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>规格编码</label>
+                        <input type="text" id="serviceCode" readonly style="background-color: #f5f5f5; cursor: not-allowed; width: 100%;">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>规格名称</label>
+                        <input type="text" id="serviceName" readonly style="background-color: #f5f5f5; cursor: not-allowed; width: 100%;">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>关联成本池</label>
+                        <div class="search-select">
+                            <input type="text" id="costPool" placeholder="请输入关联成本池" oninput="filterCostPoolOptions()" onclick="filterCostPoolOptions()" style="width: 100%;">
+                            <div id="costPoolOptions" class="search-options"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea id="serviceDescription" placeholder="请输入描述" rows="4" style="width: 100%; resize: vertical;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveService()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 配置详情弹窗 -->
+    <div class="modal" id="configDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">配置详情</h3>
+                <button class="modal-close" onclick="closeConfigDetail()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="configDetailContent">
+                    <!-- 配置详情将由JS动态生成 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeConfigDetail()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 成本池数据（从成本池管理页面获取）
+        let costPools = JSON.parse(localStorage.getItem('costPools')) || [
+            { id: 1, name: '物理机', description: '包含所有物理服务器成本', billingResource: 'CPU', totalCost: 450000, totalResources: 320, unitPrice: 1406.25, costItemCount: 8, selectedItems: [1, 8], costMonth: '2026-02' },
+            { id: 2, name: '容器', description: '包含所有容器相关成本', billingResource: 'MEM', totalCost: 280000, totalResources: 480, unitPrice: 583.33, costItemCount: 6, selectedItems: [2, 7, 42], costMonth: '2026-02' },
+            { id: 3, name: '虚拟机', description: '包含所有虚拟机成本', billingResource: 'CPU', totalCost: 320000, totalResources: 256, unitPrice: 1250.00, costItemCount: 5, selectedItems: [9, 10], costMonth: '2026-02' },
+            { id: 4, name: '存储', description: '包含所有存储相关成本', billingResource: 'DISK', totalCost: 150000, totalResources: 120, unitPrice: 1250.00, costItemCount: 3, selectedItems: [3, 4, 6], costMonth: '2026-02' },
+            { id: 5, name: '数据库', description: '包含所有数据库相关成本', billingResource: 'CPU', totalCost: 85000, totalResources: 80, unitPrice: 1062.50, costItemCount: 2, selectedItems: [5, 44], costMonth: '2026-02' },
+            { id: 6, name: '网络', description: '包含所有网络相关成本', billingResource: '流量', totalCost: 512410, totalResources: 10000, unitPrice: 51.24, costItemCount: 1, selectedItems: [45], costMonth: '2026-02' }
+        ];
+
+        // 服务价格数据（基于FinOps服务目录-20260317）
+        let serviceData = [
+            {
+                "id": 1,
+                "serviceCode": "SVC001",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "标准通用服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "标准通用服务器机型一（32C/384G/11T）",
+                "description": "",
+                "cpuSpec": "32.0",
+                "cpuModel": "",
+                "memSpec": "384.0",
+                "sasDisk": "11.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 2,
+                "serviceCode": "SVC002",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "标准通用服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "标准通用服务器机型二（32C/512G/24T）",
+                "description": "",
+                "cpuSpec": "32.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "24.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 3,
+                "serviceCode": "SVC003",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "高性能服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "高性能服务器机型一（64C/512G/24T）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "24.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 4,
+                "serviceCode": "SVC004",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "高性能服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "高性能服务器机型二（96C/768G/24T）",
+                "description": "",
+                "cpuSpec": "96.0",
+                "cpuModel": "",
+                "memSpec": "768.0",
+                "sasDisk": "24.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 5,
+                "serviceCode": "SVC005",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "轻量级应用",
+                "service": "服务器-通算服务器",
+                "serviceName": "轻量级应用服务器机型一（16C/128G/11T）",
+                "description": "",
+                "cpuSpec": "16.0",
+                "cpuModel": "",
+                "memSpec": "128.0",
+                "sasDisk": "11.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 6,
+                "serviceCode": "SVC006",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "轻量级应用",
+                "service": "服务器-通算服务器",
+                "serviceName": "轻量级应用服务器机型二（8C/64G/4T）",
+                "description": "",
+                "cpuSpec": "8.0",
+                "cpuModel": "",
+                "memSpec": "64.0",
+                "sasDisk": "4.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 7,
+                "serviceCode": "SVC007",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "存储型服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "存储型服务器机型一（32C/384G/55T）",
+                "description": "",
+                "cpuSpec": "32.0",
+                "cpuModel": "",
+                "memSpec": "384.0",
+                "sasDisk": "55.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 8,
+                "serviceCode": "SVC008",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "存储型服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "存储型服务器机型二（32C/384G/84T）",
+                "description": "",
+                "cpuSpec": "32.0",
+                "cpuModel": "",
+                "memSpec": "384.0",
+                "sasDisk": "84.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 9,
+                "serviceCode": "SVC009",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "存储型服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "存储型服务器机型三（32C/384G/112T）",
+                "description": "",
+                "cpuSpec": "32.0",
+                "cpuModel": "",
+                "memSpec": "384.0",
+                "sasDisk": "112.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 10,
+                "serviceCode": "SVC010",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "通算服务器",
+                "categoryLevel3": "存储型服务器",
+                "service": "服务器-通算服务器",
+                "serviceName": "存储型服务器机型四（32C/384G/140T）",
+                "description": "",
+                "cpuSpec": "32.0",
+                "cpuModel": "",
+                "memSpec": "384.0",
+                "sasDisk": "140.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 11,
+                "serviceCode": "SVC011",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型一（64C/512G/48T/RTX4090*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "RTX4090",
+                "gpuMem": "24.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 12,
+                "serviceCode": "SVC012",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型二（64C/512G/48T/A100*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A100",
+                "gpuMem": "40.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 13,
+                "serviceCode": "SVC013",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型三（64C/512G/48T/A10*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A10",
+                "gpuMem": "24.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 14,
+                "serviceCode": "SVC014",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型四（64C/512G/48T/H100*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "H100",
+                "gpuMem": "80.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 15,
+                "serviceCode": "SVC015",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型五（64C/512G/48T/RTX4080*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "RTX4080",
+                "gpuMem": "16.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 16,
+                "serviceCode": "SVC016",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型六（64C/512G/48T/RTX3090*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "RTX3090",
+                "gpuMem": "24.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 17,
+                "serviceCode": "SVC017",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型七（64C/512G/48T/RTX4070*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "RTX4070",
+                "gpuMem": "12.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 18,
+                "serviceCode": "SVC018",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型八（64C/512G/48T/A40*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A40",
+                "gpuMem": "48.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 19,
+                "serviceCode": "SVC019",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型九（64C/512G/48T/A6000*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A6000",
+                "gpuMem": "48.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 20,
+                "serviceCode": "SVC020",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型十（64C/512G/48T/A5000*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A5000",
+                "gpuMem": "24.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 21,
+                "serviceCode": "SVC021",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型十一（64C/512G/48T/A4500*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A4500",
+                "gpuMem": "24.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 22,
+                "serviceCode": "SVC022",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "图形渲染",
+                "service": "服务器-智算服务器",
+                "serviceName": "图形渲染服务器机型十二（64C/512G/48T/A30*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A30",
+                "gpuMem": "24.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 23,
+                "serviceCode": "SVC023",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "AI推理",
+                "service": "服务器-智算服务器",
+                "serviceName": "AI推理服务器机型一（64C/512G/48T/A100*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A100",
+                "gpuMem": "40.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 24,
+                "serviceCode": "SVC024",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "AI推理",
+                "service": "服务器-智算服务器",
+                "serviceName": "AI推理服务器机型二（64C/512G/48T/H100*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "H100",
+                "gpuMem": "80.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 25,
+                "serviceCode": "SVC025",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "AI推理",
+                "service": "服务器-智算服务器",
+                "serviceName": "AI推理服务器机型三（64C/512G/48T/A30*4）",
+                "description": "",
+                "cpuSpec": "64.0",
+                "cpuModel": "",
+                "memSpec": "512.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A30",
+                "gpuMem": "24.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 26,
+                "serviceCode": "SVC026",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "AI训练",
+                "service": "服务器-智算服务器",
+                "serviceName": "AI训练服务器机型一（96C/768G/48T/A100*8）",
+                "description": "",
+                "cpuSpec": "96.0",
+                "cpuModel": "",
+                "memSpec": "768.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A100",
+                "gpuMem": "40.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 27,
+                "serviceCode": "SVC027",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "AI训练",
+                "service": "服务器-智算服务器",
+                "serviceName": "AI训练服务器机型二（96C/768G/48T/H100*8）",
+                "description": "",
+                "cpuSpec": "96.0",
+                "cpuModel": "",
+                "memSpec": "768.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "H100",
+                "gpuMem": "80.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 28,
+                "serviceCode": "SVC028",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "AI训练",
+                "service": "服务器-智算服务器",
+                "serviceName": "AI训练服务器机型三（96C/768G/48T/A800*8）",
+                "description": "",
+                "cpuSpec": "96.0",
+                "cpuModel": "",
+                "memSpec": "768.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "A800",
+                "gpuMem": "80.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 29,
+                "serviceCode": "SVC029",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "智算服务器",
+                "categoryLevel3": "AI训练",
+                "service": "服务器-智算服务器",
+                "serviceName": "AI训练服务器机型四（96C/768G/48T/H800*8）",
+                "description": "",
+                "cpuSpec": "96.0",
+                "cpuModel": "",
+                "memSpec": "768.0",
+                "sasDisk": "48.0",
+                "ssdDisk": "0",
+                "gpuModel": "H800",
+                "gpuMem": "80.0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 30,
+                "serviceCode": "SVC030",
+                "categoryLevel1": "服务器",
+                "categoryLevel2": "硬件存储服务器",
+                "categoryLevel3": "块存储-SAN",
+                "service": "服务器-硬件存储服务器",
+                "serviceName": "块存储-SAN机型一（360T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "360.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 31,
+                "serviceCode": "SVC031",
+                "categoryLevel1": "",
+                "categoryLevel2": "",
+                "categoryLevel3": "",
+                "service": "-",
+                "serviceName": "块存储-SAN机型二（720T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "720.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 32,
+                "serviceCode": "SVC032",
+                "categoryLevel1": "",
+                "categoryLevel2": "",
+                "categoryLevel3": "",
+                "service": "-",
+                "serviceName": "块存储-SAN机型三（1440T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "1440.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 33,
+                "serviceCode": "SVC033",
+                "categoryLevel1": "存储",
+                "categoryLevel2": "硬件存储服务器",
+                "categoryLevel3": "块存储-SAN",
+                "service": "存储-硬件存储服务器",
+                "serviceName": "块存储-SAN机型四（1800T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "1800.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 34,
+                "serviceCode": "SVC034",
+                "categoryLevel1": "存储",
+                "categoryLevel2": "硬件存储服务器",
+                "categoryLevel3": "块存储-SAN",
+                "service": "存储-硬件存储服务器",
+                "serviceName": "块存储-SAN机型五（2160T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "2160.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 35,
+                "serviceCode": "SVC035",
+                "categoryLevel1": "存储",
+                "categoryLevel2": "硬件存储服务器",
+                "categoryLevel3": "块存储-SAN",
+                "service": "存储-硬件存储服务器",
+                "serviceName": "块存储-SAN机型六（2880T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "2880.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 36,
+                "serviceCode": "SVC036",
+                "categoryLevel1": "存储",
+                "categoryLevel2": "硬件存储服务器",
+                "categoryLevel3": "块存储-SAN",
+                "service": "存储-硬件存储服务器",
+                "serviceName": "块存储-SAN机型七（3600T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "3600.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            },
+            {
+                "id": 37,
+                "serviceCode": "SVC037",
+                "categoryLevel1": "存储",
+                "categoryLevel2": "硬件存储服务器",
+                "categoryLevel3": "块存储-SAN",
+                "service": "存储-硬件存储服务器",
+                "serviceName": "块存储-SAN机型八（4320T）",
+                "description": "",
+                "cpuSpec": "0",
+                "cpuModel": "",
+                "memSpec": "0",
+                "sasDisk": "4320.0",
+                "ssdDisk": "0",
+                "gpuModel": "",
+                "gpuMem": "0",
+                "costPool": "",
+                "billingResource": "",
+                "serviceFee": 0.0,
+                "storageFee": 0.0,
+                "unitPrice": 0.0,
+                "aliyunPrice": 0.0,
+                "unit": "",
+                "month": "2026-02"
+            }
+        ];
+
+        let filteredData = [...serviceData];
+        let currentEditId = null;
+        
+        // 分页相关变量
+        let currentPage = 1;
+        const pageSize = 10;
+        let totalPages = Math.ceil(serviceData.length / pageSize);
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载成本池数据到下拉选择框
+            loadCostPools();
+            renderTable();
+        });
+
+        // 加载成本池数据
+        function loadCostPools() {
+            const costPools = JSON.parse(localStorage.getItem('costPools')) || [];
+            const costPoolSelect = document.getElementById('filterCostPool');
+            const billingResourceSelect = document.getElementById('filterBillingResource');
+            
+            // 清空现有选项（保留"全部"选项）
+            costPoolSelect.innerHTML = '<option value="">全部</option>';
+            billingResourceSelect.innerHTML = '<option value="">全部</option>';
+            
+            // 用于存储去重的计费资源
+            const billingResources = new Set();
+            
+            // 添加成本池选项
+            costPools.forEach(pool => {
+                const option = document.createElement('option');
+                option.value = pool.name;
+                option.textContent = pool.name;
+                costPoolSelect.appendChild(option);
+                
+                // 添加计费资源到集合（去重）
+                if (pool.billingResource) {
+                    billingResources.add(pool.billingResource);
+                }
+            });
+            
+            // 添加计费资源选项
+            billingResources.forEach(resource => {
+                const option = document.createElement('option');
+                option.value = resource;
+                option.textContent = resource;
+                billingResourceSelect.appendChild(option);
+            });
+        }
+
+        // 过滤服务选项
+        function filterServiceOptions() {
+            const input = document.getElementById('searchService');
+            const optionsContainer = document.getElementById('serviceOptions');
+            const filter = input.value.toLowerCase();
+            
+            // 从服务数据中提取去重的服务
+            const services = new Set();
+            serviceData.forEach(service => {
+                services.add(service.categoryLevel1 + '-' + service.categoryLevel2);
+            });
+            
+            // 过滤并显示选项
+            optionsContainer.innerHTML = '';
+            if (services.size > 0) {
+                services.forEach(service => {
+                    if (service.toLowerCase().includes(filter)) {
+                        const option = document.createElement('div');
+                        option.className = 'search-option-item';
+                        
+                        // 高亮显示匹配的文本
+                        if (filter) {
+                            const regex = new RegExp(`(${filter})`, 'gi');
+                            option.innerHTML = service.replace(regex, '<span class="highlight">$1</span>');
+                        } else {
+                            option.textContent = service;
+                        }
+                        
+                        option.onclick = function() {
+                            input.value = service;
+                            optionsContainer.classList.remove('show');
+                        };
+                        optionsContainer.appendChild(option);
+                    }
+                });
+                optionsContainer.classList.add('show');
+            } else {
+                optionsContainer.classList.remove('show');
+            }
+        }
+
+        // 过滤规格簇选项
+        function filterClusterOptions() {
+            const input = document.getElementById('searchCluster');
+            const optionsContainer = document.getElementById('clusterOptions');
+            const filter = input.value.toLowerCase();
+            
+            // 从服务数据中提取去重的规格簇
+            const clusters = new Set();
+            serviceData.forEach(service => {
+                if (service.categoryLevel3) {
+                    clusters.add(service.categoryLevel3);
+                }
+            });
+            
+            // 过滤并显示选项
+            optionsContainer.innerHTML = '';
+            if (clusters.size > 0) {
+                clusters.forEach(cluster => {
+                    if (cluster.toLowerCase().includes(filter)) {
+                        const option = document.createElement('div');
+                        option.className = 'search-option-item';
+                        
+                        // 高亮显示匹配的文本
+                        if (filter) {
+                            const regex = new RegExp(`(${filter})`, 'gi');
+                            option.innerHTML = cluster.replace(regex, '<span class="highlight">$1</span>');
+                        } else {
+                            option.textContent = cluster;
+                        }
+                        
+                        option.onclick = function() {
+                            input.value = cluster;
+                            optionsContainer.classList.remove('show');
+                        };
+                        optionsContainer.appendChild(option);
+                    }
+                });
+                optionsContainer.classList.add('show');
+            } else {
+                optionsContainer.classList.remove('show');
+            }
+        }
+        
+        // 过滤成本池选项
+        function filterCostPoolOptions() {
+            const input = document.getElementById('costPool');
+            const optionsContainer = document.getElementById('costPoolOptions');
+            const filter = input.value.toLowerCase();
+            
+            // 从成本池数据中提取去重的成本池名称
+            const costPools = JSON.parse(localStorage.getItem('costPools')) || [];
+            const costPoolNames = new Set();
+            costPools.forEach(pool => {
+                if (pool.name) {
+                    costPoolNames.add(pool.name);
+                }
+            });
+            
+            // 如果没有成本池数据，添加默认选项
+            if (costPoolNames.size === 0) {
+                const defaultOptions = ['物理机', '容器', '虚拟机', '存储', '数据库', '网络'];
+                defaultOptions.forEach(optionName => {
+                    costPoolNames.add(optionName);
+                });
+            }
+            
+            // 过滤并显示选项
+            optionsContainer.innerHTML = '';
+            if (costPoolNames.size > 0) {
+                costPoolNames.forEach(costPool => {
+                    if (costPool.toLowerCase().includes(filter)) {
+                        const option = document.createElement('div');
+                        option.className = 'search-option-item';
+                        
+                        // 高亮显示匹配的文本
+                        if (filter) {
+                            const regex = new RegExp(`(${filter})`, 'gi');
+                            option.innerHTML = costPool.replace(regex, '<span class="highlight">$1</span>');
+                        } else {
+                            option.textContent = costPool;
+                        }
+                        
+                        option.onclick = function() {
+                            input.value = costPool;
+                            optionsContainer.classList.remove('show');
+                            // 更新计费资源
+                            updateBillingResource();
+                        };
+                        optionsContainer.appendChild(option);
+                    }
+                });
+                optionsContainer.classList.add('show');
+            } else {
+                optionsContainer.classList.remove('show');
+            }
+        }
+
+        // 点击页面其他地方关闭下拉框
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-select')) {
+                document.getElementById('serviceOptions').classList.remove('show');
+                document.getElementById('clusterOptions').classList.remove('show');
+                document.getElementById('costPoolOptions').classList.remove('show');
+            }
+        });
+
+        // 渲染表格
+        function renderTable() {
+            // 计算当前页数据
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const currentPageData = filteredData.slice(startIndex, endIndex);
+            
+            const tbody = document.getElementById('serviceTableBody');
+            tbody.innerHTML = currentPageData.map(service => {
+                let configParts = [];
+                if (service.cpuModel && service.cpuModel !== '无') configParts.push('<' + service.cpuModel + '>');
+                configParts.push(service.cpuSpec + 'C');
+                configParts.push(service.memSpec + 'GB');
+                let storageParts = [];
+                if (parseFloat(service.sasDisk) > 0) storageParts.push(service.sasDisk + 'T');
+                if (parseFloat(service.ssdDisk) > 0) storageParts.push(service.ssdDisk + 'T');
+                if (storageParts.length > 0) configParts.push(storageParts.join('+'));
+                if (service.gpuModel) configParts.push('<' + service.gpuModel + '>*1');
+                let configText = configParts.join('/');
+                
+                return '<tr>' +
+                    '<td>' + service.serviceCode + '</td>' +
+                    '<td>' + service.categoryLevel1 + '-' + service.categoryLevel2 + '</td>' +
+                    '<td>' + service.categoryLevel3 + '</td>' +
+                    '<td><span class="service-name-highlight">' + service.serviceName + '</span></td>' +
+                    '<td><span class="config-link" onclick="showConfigDetail(' + service.id + ')">' + configText + '</span></td>' +
+                    '<td>' + service.costPool + '</td>' +
+                    '<td>' + service.billingResource + '</td>' +
+                    '<td>¥' + service.serviceFee.toFixed(2) + '</td>' +
+                    '<td>¥' + service.unitPrice.toFixed(2) + '</td>' +
+                    '<td>¥' + service.aliyunPrice.toFixed(2) + '</td>' +
+                    '<td>' + service.unit + '</td>' +
+                    '<td>' + service.month + '</td>' +
+                    '<td>' + service.description + '</td>' +
+                    '<td>' +
+                        '<div class="action-btns">' +
+                            '<button class="btn btn-success edit-btn" data-id="' + service.id + '">编辑</button>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>';
+            }).join('');
+            
+            // 为编辑按钮添加事件监听器
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    editService(id);
+                });
+            });
+            
+            // 渲染分页控件
+            renderPagination();
+        }
+        
+        // 渲染分页控件
+        function renderPagination() {
+            totalPages = Math.ceil(filteredData.length / pageSize);
+            const paginationContainer = document.getElementById('pagination');
+            
+            if (!paginationContainer) {
+                // 创建分页容器
+                const tableContainer = document.querySelector('.table-container');
+                const paginationDiv = document.createElement('div');
+                paginationDiv.id = 'pagination';
+                paginationDiv.style.cssText = `
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    margin-top: 20px;
+                    gap: 8px;
+                `;
+                tableContainer.parentNode.insertBefore(paginationDiv, tableContainer.nextSibling);
+            }
+            
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            
+            // 上一页按钮
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'btn btn-default';
+            prevBtn.textContent = '上一页';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            };
+            paginationDiv.appendChild(prevBtn);
+            
+            // 页码按钮
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `btn ${i === currentPage ? 'btn-primary' : 'btn-default'}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = function() {
+                    currentPage = i;
+                    renderTable();
+                };
+                paginationDiv.appendChild(pageBtn);
+            }
+            
+            // 下一页按钮
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'btn btn-default';
+            nextBtn.textContent = '下一页';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            };
+            paginationDiv.appendChild(nextBtn);
+            
+            // 显示总数和当前页信息
+            const infoDiv = document.createElement('div');
+            infoDiv.style.cssText = `
+                margin-left: 20px;
+                font-size: 14px;
+                color: #666;
+            `;
+            infoDiv.textContent = `共 ${filteredData.length} 条数据，第 ${currentPage}/${totalPages} 页`;
+            paginationDiv.appendChild(infoDiv);
+        }
+
+        // 搜索服务
+        function searchServices() {
+            const service = document.getElementById('searchService').value.toLowerCase();
+            const cluster = document.getElementById('searchCluster').value.toLowerCase();
+            const specName = document.getElementById('searchSpecName').value.toLowerCase();
+            const costPool = document.getElementById('filterCostPool').value;
+            const billingResource = document.getElementById('filterBillingResource').value;
+            const month = document.getElementById('filterMonth').value;
+
+            filteredData = serviceData.filter(item => {
+                const serviceFullName = (item.categoryLevel1 + '-' + item.categoryLevel2).toLowerCase();
+                return (!service || serviceFullName.includes(service)) &&
+                       (!cluster || item.categoryLevel3.toLowerCase().includes(cluster)) &&
+                       (!specName || item.serviceName.toLowerCase().includes(specName)) &&
+                       (!costPool || item.costPool === costPool) &&
+                       (!billingResource || item.billingResource === billingResource) &&
+                       (!month || item.month === month);
+            });
+
+            // 重置页码到第一页
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 重置筛选
+        function resetFilter() {
+            document.getElementById('searchService').value = '';
+            document.getElementById('searchCluster').value = '';
+            document.getElementById('searchSpecName').value = '';
+            document.getElementById('filterCostPool').value = '';
+            document.getElementById('filterBillingResource').value = '';
+            document.getElementById('filterMonth').value = '2026-02';
+            // 关闭下拉框
+            document.getElementById('serviceOptions').classList.remove('show');
+            document.getElementById('clusterOptions').classList.remove('show');
+            filteredData = [...serviceData];
+            // 重置页码到第一页
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 查看服务详情
+        function viewService(id) {
+            const service = serviceData.find(s => s.id === id);
+            if (service) {
+                alert(`服务详情：\n编码：${service.serviceCode}\n一级分类：${service.categoryLevel1}\n二级分类：${service.categoryLevel2}\n三级分类：${service.categoryLevel3}\n名称：${service.service}\n描述：${service.description}\nCPU规格：${service.cpuSpec}C\nMEM规格：${service.memSpec}G\nDISK规格：${service.diskSpec}T\n关联成本池：${service.costPool}\n计费资源：${service.billingResource}\n服务费：¥${service.serviceFee.toFixed(2)}\n附加存储费：¥${service.storageFee.toFixed(2)}\n单价：¥${service.unitPrice.toFixed(2)}\n华为云参考价：¥${service.huaweiPrice.toFixed(2)}\n单位：${service.unit}`);
+            }
+        }
+
+        // 显示添加弹窗
+        function showAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = '添加服务';
+            document.getElementById('serviceId').value = '';
+            document.getElementById('serviceDescription').value = '';
+            document.getElementById('costPool').value = '';
+            
+            // 加载成本池数据到下拉框
+            loadCostPoolsToModal();
+            
+            document.getElementById('serviceModal').classList.add('active');
+        }
+
+        // 编辑服务
+        function editService(id) {
+            try {
+                console.log('Edit service called with id:', id);
+                const serviceId = parseInt(id);
+                console.log('Parsed serviceId:', serviceId);
+                const service = serviceData.find(s => s.id === serviceId);
+                console.log('Found service:', service);
+                if (!service) {
+                    console.log('Service not found');
+                    return;
+                }
+                
+                currentEditId = serviceId;
+                console.log('Setting currentEditId:', currentEditId);
+                document.getElementById('modalTitle').textContent = '编辑服务';
+                document.getElementById('serviceId').value = service.id;
+                document.getElementById('serviceCode').value = service.serviceCode;
+                document.getElementById('serviceName').value = service.serviceName;
+                document.getElementById('serviceDescription').value = service.description;
+                
+                // 加载成本池数据到下拉框
+                loadCostPoolsToModal();
+                
+                // 设置选中的成本池
+                setTimeout(() => {
+                    const costPoolSelect = document.getElementById('costPool');
+                    if (costPoolSelect) {
+                        costPoolSelect.value = service.costPool;
+                        // 更新计费资源
+                        updateBillingResource();
+                    }
+                }, 100);
+                
+                console.log('Adding active class to serviceModal');
+                document.getElementById('serviceModal').classList.add('active');
+                console.log('Modal should be visible now');
+            } catch (error) {
+                console.error('Error in editService:', error);
+                // 即使出错也显示弹窗
+                document.getElementById('serviceModal').classList.add('active');
+            }
+        }
+
+        // 删除服务
+        function deleteService(id) {
+            if (!confirm('确定要删除该服务吗？')) return;
+            
+            const index = serviceData.findIndex(s => s.id === id);
+            if (index >= 0) {
+                serviceData.splice(index, 1);
+                filteredData = [...serviceData];
+                renderTable();
+                alert('删除成功');
+            }
+        }
+
+        // 保存服务
+        function saveService() {
+            const description = document.getElementById('serviceDescription').value;
+            const costPool = document.getElementById('costPool').value;
+            
+            // 获取计费资源
+            let billingResource = '';
+            try {
+                const costPools = JSON.parse(localStorage.getItem('costPools')) || [];
+                const costPoolData = costPools.find(pool => pool.name === costPool);
+                if (costPoolData) {
+                    billingResource = costPoolData.billingResource;
+                } else {
+                    // 为默认成本池选项提供对应的计费资源
+                    const defaultBillingResources = {
+                        '物理机': 'CPU',
+                        '容器': 'MEM',
+                        '虚拟机': 'CPU',
+                        '存储': 'DISK',
+                        '数据库': 'CPU',
+                        '网络': '流量'
+                    };
+                    billingResource = defaultBillingResources[costPool] || '';
+                }
+            } catch (error) {
+                console.error('Error getting billing resource:', error);
+            }
+
+            if (currentEditId) {
+                // 编辑
+                const index = serviceData.findIndex(s => s.id === currentEditId);
+                if (index >= 0) {
+                    serviceData[index] = {
+                        ...serviceData[index],
+                        description,
+                        costPool,
+                        billingResource
+                    };
+                }
+            }
+
+            filteredData = [...serviceData];
+            renderTable();
+            closeModal();
+            alert('编辑成功');
+        }
+
+        // 当选择成本池时，自动填充计费资源
+        // 加载成本池数据到编辑弹窗
+        function loadCostPoolsToModal() {
+            // 现在成本池使用搜索下拉框，不需要预加载选项
+            // 选项会在用户输入时动态生成
+        }
+
+        function updateBillingResource() {
+            try {
+                const costPool = document.getElementById('costPool').value;
+                const costPools = JSON.parse(localStorage.getItem('costPools')) || [];
+                const costPoolData = costPools.find(pool => pool.name === costPool);
+                
+                if (costPoolData) {
+                    document.getElementById('billingResource').value = costPoolData.billingResource;
+                } else {
+                    // 为默认成本池选项提供对应的计费资源
+                    const defaultBillingResources = {
+                        '物理机': 'CPU',
+                        '容器': 'MEM',
+                        '虚拟机': 'CPU',
+                        '存储': 'DISK',
+                        '数据库': 'CPU'
+                    };
+                    document.getElementById('billingResource').value = defaultBillingResources[costPool] || '';
+                }
+            } catch (error) {
+                console.error('Error updating billing resource:', error);
+            }
+        }
+
+        // 手动调整列宽功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.querySelector('table');
+            const thElements = table.querySelectorAll('th');
+            let resizing = false;
+            let currentTh = null;
+            let startX = 0;
+            let startWidth = 0;
+
+            thElements.forEach(th => {
+                th.addEventListener('mousedown', function(e) {
+                    // 只有在鼠标靠近列边缘时才开始调整
+                    const rect = th.getBoundingClientRect();
+                    if (e.clientX > rect.right - 10) {
+                        resizing = true;
+                        currentTh = th;
+                        startX = e.clientX;
+                        startWidth = th.offsetWidth;
+                        document.body.style.cursor = 'col-resize';
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (resizing && currentTh) {
+                    const width = startWidth + (e.clientX - startX);
+                    currentTh.style.width = width + 'px';
+                    
+                    // 同时调整对应td的宽度
+                    const index = Array.from(currentTh.parentNode.children).indexOf(currentTh);
+                    const tbody = table.querySelector('tbody');
+                    const rows = tbody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const td = row.children[index];
+                        if (td) {
+                            td.style.width = width + 'px';
+                        }
+                    });
+                } else {
+                    // 鼠标悬停时显示调整光标
+                    let hoveredTh = null;
+                    thElements.forEach(th => {
+                        const rect = th.getBoundingClientRect();
+                        if (e.clientX > rect.right - 10 && e.clientX < rect.right) {
+                            hoveredTh = th;
+                        }
+                    });
+                    if (hoveredTh) {
+                        document.body.style.cursor = 'col-resize';
+                    } else {
+                        document.body.style.cursor = '';
+                    }
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (resizing) {
+                    resizing = false;
+                    currentTh = null;
+                    document.body.style.cursor = '';
+                }
+            });
+        });
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('serviceModal').classList.remove('active');
+        }
+
+        // 显示配置详情
+        function showConfigDetail(id) {
+            const service = serviceData.find(s => s.id === id);
+            if (!service) return;
+            
+            document.getElementById('configDetailContent').innerHTML = `
+                <div class="config-detail-item">
+                    <strong>CPU型号：</strong>${service.cpuModel || '无'}
+                </div>
+                <div class="config-detail-item">
+                    <strong>CPU(C)：</strong>${service.cpuSpec}C
+                </div>
+                <div class="config-detail-item">
+                    <strong>MEM(GB)：</strong>${service.memSpec}GB
+                </div>
+                <div class="config-detail-item">
+                    <strong>SAS_DISK(T)：</strong>${service.sasDisk}T
+                </div>
+                <div class="config-detail-item">
+                    <strong>SSD_DISK(T)：</strong>${service.ssdDisk}T
+                </div>
+                <div class="config-detail-item">
+                    <strong>显卡型号：</strong>${service.gpuModel || '无'}
+                </div>
+                <div class="config-detail-item">
+                    <strong>显存（GB）：</strong>${service.gpuMem}GB
+                </div>
+            `;
+            document.getElementById('configDetailModal').classList.add('active');
+        }
+
+        // 关闭配置详情弹窗
+        function closeConfigDetail() {
+            document.getElementById('configDetailModal').classList.remove('active');
+        }
+
+        // 导出服务
+        function exportServices() {
+            alert('导出功能：将导出当前筛选条件下的服务数据到Excel文件');
+        }
+    </script>
+</body>
+</html>

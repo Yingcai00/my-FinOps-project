@@ -1,0 +1,45 @@
+sequenceDiagram
+    participant FinOps运维管理员
+    participant FinOps系统
+    participant 定价规则模块
+    participant 成本池模块
+    participant 产品目录
+
+    Note over FinOps运维管理员,产品目录: 阶段1: 创建产品
+    FinOps运维管理员->>FinOps系统: 录入产品信息（名称、类型、规格）
+    FinOps系统->>FinOps系统: 验证产品名称唯一性
+    FinOps系统->>产品目录: 保存产品基础信息
+
+    Note over FinOps运维管理员,产品目录: 阶段2: 配置定价规则
+    FinOps运维管理员->>FinOps系统: 选择定价规则或自定义
+    alt 使用已有规则
+        FinOps运维管理员->>FinOps系统: 选择已有定价规则
+        FinOps系统->>定价规则模块: 获取规则详情
+        定价规则模块-->>FinOps系统: 返回规则公式
+        FinOps系统->>FinOps系统: 应用规则到产品
+    else 自定义规则
+        FinOps运维管理员->>FinOps系统: 输入自定义计算公式
+        FinOps系统->>定价规则模块: 创建自定义规则
+        定价规则模块-->>FinOps系统: 规则创建成功
+    end
+
+    Note over FinOps运维管理员,产品目录: 阶段3: 关联成本池
+    FinOps运维管理员->>FinOps系统: 将产品关联至成本池
+    FinOps系统->>成本池模块: 获取成本池单价
+    成本池模块-->>FinOps系统: 返回单价
+    FinOps系统->>FinOps系统: 计算产品最终价格
+
+    Note over FinOps运维管理员,产品目录: 阶段4: 定价审核
+    FinOps运维管理员->>FinOps系统: 提交定价审核
+    alt 审核通过
+        FinOps运维管理员->>FinOps系统: 发布产品定价
+        FinOps系统->>产品目录: 标记产品为已发布
+    else 审核不通过
+        FinOps运维管理员->>FinOps系统: 修改定价配置
+        FinOps系统->>FinOps系统: 重新计算价格
+    end
+
+    Note over FinOps运维管理员,产品目录: 阶段5: 产品上架
+    FinOps运维管理员->>FinOps系统: 设置产品上架状态
+    FinOps系统->>产品目录: 更新产品状态为上架
+    FinOps系统-->>产品目录: 产品可被用户订购

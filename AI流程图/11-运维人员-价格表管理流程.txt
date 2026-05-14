@@ -1,0 +1,55 @@
+sequenceDiagram
+    participant FinOps运维管理员
+    participant FinOps系统
+    participant 定价管理模块
+    participant 价格表模块
+    participant 产品目录
+
+    Note over FinOps运维管理员,产品目录: 阶段1: 创建价格表
+    FinOps运维管理员->>FinOps系统: 创建价格表（指定生效周期、适用范围）
+    FinOps系统->>价格表模块: 保存价格表基础信息
+    价格表模块-->>FinOps系统: 返回价格表ID
+
+    Note over FinOps运维管理员,产品目录: 阶段2: 添加价格项
+    FinOps运维管理员->>FinOps系统: 选择产品/规格
+    FinOps系统->>产品目录: 获取产品信息
+    产品目录-->>FinOps系统: 返回产品详情
+    FinOps运维管理员->>FinOps系统: 设置价格（可覆盖默认定价）
+    FinOps系统->>价格表模块: 添加价格项
+
+    Note over FinOps运维管理员,产品目录: 阶段3: 配置定价策略
+    alt 标准定价
+        FinOps运维管理员->>FinOps系统: 设置基础单价
+    else 阶梯定价
+        FinOps运维管理员->>FinOps系统: 配置阶梯区间和对应价格
+    else 折扣定价
+        FinOps运维管理员->>FinOps系统: 设置折扣规则（时间/数量/用户组）
+    end
+    FinOps系统->>定价管理模块: 保存定价策略
+
+    Note over FinOps运维管理员,产品目录: 阶段4: 价格表审核
+    FinOps运维管理员->>FinOps系统: 提交审核
+    FinOps系统->>定价管理模块: 校验价格表完整性
+    alt 校验通过
+        FinOps运维管理员->>FinOps系统: 发布价格表
+        FinOps系统->>价格表模块: 标记为已发布
+        FinOps系统->>定价管理模块: 启用价格表
+    else 校验失败
+        FinOps系统-->>FinOps运维管理员: 提示校验错误
+        FinOps运维管理员->>FinOps系统: 修改价格表配置
+    end
+
+    Note over FinOps运维管理员,产品目录: 阶段5: 价格表生效
+    价格表模块->>定价管理模块: 到达生效日期自动启用
+    定价管理模块->>定价管理模块: 切换当前生效价格表
+    定价管理模块-->>产品目录: 应用新价格
+
+    Note over FinOps运维管理员,产品目录: 阶段6: 价格表变更
+    alt 修改未生效价格表
+        FinOps运维管理员->>FinOps系统: 修改价格表内容
+        FinOps系统->>价格表模块: 更新价格表
+    else 调整生效中价格表
+        FinOps运维管理员->>FinOps系统: 创建新版本价格表
+        FinOps系统->>价格表模块: 创建新版本
+        FinOps系统->>定价管理模块: 设置生效时间
+    end

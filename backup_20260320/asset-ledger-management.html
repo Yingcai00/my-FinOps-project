@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>FinOps财务运营管理平台 - B类资产管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        /* 搜索筛选区域 */
+        .search-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .filter-item input,
+        .filter-item select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-item input:focus,
+        .filter-item select:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6e6e6;
+        }
+
+        .btn-success {
+            background-color: #52c41a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #73d13d;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btns .btn {
+            padding: 4px 12px;
+            font-size: 13px;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1400px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 状态标签 */
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-normal {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-maintenance {
+            background-color: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .status-retired {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffa39e;
+        }
+
+        .status-idle {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        /* 占用状态 */
+        .occupy-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .occupy-inuse {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+
+        .occupy-idle {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .occupy-reserved {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 20px;
+            gap: 8px;
+        }
+
+        .pagination button {
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .pagination button:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination .active {
+            background-color: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        .sub-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sub-menu-item {
+            display: block;
+            padding: 10px 20px 10px 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sub-menu-item:hover, .sub-menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        /* 统计卡片 */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+        }
+
+        .stat-change.positive {
+            color: #52c41a;
+        }
+
+        .stat-change.negative {
+            color: #ff4d4f;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 800px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
+                菜单导航
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="asset-ledger-management.html" class="menu-item active">
+                        <span>B类资产管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="cost-overview.html" class="menu-item">
+                        <span>成本管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
+                        </li>
+                        <li>
+                            <a href="cost-pool-management.html" class="sub-menu-item">成本池管理</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="pricing-management.html" class="menu-item">
+                        <span>定价管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="metering-management.html" class="menu-item">
+                        <span>计量管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="bill-management.html" class="menu-item">
+                        <span>账单管理</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <div class="content">
+            <!-- 统计概览 -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">B类资产总数</div>
+                    <div class="stat-value" id="totalAssets">0</div>
+                    <div class="stat-change positive">台/套</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">使用中资产</div>
+                    <div class="stat-value" id="inUseAssets">0</div>
+                    <div class="stat-change positive">正常运行</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">闲置资产</div>
+                    <div class="stat-value" id="idleAssets">0</div>
+                    <div class="stat-change negative">待优化</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">资产总价值</div>
+                    <div class="stat-value" id="totalValue">¥0</div>
+                    <div class="stat-change positive">采购总价</div>
+                </div>
+            </div>
+
+            <!-- 搜索筛选 -->
+            <div class="card">
+                <div class="search-filter">
+                    <div class="filter-item">
+                        <label>资产编码</label>
+                        <input type="text" id="searchCode" placeholder="请输入资产编码">
+                    </div>
+                    <div class="filter-item">
+                        <label>资产名称</label>
+                        <input type="text" id="searchName" placeholder="请输入资产名称">
+                    </div>
+                    <div class="filter-item">
+                        <label>资产状态</label>
+                        <select id="filterStatus">
+                            <option value="">全部</option>
+                            <option value="在用">在用</option>
+                            <option value="在库">在库</option>
+                            <option value="报废">报废</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>占用状态</label>
+                        <select id="filterOccupy">
+                            <option value="">全部</option>
+                            <option value="占用">占用</option>
+                            <option value="未占用">未占用</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>分类名称</label>
+                        <select id="filterCategory">
+                            <option value="">全部</option>
+                            <option value="服务器">服务器</option>
+                            <option value="存储设备">存储设备</option>
+                            <option value="网络设备">网络设备</option>
+                            <option value="安全设备">安全设备</option>
+                        </select>
+                    </div>
+                    <div class="filter-item" style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" onclick="searchAssets()">查询</button>
+                        <button class="btn btn-default" onclick="resetFilter()" style="margin-left: 8px;">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 资产列表 -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="card-title" style="margin: 0;">B类资产管理</h2>
+                    <div class="action-btns">
+                        <button class="btn btn-primary" onclick="showAddModal()">添加资产</button>
+                        <button class="btn btn-success" onclick="exportAssets()">导出Excel</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>资产编码</th>
+                                <th>资产名称</th>
+                                <th>资产状态</th>
+                                <th>资产型号</th>
+                                <th>品牌</th>
+                                <th>资产配置</th>
+                                <th>设备序列号</th>
+                                <th>分类名称</th>
+                                <th>FinOps资产分类</th>
+                                <th>FinOps资产用途</th>
+                                <th>占用状态</th>
+                                <th>采购价格</th>
+                                <th>使用月限</th>
+                                <th>计量单位</th>
+                                <th>采购日期</th>
+                                <th>增加方式</th>
+                                <th>资产类型</th>
+                                <th>所属地区</th>
+                                <th>归属人</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assetTableBody">
+                            <!-- 数据由JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination">
+                    <span class="pagination-info">共 <span id="totalCount">0</span> 条记录</span>
+                    <button onclick="goToPage(1)" id="firstPage">首页</button>
+                    <button onclick="prevPage()" id="prevPage">上一页</button>
+                    <span id="pageNumbers"></span>
+                    <button onclick="nextPage()" id="nextPage">下一页</button>
+                    <button onclick="goToPage(totalPages)" id="lastPage">末页</button>
+                    <span class="pagination-info">第 <span id="currentPage">1</span> / <span id="totalPages">1</span> 页</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟B类资产数据（基于Excel字段结构）
+        const assetData = [
+            {
+                id: 1,
+                code: 'AST-2024-001',
+                name: '华为服务器',
+                status: '在用',
+                model: 'Atlas 800 (Model 3000)',
+                brand: '华为',
+                config: '华为鲲鹏920-5220-32Core/64G/480G/Atlas 300V Pro 双卡',
+                serialNumber: '2102313NMSPOR1100077',
+                categoryName: '服务器',
+                finopsCategory: '国产化服务器',
+                finopsPurpose: '物理机',
+                occupyStatus: '占用',
+                purchasePrice: 200000,
+                usageMonths: 60,
+                unit: '台',
+                purchaseDate: '2024-01-15',
+                addMethod: '采购',
+                assetType: '硬件设备',
+                region: '北京片区-北京-广联达大厦二期-F01-111核心机房',
+                owner: '张三'
+            },
+            {
+                id: 2,
+                code: 'AST-2024-002',
+                name: '戴尔服务器',
+                status: '在用',
+                model: 'PowerEdge R740',
+                brand: '戴尔',
+                config: 'Intel Xeon Gold 6248-20Core/64G/960G',
+                serialNumber: 'CN740R7400001',
+                categoryName: '服务器',
+                finopsCategory: '标准化通用服务器-容器应用',
+                finopsPurpose: '容器集群',
+                occupyStatus: '占用',
+                purchasePrice: 85000,
+                usageMonths: 60,
+                unit: '台',
+                purchaseDate: '2024-02-20',
+                addMethod: '采购',
+                assetType: '硬件设备',
+                region: '北京片区-北京-广联达大厦二期-F01-112核心机房',
+                owner: '李四'
+            },
+            {
+                id: 3,
+                code: 'AST-2024-003',
+                name: '华为存储',
+                status: '在库',
+                model: 'OceanStor 5310',
+                brand: '华为',
+                config: '36TB存储容量',
+                serialNumber: '2102313NMSPOR1100078',
+                categoryName: '存储设备',
+                finopsCategory: '集中式存储',
+                finopsPurpose: '存储',
+                occupyStatus: '未占用',
+                purchasePrice: 180000,
+                usageMonths: 60,
+                unit: '套',
+                purchaseDate: '2024-03-10',
+                addMethod: '采购',
+                assetType: '硬件设备',
+                region: '北京片区-北京-广联达大厦二期-F01-113核心机房',
+                owner: '王五'
+            },
+            {
+                id: 4,
+                code: 'AST-2024-004',
+                name: '思科交换机',
+                status: '在用',
+                model: 'Catalyst 9300',
+                brand: '思科',
+                config: '48端口千兆交换机',
+                serialNumber: 'CAT9300-001',
+                categoryName: '网络设备',
+                finopsCategory: '网络设备',
+                finopsPurpose: '物理机',
+                occupyStatus: '占用',
+                purchasePrice: 45000,
+                usageMonths: 60,
+                unit: '台',
+                purchaseDate: '2024-01-25',
+                addMethod: '采购',
+                assetType: '硬件设备',
+                region: '北京片区-北京-广联达大厦二期-F01-111核心机房',
+                owner: '赵六'
+            },
+            {
+                id: 5,
+                code: 'AST-2024-005',
+                name: '深信服防火墙',
+                status: '在用',
+                model: 'AF-2000',
+                brand: '深信服',
+                config: '下一代防火墙',
+                serialNumber: 'AF2000-001',
+                categoryName: '安全设备',
+                finopsCategory: '安全设备',
+                finopsPurpose: '物理机',
+                occupyStatus: '占用',
+                purchasePrice: 68000,
+                usageMonths: 60,
+                unit: '台',
+                purchaseDate: '2024-04-05',
+                addMethod: '采购',
+                assetType: '硬件设备',
+                region: '北京片区-北京-广联达大厦二期-F01-111核心机房',
+                owner: '钱七'
+            }
+        ];
+
+        let filteredData = [...assetData];
+        let currentPage = 1;
+        const pageSize = 10;
+        let totalPages = 1;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            renderTable();
+        });
+
+        // 更新统计数据
+        function updateStats() {
+            const total = assetData.length;
+            const inUse = assetData.filter(a => a.status === '在用').length;
+            const idle = assetData.filter(a => a.status === '在库').length;
+            const totalVal = assetData.reduce((sum, a) => sum + a.purchasePrice, 0);
+
+            document.getElementById('totalAssets').textContent = total;
+            document.getElementById('inUseAssets').textContent = inUse;
+            document.getElementById('idleAssets').textContent = idle;
+            document.getElementById('totalValue').textContent = '¥' + (totalVal / 10000).toFixed(1) + '万';
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('assetTableBody');
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = filteredData.slice(start, end);
+
+            tbody.innerHTML = pageData.map(asset => `
+                <tr>
+                    <td>${asset.code}</td>
+                    <td>${asset.name}</td>
+                    <td><span class="status-tag status-${getStatusClass(asset.status)}">${asset.status}</span></td>
+                    <td>${asset.model}</td>
+                    <td>${asset.brand}</td>
+                    <td>${asset.config}</td>
+                    <td>${asset.serialNumber}</td>
+                    <td>${asset.categoryName}</td>
+                    <td>${asset.finopsCategory}</td>
+                    <td>${asset.finopsPurpose}</td>
+                    <td><span class="occupy-tag occupy-${getOccupyClass(asset.occupyStatus)}">${asset.occupyStatus}</span></td>
+                    <td>¥${asset.purchasePrice.toLocaleString()}</td>
+                    <td>${asset.usageMonths} 月</td>
+                    <td>${asset.unit}</td>
+                    <td>${asset.purchaseDate}</td>
+                    <td>${asset.addMethod}</td>
+                    <td>${asset.assetType}</td>
+                    <td>${asset.region}</td>
+                    <td>${asset.owner}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-primary" onclick="viewAsset(${asset.id})">查看</button>
+                            <button class="btn btn-success" onclick="editAsset(${asset.id})">编辑</button>
+                            <button class="btn btn-danger" onclick="deleteAsset(${asset.id})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            updatePagination();
+        }
+
+        // 获取状态样式类
+        function getStatusClass(status) {
+            const map = {
+                '正常': 'normal',
+                '维修中': 'maintenance',
+                '已报废': 'retired',
+                '闲置': 'idle'
+            };
+            return map[status] || 'normal';
+        }
+
+        // 获取占用状态样式类
+        function getOccupyClass(status) {
+            const map = {
+                '使用中': 'inuse',
+                '闲置': 'idle',
+                '预留': 'reserved'
+            };
+            return map[status] || 'idle';
+        }
+
+        // 更新分页
+        function updatePagination() {
+            totalPages = Math.ceil(filteredData.length / pageSize);
+            document.getElementById('totalCount').textContent = filteredData.length;
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+
+            document.getElementById('firstPage').disabled = currentPage === 1;
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+            document.getElementById('lastPage').disabled = currentPage === totalPages;
+
+            // 生成页码按钮
+            let pageNumbers = '';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    pageNumbers += `<button class="active">${i}</button>`;
+                } else if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    pageNumbers += `<button onclick="goToPage(${i})">${i}</button>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    pageNumbers += '<span>...</span>';
+                }
+            }
+            document.getElementById('pageNumbers').innerHTML = pageNumbers;
+        }
+
+        // 搜索资产
+        function searchAssets() {
+            const code = document.getElementById('searchCode').value.toLowerCase();
+            const name = document.getElementById('searchName').value.toLowerCase();
+            const category = document.getElementById('filterCategory').value;
+            const status = document.getElementById('filterStatus').value;
+            const occupy = document.getElementById('filterOccupy').value;
+
+            filteredData = assetData.filter(asset => {
+                return (!code || asset.code.toLowerCase().includes(code)) &&
+                       (!name || asset.name.toLowerCase().includes(name)) &&
+                       (!category || asset.categoryName === category) &&
+                       (!status || asset.status === status) &&
+                       (!occupy || asset.occupyStatus === occupy);
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 重置筛选
+        function resetFilter() {
+            document.getElementById('searchCode').value = '';
+            document.getElementById('searchName').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterOccupy').value = '';
+            document.getElementById('filterDept').value = '';
+            filteredData = [...assetData];
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 分页跳转
+        function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        }
+
+        // 查看资产详情
+        function viewAsset(id) {
+            const asset = assetData.find(a => a.id === id);
+            if (asset) {
+                alert(`资产详情：\n编码：${asset.code}\n名称：${asset.name}\n型号：${asset.model}\n分类：${asset.category}\n细分：${asset.subCategory}\n状态：${asset.status}\n占用：${asset.occupyStatus}\n采购价：¥${asset.price.toLocaleString()}\n采购日期：${asset.purchaseDate}\n员工：${asset.employee}\n部门：${asset.dept}`);
+            }
+        }
+
+        // 导出Excel
+        function exportAssets() {
+            alert('导出功能：将导出当前筛选条件下的资产数据到Excel文件');
+        }
+
+        // 添加/编辑资产弹窗
+        let currentEditAssetId = null;
+
+        function showAddModal() {
+            currentEditAssetId = null;
+            document.getElementById('modalTitle').textContent = '添加资产';
+            document.getElementById('assetId').value = '';
+            document.getElementById('assetCode').value = '';
+            document.getElementById('assetName').value = '';
+            document.getElementById('assetStatus').value = '在用';
+            document.getElementById('assetModel').value = '';
+            document.getElementById('assetBrand').value = '';
+            document.getElementById('assetConfig').value = '';
+            document.getElementById('serialNumber').value = '';
+            document.getElementById('categoryName').value = '服务器';
+            document.getElementById('finopsCategory').value = '';
+            document.getElementById('finopsPurpose').value = '物理机';
+            document.getElementById('occupyStatus').value = '占用';
+            document.getElementById('purchasePrice').value = '';
+            document.getElementById('usageMonths').value = '60';
+            document.getElementById('assetUnit').value = '台';
+            document.getElementById('purchaseDate').value = '';
+            document.getElementById('addMethod').value = '采购';
+            document.getElementById('assetType').value = '硬件设备';
+            document.getElementById('region').value = '';
+            document.getElementById('owner').value = '';
+            document.getElementById('assetModal').classList.add('active');
+        }
+
+        function editAsset(id) {
+            const asset = assetData.find(a => a.id === id);
+            if (!asset) return;
+            
+            currentEditAssetId = id;
+            document.getElementById('modalTitle').textContent = '编辑资产';
+            document.getElementById('assetId').value = asset.id;
+            document.getElementById('assetCode').value = asset.code;
+            document.getElementById('assetName').value = asset.name;
+            document.getElementById('assetStatus').value = asset.status;
+            document.getElementById('assetModel').value = asset.model;
+            document.getElementById('assetBrand').value = asset.brand;
+            document.getElementById('assetConfig').value = asset.config;
+            document.getElementById('serialNumber').value = asset.serialNumber;
+            document.getElementById('categoryName').value = asset.categoryName;
+            document.getElementById('finopsCategory').value = asset.finopsCategory;
+            document.getElementById('finopsPurpose').value = asset.finopsPurpose;
+            document.getElementById('occupyStatus').value = asset.occupyStatus;
+            document.getElementById('purchasePrice').value = asset.purchasePrice;
+            document.getElementById('usageMonths').value = asset.usageMonths;
+            document.getElementById('assetUnit').value = asset.unit;
+            document.getElementById('purchaseDate').value = asset.purchaseDate;
+            document.getElementById('addMethod').value = asset.addMethod;
+            document.getElementById('assetType').value = asset.assetType;
+            document.getElementById('region').value = asset.region;
+            document.getElementById('owner').value = asset.owner;
+            document.getElementById('assetModal').classList.add('active');
+        }
+
+        function deleteAsset(id) {
+            if (!confirm('确定要删除该资产吗？')) return;
+            
+            const index = assetData.findIndex(a => a.id === id);
+            if (index >= 0) {
+                assetData.splice(index, 1);
+                filteredData = [...assetData];
+                updateStats();
+                renderTable();
+                alert('删除成功');
+            }
+        }
+
+        function saveAsset() {
+            const id = document.getElementById('assetId').value;
+            const code = document.getElementById('assetCode').value;
+            const name = document.getElementById('assetName').value;
+            const status = document.getElementById('assetStatus').value;
+            const model = document.getElementById('assetModel').value;
+            const brand = document.getElementById('assetBrand').value;
+            const config = document.getElementById('assetConfig').value;
+            const serialNumber = document.getElementById('serialNumber').value;
+            const categoryName = document.getElementById('categoryName').value;
+            const finopsCategory = document.getElementById('finopsCategory').value;
+            const finopsPurpose = document.getElementById('finopsPurpose').value;
+            const occupyStatus = document.getElementById('occupyStatus').value;
+            const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+            const usageMonths = parseInt(document.getElementById('usageMonths').value);
+            const unit = document.getElementById('assetUnit').value;
+            const purchaseDate = document.getElementById('purchaseDate').value;
+            const addMethod = document.getElementById('addMethod').value;
+            const assetType = document.getElementById('assetType').value;
+            const region = document.getElementById('region').value;
+            const owner = document.getElementById('owner').value;
+
+            if (!code || !name || !status || !model || !brand || !config || !serialNumber || !categoryName || !finopsCategory || !finopsPurpose || !occupyStatus || !purchasePrice || !usageMonths || !unit || !purchaseDate || !addMethod || !assetType || !region || !owner) {
+                alert('请填写所有必填字段');
+                return;
+            }
+
+            if (currentEditAssetId) {
+                // 编辑
+                const index = assetData.findIndex(a => a.id === currentEditAssetId);
+                if (index >= 0) {
+                    assetData[index] = {
+                        ...assetData[index],
+                        code,
+                        name,
+                        status,
+                        model,
+                        brand,
+                        config,
+                        serialNumber,
+                        categoryName,
+                        finopsCategory,
+                        finopsPurpose,
+                        occupyStatus,
+                        purchasePrice,
+                        usageMonths,
+                        unit,
+                        purchaseDate,
+                        addMethod,
+                        assetType,
+                        region,
+                        owner
+                    };
+                }
+            } else {
+                // 添加
+                const newId = Math.max(...assetData.map(a => a.id), 0) + 1;
+                assetData.push({
+                    id: newId,
+                    code,
+                    name,
+                    status,
+                    model,
+                    brand,
+                    config,
+                    serialNumber,
+                    categoryName,
+                    finopsCategory,
+                    finopsPurpose,
+                    occupyStatus,
+                    purchasePrice,
+                    usageMonths,
+                    unit,
+                    purchaseDate,
+                    addMethod,
+                    assetType,
+                    region,
+                    owner
+                });
+            }
+
+            filteredData = [...assetData];
+            updateStats();
+            renderTable();
+            closeAssetModal();
+            alert(currentEditAssetId ? '编辑成功' : '添加成功');
+        }
+
+        function closeAssetModal() {
+            document.getElementById('assetModal').classList.remove('active');
+        }
+    </script>
+
+    <!-- 添加/编辑资产弹窗 -->
+    <div class="modal" id="assetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">添加资产</h3>
+                <button class="modal-close" onclick="closeAssetModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="assetId">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>资产编码 *</label>
+                        <input type="text" id="assetCode" placeholder="请输入资产编码">
+                    </div>
+                    <div class="form-group">
+                        <label>资产名称 *</label>
+                        <input type="text" id="assetName" placeholder="请输入资产名称">
+                    </div>
+                    <div class="form-group">
+                        <label>资产状态 *</label>
+                        <select id="assetStatus">
+                            <option value="在用">在用</option>
+                            <option value="在库">在库</option>
+                            <option value="报废">报废</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>资产型号 *</label>
+                        <input type="text" id="assetModel" placeholder="请输入资产型号">
+                    </div>
+                    <div class="form-group">
+                        <label>品牌 *</label>
+                        <input type="text" id="assetBrand" placeholder="请输入品牌">
+                    </div>
+                    <div class="form-group">
+                        <label>资产配置 *</label>
+                        <input type="text" id="assetConfig" placeholder="请输入资产配置">
+                    </div>
+                    <div class="form-group">
+                        <label>设备序列号 *</label>
+                        <input type="text" id="serialNumber" placeholder="请输入设备序列号">
+                    </div>
+                    <div class="form-group">
+                        <label>分类名称 *</label>
+                        <select id="categoryName">
+                            <option value="服务器">服务器</option>
+                            <option value="存储设备">存储设备</option>
+                            <option value="网络设备">网络设备</option>
+                            <option value="安全设备">安全设备</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>FinOps资产分类 *</label>
+                        <input type="text" id="finopsCategory" placeholder="请输入FinOps资产分类">
+                    </div>
+                    <div class="form-group">
+                        <label>FinOps资产用途 *</label>
+                        <select id="finopsPurpose">
+                            <option value="物理机">物理机</option>
+                            <option value="虚拟机集群">虚拟机集群</option>
+                            <option value="容器集群">容器集群</option>
+                            <option value="数据库">数据库</option>
+                            <option value="存储">存储</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>占用状态 *</label>
+                        <select id="occupyStatus">
+                            <option value="占用">占用</option>
+                            <option value="未占用">未占用</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>采购价格 *</label>
+                        <input type="number" id="purchasePrice" placeholder="请输入采购价格" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>使用月限 *</label>
+                        <input type="number" id="usageMonths" placeholder="请输入使用月限" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label>计量单位 *</label>
+                        <input type="text" id="assetUnit" placeholder="请输入计量单位">
+                    </div>
+                    <div class="form-group">
+                        <label>采购日期 *</label>
+                        <input type="date" id="purchaseDate">
+                    </div>
+                    <div class="form-group">
+                        <label>增加方式 *</label>
+                        <input type="text" id="addMethod" placeholder="请输入增加方式">
+                    </div>
+                    <div class="form-group">
+                        <label>资产类型 *</label>
+                        <input type="text" id="assetType" placeholder="请输入资产类型">
+                    </div>
+                    <div class="form-group">
+                        <label>所属地区 *</label>
+                        <input type="text" id="region" placeholder="请输入所属地区">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>归属人 *</label>
+                        <input type="text" id="owner" placeholder="请输入归属人">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeAssetModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveAsset()">保存</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

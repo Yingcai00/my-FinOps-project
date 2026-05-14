@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>排序功能页面原型 — 服务 / 规格簇 / 规格</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #333; font-size: 14px; }
+
+  /* ── 顶部导航 ── */
+  .topbar { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+  .topbar-tabs { display: flex; gap: 0; }
+  .tab-btn { padding: 0 20px; height: 56px; border: none; background: none; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; transition: all .2s; }
+  .tab-btn.active { color: #1677ff; border-bottom-color: #1677ff; font-weight: 500; }
+  .tab-btn:hover { color: #1677ff; }
+
+  /* ── 主区域 ── */
+  .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+  /* ── 说明卡片 ── */
+  .info-card { background: #e6f4ff; border: 1px solid #91caff; border-radius: 8px; padding: 14px 18px; margin-bottom: 24px; display: flex; gap: 10px; align-items: flex-start; }
+  .info-card .icon { color: #1677ff; font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .info-card p { color: #1677ff; line-height: 1.6; font-size: 13px; }
+
+  /* ── 场景卡片组 ── */
+  .scene-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+  @media(max-width: 900px) { .scene-grid { grid-template-columns: 1fr; } }
+  .scene-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.08); overflow: hidden; }
+  .scene-card-head { padding: 14px 20px 10px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .scene-card-head h3 { font-size: 14px; font-weight: 600; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
+  .badge-blue { background: #e6f4ff; color: #1677ff; }
+  .badge-purple { background: #f9f0ff; color: #722ed1; }
+  .badge-green { background: #f6ffed; color: #52c41a; }
+  .scene-card-body { padding: 16px 20px 20px; }
+
+  /* ── 弹窗模拟 ── */
+  .modal-sim { border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; background: #fff; }
+  .modal-header { background: #fafafa; padding: 14px 16px 12px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h4 { font-size: 14px; font-weight: 600; }
+  .modal-close { color: #999; cursor: pointer; font-size: 16px; }
+  .modal-body { padding: 16px 20px; }
+  .modal-footer { padding: 12px 20px 16px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #f5f5f5; }
+
+  /* ── 表单 ── */
+  .form-item { display: flex; align-items: flex-start; margin-bottom: 14px; gap: 0; }
+  .form-item:last-child { margin-bottom: 0; }
+  .form-label { width: 88px; flex-shrink: 0; text-align: right; padding-right: 10px; padding-top: 6px; color: #666; font-size: 13px; }
+  .form-label.required::before { content: '*'; color: #ff4d4f; margin-right: 3px; }
+  .form-content { flex: 1; }
+
+  /* 输入框 */
+  .input { width: 100%; height: 32px; border: 1px solid #d9d9d9; border-radius: 6px; padding: 0 10px; font-size: 13px; color: #333; outline: none; transition: border-color .2s; }
+  .input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
+  .input.warning { border-color: #fa8c16; }
+  .input.warning:focus { box-shadow: 0 0 0 2px rgba(250,140,22,.1); }
+  .input.disabled { background: #f5f5f5; color: #999; cursor: not-allowed; }
+  .input-counter { font-size: 11px; color: #999; float: right; margin-top: 2px; }
+  textarea.input { height: 72px; resize: vertical; padding: 6px 10px; }
+
+  /* 排序输入组 */
+  .sort-row { display: flex; align-items: center; gap: 8px; }
+  .sort-input-wrap { position: relative; flex: 1; }
+  .sort-input { width: 100%; height: 32px; border: 1px solid #d9d9d9; border-radius: 6px; padding: 0 36px 0 10px; font-size: 13px; color: #333; outline: none; transition: border-color .2s; }
+  .sort-input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
+  .sort-input.warning { border-color: #fa8c16; }
+  .sort-arrows { position: absolute; right: 1px; top: 1px; bottom: 1px; width: 26px; display: flex; flex-direction: column; border-left: 1px solid #e8e8e8; border-radius: 0 5px 5px 0; overflow: hidden; }
+  .sort-arrow { flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fafafa; color: #999; font-size: 9px; transition: background .15s; user-select: none; }
+  .sort-arrow:hover { background: #f0f0f0; color: #666; }
+  .sort-arrow:first-child { border-bottom: 1px solid #e8e8e8; }
+  .max-hint { font-size: 12px; color: #999; white-space: nowrap; flex-shrink: 0; }
+  .max-hint strong { color: #1677ff; }
+
+  /* 警告提示 */
+  .warn-tip { margin-top: 5px; padding: 5px 10px; background: #fff7e6; border: 1px solid #ffd591; border-radius: 5px; font-size: 12px; color: #d46b08; display: flex; gap: 6px; align-items: flex-start; line-height: 1.5; }
+  .warn-tip .wi { flex-shrink: 0; margin-top: 1px; }
+  .tip-text { font-size: 12px; color: #999; margin-top: 4px; }
+
+  /* select */
+  .select { width: 100%; height: 32px; border: 1px solid #d9d9d9; border-radius: 6px; padding: 0 30px 0 10px; font-size: 13px; color: #333; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center; -webkit-appearance: none; outline: none; }
+  .divider-label { font-size: 12px; color: #ff6b35; font-weight: 600; border-bottom: 2px solid #ff6b35; padding-bottom: 4px; margin: 8px 0 12px 0; }
+
+  /* toggle */
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; height: 32px; }
+  .toggle { width: 36px; height: 20px; background: #d9d9d9; border-radius: 10px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+  .toggle.on { background: #1677ff; }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: left .2s; }
+  .toggle.on::after { left: 18px; }
+  .toggle-label { font-size: 13px; color: #333; }
+
+  /* 按钮 */
+  .btn { height: 32px; padding: 0 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #d9d9d9; background: #fff; color: #333; transition: all .2s; }
+  .btn:hover { border-color: #1677ff; color: #1677ff; }
+  .btn-primary { background: #1677ff; border-color: #1677ff; color: #fff; }
+  .btn-primary:hover { background: #4096ff; border-color: #4096ff; color: #fff; }
+
+  /* ── 排序效果展示区 ── */
+  .effect-section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.08); padding: 20px 24px; margin-bottom: 24px; }
+  .effect-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+  .effect-section h2::before { content: ''; display: inline-block; width: 3px; height: 15px; background: #1677ff; border-radius: 2px; }
+
+  .sort-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sort-table th { background: #fafafa; padding: 10px 14px; text-align: left; font-weight: 500; color: #666; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  .sort-table td { padding: 10px 14px; border-bottom: 1px solid #f5f5f5; color: #333; }
+  .sort-table tr:last-child td { border-bottom: none; }
+  .sort-table tr:hover td { background: #fafafa; }
+  .sort-num { display: inline-block; width: 32px; height: 22px; background: #e6f4ff; color: #1677ff; border-radius: 4px; text-align: center; line-height: 22px; font-size: 12px; font-weight: 600; }
+  .sort-num.warn { background: #fff7e6; color: #d46b08; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; }
+  .tag-blue { background: #e6f4ff; color: #1677ff; }
+  .tag-purple { background: #f9f0ff; color: #722ed1; }
+  .tag-orange { background: #fff7e6; color: #d46b08; }
+  .arrow-down { color: #999; font-size: 11px; margin: 0 4px; }
+
+  /* ── 断档说明 ── */
+  .gap-section { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.08); padding: 20px 24px; margin-bottom: 24px; }
+  .gap-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+  .gap-section h2::before { content: ''; display: inline-block; width: 3px; height: 15px; background: #52c41a; border-radius: 2px; }
+  .gap-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width: 700px) { .gap-compare { grid-template-columns: 1fr; } }
+  .gap-box { border-radius: 8px; padding: 14px 16px; }
+  .gap-box.bad { background: #fff2f0; border: 1px solid #ffccc7; }
+  .gap-box.good { background: #f6ffed; border: 1px solid #b7eb8f; }
+  .gap-box h4 { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .gap-box.bad h4 { color: #cf1322; }
+  .gap-box.good h4 { color: #389e0d; }
+  .gap-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #e8e8e8; font-size: 13px; }
+  .gap-item:last-child { border-bottom: none; }
+  .gap-num { width: 36px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+  .gap-num.n { background: #e6f4ff; color: #1677ff; }
+  .gap-num.gap { background: #fff1f0; color: #ff4d4f; border: 1px dashed #ff4d4f; }
+  .gap-label { font-size: 12px; color: #999; }
+  .conclusion-box { margin-top: 16px; background: #f0f9eb; border: 1px solid #b7eb8f; border-radius: 8px; padding: 12px 16px; }
+  .conclusion-box p { font-size: 13px; color: #389e0d; line-height: 1.7; }
+
+  /* ── 状态注解 ── */
+  .annotations { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+  .ann-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; }
+  .ann-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── 数字标注 ── */
+  .callout { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: #1677ff; color: #fff; border-radius: 50%; font-size: 11px; font-weight: 600; margin-left: 4px; vertical-align: middle; flex-shrink: 0; }
+
+  /* ── 标注详情 ── */
+  .note-list { list-style: none; margin-top: 16px; }
+  .note-list li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; color: #555; line-height: 1.6; }
+  .note-list li:last-child { border-bottom: none; }
+
+  /* tab切换 */
+  .page-tabs { display: flex; gap: 0; border-bottom: 2px solid #f0f0f0; margin-bottom: 24px; }
+  .page-tab { padding: 10px 20px; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; }
+  .page-tab.active { color: #1677ff; border-bottom-color: #1677ff; font-weight: 500; }
+  .page-tab:hover { color: #1677ff; }
+  .page-section { display: none; }
+  .page-section.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">☁️ 云管系统 · 服务规格排序功能原型</div>
+  <div class="topbar-tabs">
+    <button class="tab-btn active" onclick="switchPage('dialogs')">编辑弹窗原型</button>
+    <button class="tab-btn" onclick="switchPage('effect')">排序效果展示</button>
+    <button class="tab-btn" onclick="switchPage('gap')">断档分析说明</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════ PAGE 1: 编辑弹窗原型 ══════════════════ -->
+  <div class="page-section active" id="page-dialogs">
+
+    <div class="info-card">
+      <div class="icon">ℹ</div>
+      <p>
+        以下展示三个编辑弹窗新增排序字段后的完整交互原型，包含：
+        <b>① 新建默认值自动填入</b>（最大值+10）、
+        <b>② 当前最大排序值提示</b>、
+        <b>③ 重复值橙色警告</b>三种状态。
+        点击排序输入框或调整数值可触发交互演示。
+      </p>
+    </div>
+
+    <div class="scene-grid">
+
+      <!-- ─── 弹窗1：编辑服务类型 ─── -->
+      <div class="scene-card">
+        <div class="scene-card-head">
+          <h3>① 编辑服务类型</h3>
+          <span class="badge badge-blue">已有排序字段·强化</span>
+        </div>
+        <div class="scene-card-body">
+          <div class="modal-sim">
+            <div class="modal-header">
+              <h4>编辑服务类型</h4>
+              <span class="modal-close">✕</span>
+            </div>
+            <div class="modal-body">
+              <div class="form-item">
+                <span class="form-label">编码</span>
+                <div class="form-content">
+                  <input class="input disabled" value="Computer" readonly>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label required">名称</span>
+                <div class="form-content">
+                  <input class="input" value="计算机">
+                  <div class="input-counter">3 / 200</div>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">表名</span>
+                <div class="form-content">
+                  <input class="input" placeholder="如 cm_mysql_cluster">
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">前端 url</span>
+                <div class="form-content">
+                  <input class="input" placeholder="如 /service/mysql">
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">描述</span>
+                <div class="form-content">
+                  <textarea class="input" placeholder="描述"></textarea>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">虚拟标识</span>
+                <div class="form-content">
+                  <select class="select"><option>是</option><option>否</option></select>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">服务标识</span>
+                <div class="form-content">
+                  <select class="select"><option>否</option><option>是</option></select>
+                </div>
+              </div>
+
+              <!-- 排序字段（强化版） -->
+              <div class="form-item" id="svc-sort-item">
+                <span class="form-label">排序</span>
+                <div class="form-content">
+                  <div class="sort-row">
+                    <div class="sort-input-wrap">
+                      <input class="sort-input" id="svc-sort-input" type="number" value="60" min="1" oninput="checkSvcDup(this.value)" onfocus="this.select()">
+                      <div class="sort-arrows">
+                        <div class="sort-arrow" onclick="changeSort('svc-sort-input',1)">▲</div>
+                        <div class="sort-arrow" onclick="changeSort('svc-sort-input',-1)">▼</div>
+                      </div>
+                    </div>
+                    <span class="max-hint">当前最大排序值：<strong id="svc-max">50</strong></span>
+                  </div>
+                  <div class="warn-tip" id="svc-warn" style="display:none">
+                    <span class="wi">⚠</span>
+                    <span id="svc-warn-text">当前已存在排序值 50，保存后将与「存储服务」顺序相邻，建议调整</span>
+                  </div>
+                  <div class="tip-text">数值越小排序越靠前，建议步长设置为10（如10、20、30）</div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <span class="form-label">扩展</span>
+                <div class="form-content">
+                  <textarea class="input" placeholder="可选，JSON 或文本；无则留空" style="height:56px;"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn">取消</button>
+              <button class="btn btn-primary">保存</button>
+            </div>
+          </div>
+          <div class="annotations">
+            <div class="ann-item"><div class="ann-dot" style="background:#1677ff"></div>蓝色数字 = 当前最大值提示</div>
+            <div class="ann-item"><div class="ann-dot" style="background:#fa8c16"></div>橙色背景 = 重复值警告</div>
+          </div>
+          <ul class="note-list">
+            <li><span class="callout">1</span> 输入 50（与已有值重复）→ 橙色警告出现</li>
+            <li><span class="callout">2</span> 输入 60（新建时默认值=最大50+10）→ 无警告</li>
+            <li><span class="callout">3</span> 警告为提示性，不阻止保存</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─── 弹窗2：编辑规格簇 ─── -->
+      <div class="scene-card">
+        <div class="scene-card-head">
+          <h3>② 编辑服务规格簇</h3>
+          <span class="badge badge-purple">新增排序字段</span>
+        </div>
+        <div class="scene-card-body">
+          <div class="modal-sim">
+            <div class="modal-header">
+              <h4>编辑服务规格簇</h4>
+              <span class="modal-close">✕</span>
+            </div>
+            <div class="modal-body">
+              <div class="form-item">
+                <span class="form-label">服务类型ID</span>
+                <div class="form-content">
+                  <input class="input disabled" value="aba902de-6ea2-40ef-aa52-7eeb95a99c21" readonly style="font-size:11px;">
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label required">名称</span>
+                <div class="form-content">
+                  <input class="input" value="标准通用服务器">
+                  <div class="input-counter">7 / 200</div>
+                </div>
+              </div>
+
+              <!-- 新增排序字段 -->
+              <div class="form-item">
+                <span class="form-label">排序 <span style="color:#ff4d4f">*</span></span>
+                <div class="form-content">
+                  <div class="sort-row">
+                    <div class="sort-input-wrap">
+                      <input class="sort-input warning" id="clu-sort-input" type="number" value="20" min="1" oninput="checkCluDup(this.value)">
+                      <div class="sort-arrows">
+                        <div class="sort-arrow" onclick="changeSort('clu-sort-input',1)">▲</div>
+                        <div class="sort-arrow" onclick="changeSort('clu-sort-input',-1)">▼</div>
+                      </div>
+                    </div>
+                    <span class="max-hint">当前最大排序值：<strong id="clu-max">20</strong></span>
+                  </div>
+                  <div class="warn-tip" id="clu-warn">
+                    <span class="wi">⚠</span>
+                    <span id="clu-warn-text">当前已存在排序值 20，保存后将与「高性能服务器」顺序相邻，建议调整</span>
+                  </div>
+                  <div class="tip-text">同服务下最大排序值为 20；新建时默认值 = 最大值 + 10 = 30</div>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <span class="form-label">规格簇描述</span>
+                <div class="form-content">
+                  <textarea class="input" placeholder="请输入规则簇描述" style="height:80px;"></textarea>
+                  <div class="input-counter">0 / 512</div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn">取消</button>
+              <button class="btn btn-primary">保存</button>
+            </div>
+          </div>
+          <div class="annotations">
+            <div class="ann-item"><div class="ann-dot" style="background:#722ed1"></div>规格簇新增字段，位于「名称」和「描述」之间</div>
+          </div>
+          <ul class="note-list">
+            <li><span class="callout">1</span> 新建时默认值 = 同服务下最大值 + 10</li>
+            <li><span class="callout">2</span> 此示例：输入20与已有规格簇重复，显示警告</li>
+            <li><span class="callout">3</span> 同维度 = 同一服务下的所有规格簇</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─── 弹窗3：编辑规格 ─── -->
+      <div class="scene-card">
+        <div class="scene-card-head">
+          <h3>③ 编辑服务规格</h3>
+          <span class="badge badge-green">新增排序字段</span>
+        </div>
+        <div class="scene-card-body">
+          <div class="modal-sim">
+            <div class="modal-header">
+              <h4>编辑服务规格</h4>
+              <span class="modal-close">✕</span>
+            </div>
+            <div class="modal-body" style="max-height:420px;overflow-y:auto;">
+              <div class="form-item">
+                <span class="form-label required">规格簇</span>
+                <div class="form-content">
+                  <select class="select"><option>高性能服务器</option><option>标准通用服务器</option></select>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label required">名称</span>
+                <div class="form-content">
+                  <input class="input" value="高性能服务器机型一 (32/512G/11T SSD)">
+                  <div class="input-counter">27 / 200</div>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label required">编码</span>
+                <div class="form-content">
+                  <input class="input" value="通算服务器.高性能服务器">
+                  <div class="input-counter">12 / 128</div>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">对用户开放</span>
+                <div class="form-content">
+                  <div class="toggle-wrap">
+                    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                    <span class="toggle-label">否</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">描述</span>
+                <div class="form-content">
+                  <textarea class="input" placeholder="请输入描述"></textarea>
+                </div>
+              </div>
+
+              <!-- 新增排序字段 -->
+              <div class="form-item">
+                <span class="form-label">排序 <span style="color:#ff4d4f">*</span></span>
+                <div class="form-content">
+                  <div class="sort-row">
+                    <div class="sort-input-wrap">
+                      <input class="sort-input" id="spc-sort-input" type="number" value="30" min="1" oninput="checkSpcDup(this.value)">
+                      <div class="sort-arrows">
+                        <div class="sort-arrow" onclick="changeSort('spc-sort-input',1)">▲</div>
+                        <div class="sort-arrow" onclick="changeSort('spc-sort-input',-1)">▼</div>
+                      </div>
+                    </div>
+                    <span class="max-hint">当前最大排序值：<strong id="spc-max">20</strong></span>
+                  </div>
+                  <div class="warn-tip" id="spc-warn" style="display:none">
+                    <span class="wi">⚠</span>
+                    <span id="spc-warn-text">当前已存在排序值，保存后将与已有规格顺序相邻，建议调整</span>
+                  </div>
+                  <div class="tip-text">同规格簇下最大排序值为 20；新建时默认值 = 最大值 + 10 = 30</div>
+                </div>
+              </div>
+
+              <div class="divider-label">规格属性值</div>
+              <div class="form-item">
+                <span class="form-label">CPU型号</span>
+                <div class="form-content"><input class="input" placeholder="请输入字符串"></div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">CPU (C)</span>
+                <div class="form-content">
+                  <div class="sort-input-wrap" style="max-width:140px;">
+                    <input class="sort-input" value="32.0000">
+                    <div class="sort-arrows"><div class="sort-arrow">▲</div><div class="sort-arrow">▼</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">内存 (GB)</span>
+                <div class="form-content">
+                  <div class="sort-input-wrap" style="max-width:140px;">
+                    <input class="sort-input" value="512.0000">
+                    <div class="sort-arrows"><div class="sort-arrow">▲</div><div class="sort-arrow">▼</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">固态硬盘(TB)</span>
+                <div class="form-content">
+                  <div class="sort-input-wrap" style="max-width:140px;">
+                    <input class="sort-input" value="11.0000">
+                    <div class="sort-arrows"><div class="sort-arrow">▲</div><div class="sort-arrow">▼</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn">取消</button>
+              <button class="btn btn-primary">保存</button>
+            </div>
+          </div>
+          <div class="annotations">
+            <div class="ann-item"><div class="ann-dot" style="background:#52c41a"></div>规格新增字段，位于「描述」和「规格属性值」分组之间</div>
+          </div>
+          <ul class="note-list">
+            <li><span class="callout">1</span> 新建时默认值 = 同规格簇下最大值 + 10</li>
+            <li><span class="callout">2</span> 同维度 = 同一规格簇下的所有规格</li>
+            <li><span class="callout">3</span> 此示例：输入30，无重复，无警告</li>
+          </ul>
+        </div>
+      </div>
+
+    </div><!-- /scene-grid -->
+
+    <!-- 交互状态演示 -->
+    <div class="effect-section">
+      <h2>排序输入交互状态说明</h2>
+      <table class="sort-table">
+        <thead>
+          <tr>
+            <th>状态</th><th>触发条件</th><th>输入框样式</th><th>辅助文案</th><th>是否阻止保存</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>✅ 正常（新建默认）</td>
+            <td>弹窗打开，输入框自动填入最大值+10</td>
+            <td>默认边框（灰色）</td>
+            <td>当前最大排序值：XX（灰色提示）</td>
+            <td>否</td>
+          </tr>
+          <tr>
+            <td>✅ 正常（无重复）</td>
+            <td>用户修改排序值，同维度无重复</td>
+            <td>聚焦时蓝色边框</td>
+            <td>仅展示最大值提示</td>
+            <td>否</td>
+          </tr>
+          <tr>
+            <td>⚠️ 重复警告</td>
+            <td>用户输入值与同维度已有值重复</td>
+            <td>橙色边框</td>
+            <td>橙色背景警告框（含被重复项名称）</td>
+            <td>否（提示性）</td>
+          </tr>
+          <tr>
+            <td>❌ 格式错误</td>
+            <td>输入小数、负数、非数字或清空</td>
+            <td>红色边框</td>
+            <td>红色错误文案：请输入正整数</td>
+            <td>是（校验拦截）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page-dialogs -->
+
+
+  <!-- ══════════════════ PAGE 2: 排序效果展示 ══════════════════ -->
+  <div class="page-section" id="page-effect">
+
+    <div class="info-card">
+      <div class="icon">ℹ</div>
+      <p>全局规格列表按 <b>服务排序 → 规格簇排序 → 规格排序</b> 三级升序排列。以下展示配置示例与最终展示效果。</p>
+    </div>
+
+    <div class="effect-section">
+      <h2>排序配置示例</h2>
+      <table class="sort-table">
+        <thead>
+          <tr><th>服务名称</th><th>服务排序</th><th>规格簇名称</th><th>规格簇排序</th><th>规格名称</th><th>规格排序</th><th>最终展示序号</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>计算机</td>
+            <td><span class="sort-num">10</span></td>
+            <td>高性能服务器</td>
+            <td><span class="sort-num">10</span></td>
+            <td>高性能机型一 (32C/512G)</td>
+            <td><span class="sort-num">10</span></td>
+            <td><span class="tag tag-blue"># 1</span></td>
+          </tr>
+          <tr>
+            <td>计算机</td>
+            <td><span class="sort-num">10</span></td>
+            <td>高性能服务器</td>
+            <td><span class="sort-num">10</span></td>
+            <td>高性能机型二 (64C/256G)</td>
+            <td><span class="sort-num">20</span></td>
+            <td><span class="tag tag-blue"># 2</span></td>
+          </tr>
+          <tr>
+            <td>计算机</td>
+            <td><span class="sort-num">10</span></td>
+            <td>标准通用服务器</td>
+            <td><span class="sort-num">20</span></td>
+            <td>标准机型一 (8C/32G)</td>
+            <td><span class="sort-num">10</span></td>
+            <td><span class="tag tag-blue"># 3</span></td>
+          </tr>
+          <tr>
+            <td>计算机</td>
+            <td><span class="sort-num">10</span></td>
+            <td>标准通用服务器</td>
+            <td><span class="sort-num">20</span></td>
+            <td>标准机型二 (16C/64G)</td>
+            <td><span class="sort-num">20</span></td>
+            <td><span class="tag tag-blue"># 4</span></td>
+          </tr>
+          <tr style="background:#fafafa">
+            <td>存储服务</td>
+            <td><span class="sort-num">20</span></td>
+            <td>对象存储</td>
+            <td><span class="sort-num">10</span></td>
+            <td>标准型 OBS</td>
+            <td><span class="sort-num">10</span></td>
+            <td><span class="tag tag-purple"># 5</span></td>
+          </tr>
+          <tr style="background:#fafafa">
+            <td>存储服务</td>
+            <td><span class="sort-num">20</span></td>
+            <td>块存储</td>
+            <td><span class="sort-num">20</span></td>
+            <td>高IO型 SSD</td>
+            <td><span class="sort-num">10</span></td>
+            <td><span class="tag tag-purple"># 6</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="effect-section">
+      <h2>新增一条规格：无需改动其他排序值</h2>
+      <p style="font-size:13px;color:#666;margin-bottom:14px;">场景：需要在「高性能机型一」和「高性能机型二」之间插入新规格「高性能机型一PRO」</p>
+      <table class="sort-table">
+        <thead>
+          <tr><th>操作</th><th>规格名称</th><th>规格排序值</th><th>展示结果</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>保持不变</td>
+            <td>高性能机型一 (32C/512G)</td>
+            <td><span class="sort-num">10</span></td>
+            <td>第1位 ✅</td>
+          </tr>
+          <tr style="background:#f6ffed;">
+            <td>🆕 新增</td>
+            <td><b>高性能机型一PRO (32C/1T)</b></td>
+            <td><span class="sort-num" style="background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f;">15</span></td>
+            <td>第2位 ✅（插入中间，无需改其他）</td>
+          </tr>
+          <tr>
+            <td>保持不变</td>
+            <td>高性能机型二 (64C/256G)</td>
+            <td><span class="sort-num">20</span></td>
+            <td>第3位 ✅</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:#e6f4ff;border-radius:6px;font-size:13px;color:#1677ff;">
+        💡 步长10的好处：10和20之间有15这个空位，新插入项只需填15，<b>完全不需要修改其他已有规格的排序值</b>。
+      </div>
+    </div>
+
+  </div><!-- /page-effect -->
+
+
+  <!-- ══════════════════ PAGE 3: 断档分析说明 ══════════════════ -->
+  <div class="page-section" id="page-gap">
+
+    <div class="info-card">
+      <div class="icon">ℹ</div>
+      <p>排序断档指同维度内排序值不连续（如 10、20、50）。以下说明断档的影响程度，以及推荐的处理策略。</p>
+    </div>
+
+    <div class="gap-section">
+      <h2>断档 vs 连续：效果对比</h2>
+      <div class="gap-compare">
+        <div class="gap-box bad">
+          <h4>❌ 看起来"有问题"的断档</h4>
+          <div class="gap-item"><div class="gap-num n">10</div><span>高性能服务器</span></div>
+          <div class="gap-item"><div class="gap-num n">20</div><span>标准通用服务器</span></div>
+          <div class="gap-item"><div class="gap-num gap">30</div><span style="color:#999;text-decoration:line-through;">（已删除的规格簇）</span></div>
+          <div class="gap-item"><div class="gap-num n">40</div><span>内存优化型服务器</span></div>
+          <div class="gap-item"><div class="gap-num n">80</div><span>GPU加速服务器</span></div>
+          <div style="margin-top:10px;font-size:12px;color:#cf1322;">排序值 30 曾被删除，50-70 未使用，看起来"不整洁"</div>
+        </div>
+        <div class="gap-box good">
+          <h4>✅ 实际展示效果完全正确</h4>
+          <div class="gap-item"><div class="gap-num n">10</div><span>高性能服务器</span><span class="tag tag-blue" style="margin-left:auto;">第1位</span></div>
+          <div class="gap-item"><div class="gap-num n">20</div><span>标准通用服务器</span><span class="tag tag-blue" style="margin-left:auto;">第2位</span></div>
+          <div class="gap-item"><div class="gap-num n">40</div><span>内存优化型服务器</span><span class="tag tag-blue" style="margin-left:auto;">第3位</span></div>
+          <div class="gap-item"><div class="gap-num n">80</div><span>GPU加速服务器</span><span class="tag tag-blue" style="margin-left:auto;">第4位</span></div>
+          <div style="margin-top:10px;font-size:12px;color:#389e0d;">展示顺序由<b>相对大小</b>决定，断档不影响顺序正确性 ✅</div>
+        </div>
+      </div>
+      <div class="conclusion-box">
+        <p>
+          ✅ <b>结论：断档对业务功能无影响。</b>排序的本质是"相对大小比较"，10 < 20 < 40 < 80 的相对顺序等同于 1 < 2 < 3 < 4，展示结果完全一致。<br>
+          ⚠️ 唯一的轻微影响是：用户在编辑时看到排序值"跳跃"可能会感到困惑，但不影响实际使用。通过输入框旁的「当前最大值提示」，用户可以清楚了解上下文。
+        </p>
+      </div>
+    </div>
+
+    <div class="gap-section">
+      <h2>避免断档 / 整理排序的三种策略（本期可选）</h2>
+      <table class="sort-table">
+        <thead>
+          <tr><th>策略</th><th>实现方式</th><th>触发时机</th><th>优点</th><th>缺点</th><th>本期建议</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>步长10留空间</td>
+            <td>默认值=最大值+10，中间可插入</td>
+            <td>新建时自动</td>
+            <td>无需重排，插入方便</td>
+            <td>久了仍会出现断档</td>
+            <td><span class="tag tag-blue">✅ 本期实现</span></td>
+          </tr>
+          <tr>
+            <td>删除后自动重排</td>
+            <td>删除某项后，同维度其余项按现有顺序重排为10/20/30...</td>
+            <td>删除操作后台执行</td>
+            <td>自动保持整洁</td>
+            <td>并发删除可能冲突；影响用户手动设置的值</td>
+            <td><span class="tag tag-orange">⏳ 二期评估</span></td>
+          </tr>
+          <tr>
+            <td>手动「整理排序」</td>
+            <td>提供按钮，将同维度项按现有顺序重置为10/20/30...</td>
+            <td>用户主动触发</td>
+            <td>用户可控，不干扰正常编辑</td>
+            <td>需要用户主动操作</td>
+            <td><span class="tag tag-orange">⏳ 二期评估</span></td>
+          </tr>
+          <tr>
+            <td>拖拽排序</td>
+            <td>列表行支持拖拽，后台自动计算排序值</td>
+            <td>拖拽操作后自动更新</td>
+            <td>最直观易用</td>
+            <td>开发成本较高</td>
+            <td><span class="tag tag-orange">⏳ 二期评估</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page-gap -->
+
+</div><!-- /main -->
+
+<script>
+// ── tab 切换 ──
+function switchPage(name) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── 排序值加减 ──
+function changeSort(id, delta) {
+  const input = document.getElementById(id);
+  let v = parseInt(input.value) || 0;
+  v = Math.max(1, v + delta);
+  input.value = v;
+  input.dispatchEvent(new Event('input'));
+}
+
+// ── 服务：模拟已有值 [10,20,30,50]，50 与「存储服务」重复 ──
+const svcExisting = [
+  {val:10, name:'网络服务'},
+  {val:20, name:'数据库服务'},
+  {val:30, name:'中间件服务'},
+  {val:50, name:'存储服务'}
+];
+function checkSvcDup(v) {
+  const n = parseInt(v);
+  const inp = document.getElementById('svc-sort-input');
+  const warn = document.getElementById('svc-warn');
+  const warnTxt = document.getElementById('svc-warn-text');
+  const dup = svcExisting.find(x => x.val === n);
+  if (dup) {
+    inp.classList.add('warning');
+    warn.style.display = 'flex';
+    warnTxt.textContent = `当前已存在排序值 ${n}，保存后将与「${dup.name}」顺序相邻，建议调整`;
+  } else {
+    inp.classList.remove('warning');
+    warn.style.display = 'none';
+  }
+}
+
+// ── 规格簇：模拟已有值 [10,20]，20 与「高性能服务器」重复 ──
+const cluExisting = [
+  {val:10, name:'高性能服务器'},
+  {val:20, name:'高性能服务器（别名）'}
+];
+function checkCluDup(v) {
+  const n = parseInt(v);
+  const inp = document.getElementById('clu-sort-input');
+  const warn = document.getElementById('clu-warn');
+  const warnTxt = document.getElementById('clu-warn-text');
+  const dup = cluExisting.find(x => x.val === n);
+  if (dup) {
+    inp.classList.add('warning');
+    warn.style.display = 'flex';
+    warnTxt.textContent = `当前已存在排序值 ${n}，保存后将与「${dup.name}」顺序相邻，建议调整`;
+  } else {
+    inp.classList.remove('warning');
+    warn.style.display = 'none';
+  }
+}
+
+// ── 规格：模拟已有值 [10,20]，无重复 ──
+const spcExisting = [
+  {val:10, name:'高性能机型一 (32C/512G)'},
+  {val:20, name:'高性能机型二 (64C/256G)'}
+];
+function checkSpcDup(v) {
+  const n = parseInt(v);
+  const inp = document.getElementById('spc-sort-input');
+  const warn = document.getElementById('spc-warn');
+  const warnTxt = document.getElementById('spc-warn-text');
+  const dup = spcExisting.find(x => x.val === n);
+  if (dup) {
+    inp.classList.add('warning');
+    warn.style.display = 'flex';
+    warnTxt.textContent = `当前已存在排序值 ${n}，保存后将与「${dup.name}」顺序相邻，建议调整`;
+  } else {
+    inp.classList.remove('warning');
+    warn.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>

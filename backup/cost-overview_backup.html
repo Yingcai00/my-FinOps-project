@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 成本总览</title>
+    <!-- 自定义样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+        }
+
+        .stat-change.positive {
+            color: #52c41a;
+        }
+
+        .stat-change.negative {
+            color: #ff4d4f;
+        }
+
+        .stat-card.warning .stat-value {
+            color: #fa8c16;
+        }
+
+        .search-filter {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .filter-item input,
+        .filter-item select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-item input:focus,
+        .filter-item select:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6e6e6;
+        }
+
+        .btn-warning {
+            background-color: #faad14;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #ffc53d;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-warning {
+            color: #fa8c16;
+        }
+
+        .text-success {
+            color: #52c41a;
+        }
+
+        .text-danger {
+            color: #ff4d4f;
+        }
+
+        .text-primary {
+            color: #1890ff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-warning {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .badge-success {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+
+        .badge-danger {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+        }
+
+        .badge-primary {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 20px;
+            gap: 8px;
+        }
+
+        .pagination button {
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .pagination button:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination .active {
+            background-color: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .confirm-dialog {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 400px;
+            padding: 24px;
+        }
+
+        .confirm-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .confirm-content {
+            margin-bottom: 24px;
+            color: #666;
+        }
+
+        .confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            flex: 1;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar" style="width: 220px; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09); overflow: hidden; position: sticky; top: 20px; height: calc(100vh - 40px);">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                <span>菜单导航</span>
+                <button id="collapse-btn" style="background: none; border: none; color: white; font-size: 14px; cursor: pointer;">
+                    ▼
+                </button>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0; overflow-y: auto; height: calc(100% - 60px);">
+                <li class="menu-item-container">
+                    <a href="cost-overview.html" class="menu-item" data-page="cost-management" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; border-left: 3px solid transparent; transition: all 0.3s; font-size: 14px; font-weight: 500;">
+                        <span>成本管理</span>
+                        <span class="menu-arrow">▼</span>
+                    </a>
+                    <ul class="sub-menu" style="list-style: none; padding: 0; margin: 0; background-color: #f9f9f9; display: block;">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item" data-subpage="cost-overview" style="display: block; padding: 10px 20px 10px 40px; color: #666; text-decoration: none; transition: all 0.3s; font-size: 13px; border-left: 3px solid transparent;">
+                                成本总览
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cost-analysis.html" class="sub-menu-item" data-subpage="cost-analysis" style="display: block; padding: 10px 20px 10px 40px; color: #666; text-decoration: none; transition: all 0.3s; font-size: 13px; border-left: 3px solid transparent;">
+                                成本分析
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 右侧内容 -->
+        <div class="content">
+            <!-- 顶部全局概览区 -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">本月总成本</div>
+                    <div class="stat-value">¥1,250,000</div>
+                    <div class="stat-change negative">环比 +5.2%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">月末预测成本</div>
+                    <div class="stat-value">¥1,320,000</div>
+                    <div class="stat-change negative">环比 +5.2%</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">公摊总成本</div>
+                    <div class="stat-value">¥320,000</div>
+                    <div class="stat-change positive">环比 -1.2%</div>
+                </div>
+            </div>
+
+            <!-- 查询与筛选区 -->
+            <div class="search-filter">
+                <div class="filter-form" style="flex-wrap: wrap;">
+                    <div class="filter-item">
+                        <label>成本池</label>
+                        <select>
+                            <option value="">全部</option>
+                            <option value="设备费用">设备费用</option>
+                            <option value="软件平台">软件平台</option>
+                            <option value="网络成本">网络成本</option>
+                            <option value="人力成本">人力成本</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>成本子池</label>
+                        <select>
+                            <option value="">全部</option>
+                            <option value="服务器">服务器</option>
+                            <option value="存储">存储</option>
+                            <option value="网络设备">网络设备</option>
+                            <option value="带宽费用">带宽费用</option>
+                            <option value="数据库">数据库</option>
+                            <option value="虚拟机">虚拟机</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>地域</label>
+                        <select>
+                            <option value="">全部</option>
+                            <option value="北京">北京</option>
+                            <option value="上海">上海</option>
+                            <option value="西安">西安</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>公摊维度</label>
+                        <select>
+                            <option value="">全部</option>
+                            <option value="业务系统">业务系统</option>
+                            <option value="部门">部门</option>
+                            <option value="项目">项目</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>公摊类型</label>
+                        <select>
+                            <option value="">全部</option>
+                            <option value="公摊">公摊</option>
+                            <option value="非公摊">非公摊</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>成本项名称</label>
+                        <input type="text" placeholder="请输入成本项名称">
+                    </div>
+                    <div class="filter-item">
+                        <label>账期</label>
+                        <input type="month" placeholder="请选择账期">
+                    </div>
+                    <div style="width: 100%; display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                        <button class="btn btn-primary">查询</button>
+                        <button class="btn btn-default">重置</button>
+                        <button class="btn btn-default">高级筛选</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮区 -->
+            <div class="action-buttons">
+                <button class="btn btn-default">批量导入</button>
+                <button class="btn btn-default">批量删除</button>
+                <button class="btn btn-default">自动同步</button>
+                <button class="btn btn-default">手动添加</button>
+            </div>
+
+            <!-- 数据表格区 -->
+            <div class="table-container" style="overflow-x: auto; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
+                <table style="width: auto; table-layout: auto; min-width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="position: sticky; left: 0; background-color: #fafafa; z-index: 1; min-width: 40px; resize: horizontal; overflow: auto;"><input type="checkbox"></th>
+                            <th style="min-width: 120px; resize: horizontal; overflow: auto;">成本编码</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">成本池</th>
+                            <th style="min-width: 120px; resize: horizontal; overflow: auto;">成本子池</th>
+                            <th style="min-width: 150px; resize: horizontal; overflow: auto;">成本项</th>
+                            <th style="min-width: 80px; resize: horizontal; overflow: auto;">地域</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">公摊维度</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">公摊类型</th>
+                            <th style="min-width: 200px; resize: horizontal; overflow: auto;">描述</th>
+                            <th style="min-width: 120px; resize: horizontal; overflow: auto;">单价（元）</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">折旧月限</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">折旧月价</th>
+                            <th style="min-width: 80px; resize: horizontal; overflow: auto;">数量</th>
+                            <th style="min-width: 80px; resize: horizontal; overflow: auto;">单位</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">账期</th>
+                            <th style="min-width: 120px; resize: horizontal; overflow: auto;">月成本（元）</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">公摊比例</th>
+                            <th style="min-width: 150px; resize: horizontal; overflow: auto;">公摊后月总成本</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">CPU总量</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">内存总量</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">存储总量</th>
+                            <th style="min-width: 100px; resize: horizontal; overflow: auto;">流量总量</th>
+                            <th style="min-width: 150px; resize: horizontal; overflow: auto;">数据来源</th>
+                            <th style="min-width: 120px; resize: horizontal; overflow: auto;">创建时间</th>
+                            <th style="min-width: 120px; resize: horizontal; overflow: auto;">更新时间</th>
+                            <th style="position: sticky; right: 0; background-color: #fafafa; z-index: 1; min-width: 140px; resize: horizontal; overflow: auto;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="position: sticky; left: 0; background-color: white;"><input type="checkbox"></td>
+                            <td>COST-2026-0001</td>
+                            <td>设备费用</td>
+                            <td>服务器</td>
+                            <td><a href="cost-detail.html?id=1" class="text-primary">服务器A</a></td>
+                            <td>北京</td>
+                            <td>--</td>
+                            <td>非公摊</td>
+                            <td>高性能服务器，用于生产环境核心业务</td>
+                            <td>¥500,000</td>
+                            <td>60</td>
+                            <td>¥8,333</td>
+                            <td>1</td>
+                            <td>台</td>
+                            <td>2026-02</td>
+                            <td>¥50,000</td>
+                            <td>0%</td>
+                            <td>¥50,000</td>
+                            <td>20核</td>
+                            <td>40GB</td>
+                            <td>500GB</td>
+                            <td>10Gbps</td>
+                            <td>资产系统-B类资产</td>
+                            <td>2026-01-01</td>
+                            <td>2026-01-15</td>
+                            <td style="position: sticky; right: 0; background-color: white;">
+                                <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;" onclick="window.location.href='cost-detail.html?id=1'">编辑</button>
+                                <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="position: sticky; left: 0; background-color: white;"><input type="checkbox"></td>
+                            <td>COST-2026-0002</td>
+                            <td>设备费用</td>
+                            <td>服务器</td>
+                            <td><a href="cost-detail.html?id=2" class="text-primary">服务器B</a></td>
+                            <td>上海</td>
+                            <td>--</td>
+                            <td>非公摊</td>
+                            <td>高性能服务器，用于生产环境核心业务</td>
+                            <td>¥450,000</td>
+                            <td>60</td>
+                            <td>¥7,500</td>
+                            <td>1</td>
+                            <td>台</td>
+                            <td>2026-02</td>
+                            <td>¥45,000</td>
+                            <td>0%</td>
+                            <td>¥45,000</td>
+                            <td>16核</td>
+                            <td>32GB</td>
+                            <td>400GB</td>
+                            <td>10Gbps</td>
+                            <td>资产系统-B类资产</td>
+                            <td>2026-01-01</td>
+                            <td>2026-01-15</td>
+                            <td style="position: sticky; right: 0; background-color: white;">
+                                <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;" onclick="window.location.href='cost-detail.html?id=2'">编辑</button>
+                                <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="position: sticky; left: 0; background-color: white;"><input type="checkbox"></td>
+                            <td>COST-2026-0003</td>
+                            <td>网络成本</td>
+                            <td>带宽费用</td>
+                            <td><a href="cost-detail.html?id=3" class="text-primary">网络带宽</a></td>
+                            <td>北京</td>
+                            <td>业务系统</td>
+                            <td>公摊</td>
+                            <td>互联网出口带宽</td>
+                            <td>¥100,000</td>
+                            <td>12</td>
+                            <td>¥8,333</td>
+                            <td>1</td>
+                            <td>Gbps</td>
+                            <td>2026-02</td>
+                            <td>¥100,000</td>
+                            <td>100%</td>
+                            <td>¥100,000</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>10Gbps</td>
+                            <td>资产系统-B类资产</td>
+                            <td>2026-01-01</td>
+                            <td>2026-01-15</td>
+                            <td style="position: sticky; right: 0; background-color: white;">
+                                <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;" onclick="window.location.href='cost-detail.html?id=3'">编辑</button>
+                                <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="position: sticky; left: 0; background-color: white;"><input type="checkbox"></td>
+                            <td>COST-2026-0004</td>
+                            <td>软件平台</td>
+                            <td>数据库</td>
+                            <td><a href="cost-detail.html?id=4" class="text-primary">容器平台</a></td>
+                            <td>北京</td>
+                            <td>--</td>
+                            <td>非公摊</td>
+                            <td>容器平台</td>
+                            <td>¥80,000</td>
+                            <td>12</td>
+                            <td>¥6,667</td>
+                            <td>1</td>
+                            <td>套</td>
+                            <td>2026-02</td>
+                            <td>¥80,000</td>
+                            <td>0%</td>
+                            <td>¥80,000</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>手动维护</td>
+                            <td>2026-01-01</td>
+                            <td>2026-01-15</td>
+                            <td style="position: sticky; right: 0; background-color: white;">
+                                <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;" onclick="window.location.href='cost-detail.html?id=4'">编辑</button>
+                                <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="position: sticky; left: 0; background-color: white;"><input type="checkbox"></td>
+                            <td>COST-2026-0005</td>
+                            <td>人力成本</td>
+                            <td>虚拟机</td>
+                            <td><a href="cost-detail.html?id=5" class="text-primary">人力费用</a></td>
+                            <td>北京</td>
+                            <td>部门</td>
+                            <td>非公摊</td>
+                            <td>虚拟机维护费</td>
+                            <td>¥150,000</td>
+                            <td>1</td>
+                            <td>¥15,000</td>
+                            <td>1</td>
+                            <td>人</td>
+                            <td>2026-02</td>
+                            <td>¥15,000</td>
+                            <td>100%</td>
+                            <td>¥150,000</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>手动维护</td>
+                            <td>2026-01-01</td>
+                            <td>2026-01-15</td>
+                            <td style="position: sticky; right: 0; background-color: white;">
+                                <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;" onclick="window.location.href='cost-detail.html?id=5'">编辑</button>
+                                <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination">
+                <button disabled>上一页</button>
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>4</button>
+                <button>5</button>
+                <button>下一页</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">批量导入</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- 模态框内容将通过JavaScript动态添加 -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <!-- 模态框按钮将通过JavaScript动态添加 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认对话框 -->
+    <div class="modal" id="confirm-dialog">
+        <div class="confirm-dialog">
+            <h3 class="confirm-title" id="confirm-title">确认删除</h3>
+            <div class="confirm-content" id="confirm-content">您确定要删除这条记录吗？此操作不可恢复。</div>
+            <div class="confirm-actions">
+                <button class="btn btn-default" id="confirm-cancel">取消</button>
+                <button class="btn btn-primary" id="confirm-ok">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 菜单折叠/展开功能
+        const collapseBtn = document.getElementById('collapse-btn');
+        const sidebar = document.querySelector('.sidebar');
+        let isCollapsed = false;
+        
+        collapseBtn.addEventListener('click', function() {
+            isCollapsed = !isCollapsed;
+            if (isCollapsed) {
+                sidebar.style.width = '60px';
+                sidebar.querySelector('span').style.display = 'none';
+                sidebar.querySelector('.menu-item span:first-child').style.display = 'none';
+                sidebar.querySelector('.sub-menu').style.display = 'none';
+                collapseBtn.textContent = '▶';
+            } else {
+                sidebar.style.width = '220px';
+                sidebar.querySelector('span').style.display = 'inline';
+                sidebar.querySelector('.menu-item span:first-child').style.display = 'inline';
+                sidebar.querySelector('.sub-menu').style.display = 'block';
+                collapseBtn.textContent = '▼';
+            }
+        });
+
+        // 左侧菜单点击事件
+        document.querySelectorAll('.menu-item').forEach(menu => {
+            // 悬停效果
+            menu.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = '#f0f7ff';
+                    this.style.color = '#1890ff';
+                }
+            });
+            
+            menu.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = 'transparent';
+                    this.style.color = '#333';
+                }
+            });
+            
+            // 点击事件
+            menu.addEventListener('click', function(e) {
+                // 移除所有左侧菜单的active类
+                document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.style.backgroundColor = 'transparent';
+                    item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                    item.style.borderLeftColor = 'transparent';
+                });
+                
+                // 添加当前菜单的active类
+                this.classList.add('active');
+                this.style.backgroundColor = '#e6f7ff';
+                this.style.color = '#1890ff';
+                this.style.borderLeftColor = '#1890ff';
+            });
+        });
+
+        // 左侧二级菜单点击事件
+        document.querySelectorAll('.sub-menu-item').forEach(subMenu => {
+            // 悬停效果
+            subMenu.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = '#f0f7ff';
+                    this.style.color = '#1890ff';
+                }
+            });
+            
+            subMenu.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = 'transparent';
+                    this.style.color = '#666';
+                }
+            });
+            
+            // 点击事件
+            subMenu.addEventListener('click', function(e) {
+                // 移除所有左侧菜单的active类
+                document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.style.backgroundColor = 'transparent';
+                    item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                    item.style.borderLeftColor = 'transparent';
+                });
+                
+                // 添加当前二级菜单的active类
+                this.classList.add('active');
+                this.style.backgroundColor = '#e6f7ff';
+                this.style.color = '#1890ff';
+                this.style.borderLeftColor = '#1890ff';
+                
+                // 添加父级菜单的active类
+                const parentMenu = this.closest('li').parentElement.previousElementSibling;
+                parentMenu.classList.add('active');
+                parentMenu.style.backgroundColor = '#e6f7ff';
+                parentMenu.style.color = '#1890ff';
+                parentMenu.style.borderLeftColor = '#1890ff';
+            });
+        });
+
+        // 标记当前页面的菜单项为active
+        const currentUrl = window.location.href;
+        const menuItems = document.querySelectorAll('.menu-item, .sub-menu-item');
+        menuItems.forEach(item => {
+            if (currentUrl.includes(item.getAttribute('href'))) {
+                item.classList.add('active');
+                item.style.backgroundColor = '#e6f7ff';
+                item.style.color = '#1890ff';
+                item.style.borderLeftColor = '#1890ff';
+                
+                // 如果是二级菜单，也标记父级菜单为active
+                if (item.classList.contains('sub-menu-item')) {
+                    const parentMenu = item.closest('li').parentElement.previousElementSibling;
+                    parentMenu.classList.add('active');
+                    parentMenu.style.backgroundColor = '#e6f7ff';
+                    parentMenu.style.color = '#1890ff';
+                    parentMenu.style.borderLeftColor = '#1890ff';
+                }
+            }
+        });
+
+        // 批量导入按钮
+        document.querySelector('.action-buttons button:first-child').addEventListener('click', function() {
+            // 显示批量导入模态框
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            modalTitle.textContent = '批量导入';
+            modalBody.innerHTML = `
+                <div class="form-group">
+                    <label>上传文件 <span class="text-danger">*</span></label>
+                    <div id="drop-area" style="border: 2px dashed #d9d9d9; border-radius: 4px; padding: 40px 20px; text-align: center; margin-bottom: 16px; transition: all 0.3s;">
+                        <p style="margin-bottom: 16px;">点击或拖拽文件到此处上传</p>
+                        <p style="color: #999; font-size: 12px;">支持 .xlsx, .xls 文件</p>
+                        <input type="file" id="file-input" accept=".xlsx, .xls" style="display: none;">
+                        <button class="btn btn-default" onclick="document.getElementById('file-input').click()">选择文件</button>
+                    </div>
+                    <p id="file-name" style="margin-top: 8px; color: #666; font-size: 12px;"></p>
+                </div>
+                <div class="form-group">
+                    <label>数据来源 <span class="text-danger">*</span></label>
+                    <select>
+                        <option value="资产系统-B类资产">资产系统-B类资产</option>
+                        <option value="手动维护" selected>手动维护</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>导入选项</label>
+                    <div style="display: flex; gap: 12px;">
+                        <label style="display: flex; align-items: center;">
+                            <input type="radio" name="import-option" value="replace">
+                            <span style="margin-left: 4px;">替换现有数据</span>
+                        </label>
+                        <label style="display: flex; align-items: center;">
+                            <input type="radio" name="import-option" value="append" checked>
+                            <span style="margin-left: 4px;">追加数据</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>下载模板</label>
+                    <button class="btn btn-default" onclick="alert('模板下载功能')">下载导入模板</button>
+                </div>
+            `;
+            
+            modalFooter.innerHTML = `
+                <button class="btn btn-default" id="modal-cancel">取消</button>
+                <button class="btn btn-primary" id="modal-import">确认导入</button>
+            `;
+            
+            modal.classList.add('active');
+            
+            // 绑定模态框按钮事件
+            document.getElementById('modal-cancel').addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('modal-import').addEventListener('click', function() {
+                modal.classList.remove('active');
+                alert('导入成功');
+            });
+            
+            // 拖拽上传功能
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const fileName = document.getElementById('file-name');
+            
+            // 拖拽事件
+            dropArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropArea.style.borderColor = '#1890ff';
+                dropArea.style.backgroundColor = '#f0f7ff';
+            });
+            
+            dropArea.addEventListener('dragleave', function() {
+                dropArea.style.borderColor = '#d9d9d9';
+                dropArea.style.backgroundColor = 'transparent';
+            });
+            
+            dropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropArea.style.borderColor = '#d9d9d9';
+                dropArea.style.backgroundColor = 'transparent';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileName.textContent = '已选择文件: ' + e.dataTransfer.files[0].name;
+                }
+            });
+            
+            // 点击上传功能
+            fileInput.addEventListener('change', function() {
+                if (this.files.length) {
+                    fileName.textContent = '已选择文件: ' + this.files[0].name;
+                }
+            });
+            
+            // 点击区域上传
+            dropArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // 阻止默认行为
+            dropArea.addEventListener('click', function(e) {
+                if (e.target !== dropArea && !dropArea.contains(e.target)) {
+                    return;
+                }
+                fileInput.click();
+            });
+        });
+
+        // 自动同步按钮
+        document.querySelector('.action-buttons button:nth-child(3)').addEventListener('click', function() {
+            // 显示同步状态
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            modalTitle.textContent = '自动同步';
+            modalBody.innerHTML = `
+                <div style="text-align: center; padding: 40px 0;">
+                    <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #1890ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                    <p style="margin-top: 16px;">正在同步数据...</p>
+                </div>
+            `;
+            
+            modalFooter.innerHTML = '';
+            
+            modal.classList.add('active');
+            
+            // 模拟同步过程
+            setTimeout(function() {
+                modalBody.innerHTML = `
+                    <div style="text-align: center; padding: 40px 0;">
+                        <div style="font-size: 48px; color: #52c41a; margin-bottom: 16px;">✓</div>
+                        <p>同步成功</p>
+                        <p style="margin-top: 8px; color: #666;">已更新5条记录</p>
+                    </div>
+                `;
+                
+                modalFooter.innerHTML = `
+                    <button class="btn btn-primary" id="modal-close-btn">关闭</button>
+                `;
+                
+                document.getElementById('modal-close-btn').addEventListener('click', function() {
+                    modal.classList.remove('active');
+                });
+            }, 2000);
+        });
+
+        // 批量删除按钮
+        document.querySelector('.action-buttons button:nth-child(2)').addEventListener('click', function() {
+            // 显示确认对话框
+            const confirmDialog = document.getElementById('confirm-dialog');
+            const confirmTitle = document.getElementById('confirm-title');
+            const confirmContent = document.getElementById('confirm-content');
+            
+            confirmTitle.textContent = '批量删除';
+            confirmContent.textContent = '您确定要删除选中的成本项吗？此操作不可恢复。';
+            
+            confirmDialog.classList.add('active');
+            
+            // 绑定确认按钮事件
+            document.getElementById('confirm-ok').addEventListener('click', function() {
+                // 这里可以添加批量删除逻辑
+                confirmDialog.classList.remove('active');
+                alert('删除成功');
+            });
+            
+            // 绑定取消按钮事件
+            document.getElementById('confirm-cancel').addEventListener('click', function() {
+                confirmDialog.classList.remove('active');
+            });
+        });
+
+        // 手动添加按钮
+        document.querySelector('.action-buttons button:nth-child(4)').addEventListener('click', function() {
+            // 显示手动添加模态框
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            // 获取当前月份，格式为YYYY-MM
+            const now = new Date();
+            const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            
+            modalTitle.textContent = '手动添加成本';
+            modalBody.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>成本池 <span class="text-danger">*</span></label>
+                        <select id="cost-pool" required>
+                            <option value="">请选择</option>
+                            <option value="设备费用">设备费用</option>
+                            <option value="软件平台">软件平台</option>
+                            <option value="网络成本">网络成本</option>
+                            <option value="人力成本">人力成本</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>成本子池 <span class="text-danger">*</span></label>
+                        <select id="cost-subpool" required>
+                            <option value="">请选择</option>
+                            <option value="服务器">服务器</option>
+                            <option value="存储">存储</option>
+                            <option value="网络设备">网络设备</option>
+                            <option value="带宽费用">带宽费用</option>
+                            <option value="数据库">数据库</option>
+                            <option value="虚拟机">虚拟机</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>成本项 <span class="text-danger">*</span></label>
+                    <input type="text" id="cost-item" placeholder="请输入成本项" required>
+                </div>
+                <!-- 资产系统-B类资产表单 -->
+                <div class="form-container" id="asset-system-form" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>公摊维度 <span class="text-danger">*</span></label>
+                            <select id="asset-allocation-dimension" required>
+                                <option value="">请选择</option>
+                                <option value="业务系统">业务系统</option>
+                                <option value="部门">部门</option>
+                                <option value="项目">项目</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>公摊类型 <span class="text-danger">*</span></label>
+                            <select id="asset-allocation-type" required>
+                                <option value="">请选择</option>
+                                <option value="公摊">公摊</option>
+                                <option value="非公摊">非公摊</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>数据来源 <span class="text-danger">*</span></label>
+                        <select id="asset-data-source" required>
+                            <option value="资产系统-B类资产">资产系统-B类资产</option>
+                            <option value="手动维护" selected>手动维护</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="asset-category-container-1" style="display: none;">
+                        <label>资产分类 <span class="text-danger">*</span></label>
+                        <select id="asset-category-1" required>
+                            <option value="">请选择</option>
+                            <option value="服务器">服务器</option>
+                            <option value="存储设备">存储设备</option>
+                            <option value="网络设备">网络设备</option>
+                            <option value="安全设备">安全设备</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>账期 <span class="text-danger">*</span></label>
+                        <input type="month" id="asset-cost-month" value="${currentMonth}" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea id="asset-description" placeholder="请输入描述" rows="3"></textarea>
+                    </div>
+                </div>
+                <!-- 手动维护表单 -->
+                <div class="form-container" id="manual-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>公摊维度 <span class="text-danger">*</span></label>
+                            <select id="allocation-dimension" required>
+                                <option value="">请选择</option>
+                                <option value="业务系统">业务系统</option>
+                                <option value="部门">部门</option>
+                                <option value="项目">项目</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>公摊类型 <span class="text-danger">*</span></label>
+                            <select id="allocation-type" required>
+                                <option value="">请选择</option>
+                                <option value="公摊">公摊</option>
+                                <option value="非公摊">非公摊</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>数据来源 <span class="text-danger">*</span></label>
+                        <select id="manual-data-source" required>
+                            <option value="资产系统-B类资产">资产系统-B类资产</option>
+                            <option value="手动维护" selected>手动维护</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="asset-category-container-2" style="display: none;">
+                        <label>资产分类 <span class="text-danger">*</span></label>
+                        <select id="asset-category-2" required>
+                            <option value="">请选择</option>
+                            <option value="服务器">服务器</option>
+                            <option value="存储设备">存储设备</option>
+                            <option value="网络设备">网络设备</option>
+                            <option value="安全设备">安全设备</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>地域 <span class="text-danger">*</span></label>
+                            <select id="region" required>
+                                <option value="">请选择</option>
+                                <option value="北京">北京</option>
+                                <option value="上海">上海</option>
+                                <option value="西安">西安</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>单价（元） <span class="text-danger">*</span></label>
+                            <input type="number" id="unit-price" step="0.01" min="0" placeholder="请输入单价" required>
+                        </div>
+                        <div class="form-group">
+                            <label>折旧月限 <span class="text-danger">*</span></label>
+                            <input type="number" id="depreciation-months" step="1" min="1" placeholder="请输入折旧月限" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>数量 <span class="text-danger">*</span></label>
+                            <input type="number" id="quantity" step="1" min="1" placeholder="请输入数量" required>
+                        </div>
+                        <div class="form-group">
+                            <label>单位 <span class="text-danger">*</span></label>
+                            <select id="unit" required>
+                                <option value="">请选择</option>
+                                <option value="台">台</option>
+                                <option value="套">套</option>
+                                <option value="Gbps">Gbps</option>
+                                <option value="TB">TB</option>
+                                <option value="月">月</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>账期 <span class="text-danger">*</span></label>
+                        <input type="month" id="cost-month" value="${currentMonth}" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea id="description" placeholder="请输入描述" rows="3"></textarea>
+                    </div>
+                </div>
+            `;
+            
+            modalFooter.innerHTML = `
+                <button class="btn btn-default" id="modal-cancel">取消</button>
+                <button class="btn btn-primary" id="modal-save">保存</button>
+            `;
+            
+            modal.classList.add('active');
+            
+            // 数据来源切换逻辑
+            const assetSystemDataSource = document.querySelector('#asset-system-form #asset-data-source');
+            const manualDataSource = document.querySelector('#manual-form #manual-data-source');
+            const assetCategoryContainer1 = document.querySelector('#asset-system-form #asset-category-container-1');
+            const assetCategoryContainer2 = document.querySelector('#manual-form #asset-category-container-2');
+            const assetSystemForm = document.getElementById('asset-system-form');
+            const manualForm = document.getElementById('manual-form');
+            
+            // 显示默认表单
+            manualForm.style.display = 'block';
+            assetSystemForm.style.display = 'none';
+            
+            // 确保初始状态下资产分类字段隐藏
+            if (assetCategoryContainer1) {
+                assetCategoryContainer1.style.display = 'none';
+            }
+            if (assetCategoryContainer2) {
+                assetCategoryContainer2.style.display = 'none';
+            }
+            
+            // 资产系统表单数据来源切换
+            if (assetSystemDataSource) {
+                assetSystemDataSource.addEventListener('change', function() {
+                    if (this.value === '资产系统-B类资产') {
+                        // 当数据来源为资产系统-B类资产时显示资产分类字段
+                        if (assetCategoryContainer1) {
+                            assetCategoryContainer1.style.display = 'block';
+                        }
+                        assetSystemForm.style.display = 'block';
+                        manualForm.style.display = 'none';
+                    } else {
+                        // 当数据来源不为资产系统-B类资产时隐藏资产分类字段
+                        if (assetCategoryContainer1) {
+                            assetCategoryContainer1.style.display = 'none';
+                        }
+                        assetSystemForm.style.display = 'none';
+                        manualForm.style.display = 'block';
+                        // 确保切换到手动维护表单时，数据来源字段为手动维护
+                        if (manualDataSource) {
+                            manualDataSource.value = '手动维护';
+                        }
+                    }
+                });
+            }
+            
+            // 手动维护表单数据来源切换
+            if (manualDataSource) {
+                manualDataSource.addEventListener('change', function() {
+                    if (this.value === '资产系统-B类资产') {
+                        // 当数据来源为资产系统-B类资产时，更新资产系统表单的数据来源并显示
+                        if (assetSystemDataSource) {
+                            assetSystemDataSource.value = '资产系统-B类资产';
+                        }
+                        // 显示资产分类字段
+                        if (assetCategoryContainer1) {
+                            assetCategoryContainer1.style.display = 'block';
+                        }
+                        assetSystemForm.style.display = 'block';
+                        manualForm.style.display = 'none';
+                        // 手动调用更新资产分类显示函数，确保资产分类字段显示
+                        updateAssetCategoryDisplay();
+                    } else {
+                        // 当数据来源不为资产系统-B类资产时隐藏资产分类字段
+                        if (assetCategoryContainer2) {
+                            assetCategoryContainer2.style.display = 'none';
+                        }
+                        assetSystemForm.style.display = 'none';
+                        manualForm.style.display = 'block';
+                    }
+                });
+            }
+            
+            // 确保初始加载时，如果资产系统表单的数据源是资产系统-B类资产，显示资产分类字段
+            if (assetSystemDataSource && assetSystemDataSource.value === '资产系统-B类资产' && assetCategoryContainer1) {
+                assetCategoryContainer1.style.display = 'block';
+            }
+            
+            // 确保资产系统表单在显示时，根据数据来源正确显示或隐藏资产分类字段
+            function updateAssetCategoryDisplay() {
+                if (assetSystemDataSource && assetCategoryContainer1) {
+                    if (assetSystemDataSource.value === '资产系统-B类资产') {
+                        assetCategoryContainer1.style.display = 'block';
+                    } else {
+                        assetCategoryContainer1.style.display = 'none';
+                    }
+                }
+            }
+            
+            // 监听资产系统表单的显示事件
+            if (assetSystemForm) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === 'style') {
+                            if (assetSystemForm.style.display !== 'none') {
+                                updateAssetCategoryDisplay();
+                            }
+                        }
+                    });
+                });
+                observer.observe(assetSystemForm, { attributes: true });
+            }
+            
+            // 绑定模态框按钮事件
+            document.getElementById('modal-cancel').addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            
+            document.getElementById('modal-save').addEventListener('click', function() {
+                // 表单验证
+                const costPool = document.getElementById('cost-pool');
+                const assetSystemDataSource = document.querySelector('#asset-system-form #asset-data-source');
+                const manualDataSource = document.querySelector('#manual-form #manual-data-source');
+                
+                // 基本验证
+                if (!costPool.value) {
+                    alert('请选择成本池');
+                    return;
+                }
+                
+                // 确定当前显示的表单和对应的数据源
+                let currentDataSource;
+                if (assetSystemForm.style.display === 'block' && assetSystemDataSource) {
+                    currentDataSource = assetSystemDataSource;
+                } else if (manualForm.style.display === 'block' && manualDataSource) {
+                    currentDataSource = manualDataSource;
+                }
+                
+                if (!currentDataSource || !currentDataSource.value) {
+                    alert('请选择数据来源');
+                    return;
+                }
+                
+                // 根据数据来源验证不同的字段
+                if (currentDataSource.value === '资产系统-B类资产') {
+                    // 资产系统-B类资产验证
+                    const assetCategory = document.getElementById('asset-category-1');
+                    const assetCostSubpool = document.getElementById('cost-subpool');
+                    const assetCostItem = document.getElementById('cost-item');
+                    const assetAllocationDimension = document.getElementById('asset-allocation-dimension');
+                    const assetAllocationType = document.getElementById('asset-allocation-type');
+                    
+                    if (!assetCategory.value) {
+                        alert('请选择资产分类');
+                        return;
+                    }
+                    if (!assetCostSubpool.value) {
+                        alert('请选择成本子池');
+                        return;
+                    }
+                    if (!assetCostItem.value) {
+                        alert('请输入成本项');
+                        return;
+                    }
+                    if (!assetAllocationDimension.value) {
+                        alert('请选择公摊维度');
+                        return;
+                    }
+                    if (!assetAllocationType.value) {
+                        alert('请选择公摊类型');
+                        return;
+                    }
+                } else if (currentDataSource.value === '手动维护') {
+                    // 手动维护验证
+                    const costSubpool = document.getElementById('cost-subpool');
+                    const costItem = document.getElementById('cost-item');
+                    const region = document.getElementById('region');
+                    const allocationDimension = document.getElementById('allocation-dimension');
+                    const allocationType = document.getElementById('allocation-type');
+                    const unitPrice = document.getElementById('unit-price');
+                    const depreciationMonths = document.getElementById('depreciation-months');
+                    const quantity = document.getElementById('quantity');
+                    const unit = document.getElementById('unit');
+                    
+                    if (!costSubpool.value) {
+                        alert('请选择成本子池');
+                        return;
+                    }
+                    if (!costItem.value) {
+                        alert('请输入成本项');
+                        return;
+                    }
+                    if (!region.value) {
+                        alert('请选择地域');
+                        return;
+                    }
+                    if (!allocationDimension.value) {
+                        alert('请选择公摊维度');
+                        return;
+                    }
+                    if (!allocationType.value) {
+                        alert('请选择公摊类型');
+                        return;
+                    }
+                    if (!unitPrice.value) {
+                        alert('请输入单价');
+                        return;
+                    }
+                    if (!depreciationMonths.value) {
+                        alert('请输入折旧月限');
+                        return;
+                    }
+                    if (!quantity.value) {
+                        alert('请输入数量');
+                        return;
+                    }
+                    if (!unit.value) {
+                        alert('请选择单位');
+                        return;
+                    }
+                }
+                
+                // 保存成功
+                modal.classList.remove('active');
+                alert('添加成功');
+            });
+        });
+
+        // 删除按钮事件
+        document.querySelectorAll('button[style*="color: #ff4d4f;"]').forEach(button => {
+            button.addEventListener('click', function() {
+                // 显示确认对话框
+                const confirmDialog = document.getElementById('confirm-dialog');
+                const confirmTitle = document.getElementById('confirm-title');
+                const confirmContent = document.getElementById('confirm-content');
+                
+                confirmTitle.textContent = '确认删除';
+                confirmContent.textContent = '您确定要删除这条记录吗？此操作不可恢复。';
+                
+                confirmDialog.classList.add('active');
+                
+                // 绑定确认对话框按钮事件
+                document.getElementById('confirm-cancel').addEventListener('click', function() {
+                    confirmDialog.classList.remove('active');
+                });
+                
+                document.getElementById('confirm-ok').addEventListener('click', function() {
+                    confirmDialog.classList.remove('active');
+                    alert('删除成功');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

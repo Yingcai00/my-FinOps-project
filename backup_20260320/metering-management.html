@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>FinOps财务运营管理平台 - 计量管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-success {
+            background-color: #52c41a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #73d13d;
+        }
+
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff7875;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6e6e6;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btns .btn {
+            padding: 4px 12px;
+            font-size: 13px;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 搜索筛选区域 */
+        .search-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .filter-item input,
+        .filter-item select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-item input:focus,
+        .filter-item select:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        /* 状态标签 */
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-warning {
+            background-color: #fffbe6;
+            color: #faad14;
+            border: 1px solid #ffe58f;
+        }
+
+        .status-error {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffa39e;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        .sub-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sub-menu-item {
+            display: block;
+            padding: 10px 20px 10px 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sub-menu-item:hover, .sub-menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 700px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* 统计卡片 */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+        }
+
+        .stat-change.positive {
+            color: #52c41a;
+        }
+
+        .stat-change.negative {
+            color: #ff4d4f;
+        }
+
+        /* 使用趋势图表容器 */
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            background-color: #fafafa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        /* 资源使用分布 */
+        .usage-distribution {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .distribution-card {
+            background-color: #fafafa;
+            border-radius: 4px;
+            padding: 16px;
+        }
+
+        .distribution-header {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .distribution-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .distribution-bar {
+            flex: 1;
+            height: 8px;
+            background-color: #e8e8e8;
+            border-radius: 4px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+
+        .distribution-fill {
+            height: 100%;
+            background-color: #1890ff;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
+                菜单导航
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="asset-ledger-management.html" class="menu-item">
+                        <span>B类资产管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="cost-overview.html" class="menu-item">
+                        <span>成本管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
+                        </li>
+                        <li>
+                            <a href="cost-pool-management.html" class="sub-menu-item">成本池管理</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="pricing-management.html" class="menu-item">
+                        <span>定价管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="metering-management.html" class="menu-item active">
+                        <span>计量管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="bill-management.html" class="menu-item">
+                        <span>账单管理</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <div class="content">
+            <!-- 统计概览 -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">总计量数据</div>
+                    <div class="stat-value" id="totalMetering">0</div>
+                    <div class="stat-change positive">条记录</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">CPU使用量</div>
+                    <div class="stat-value" id="cpuUsage">0</div>
+                    <div class="stat-change positive">核时</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">内存使用量</div>
+                    <div class="stat-value" id="memUsage">0</div>
+                    <div class="stat-change positive">GB时</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">存储使用量</div>
+                    <div class="stat-value" id="diskUsage">0</div>
+                    <div class="stat-change positive">TB时</div>
+                </div>
+            </div>
+
+            <!-- 搜索筛选 -->
+            <div class="card">
+                <div class="search-filter">
+                    <div class="filter-item">
+                        <label>服务名称</label>
+                        <select id="filterService">
+                            <option value="">全部服务</option>
+                            <option value="云服务器ECS">云服务器ECS</option>
+                            <option value="对象存储OSS">对象存储OSS</option>
+                            <option value="负载均衡SLB">负载均衡SLB</option>
+                            <option value="云数据库RDS">云数据库RDS</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>资源类型</label>
+                        <select id="filterResource">
+                            <option value="">全部资源</option>
+                            <option value="CPU">CPU</option>
+                            <option value="内存">内存</option>
+                            <option value="存储">存储</option>
+                            <option value="网络">网络</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>开始时间</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="filter-item">
+                        <label>结束时间</label>
+                        <input type="date" id="endDate">
+                    </div>
+                    <div class="filter-item" style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" onclick="searchMetering()">查询</button>
+                        <button class="btn btn-default" onclick="resetFilter()" style="margin-left: 8px;">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 使用趋势图表 -->
+            <div class="card">
+                <div class="card-title">资源使用趋势</div>
+                <div class="chart-container" id="usageTrendChart">
+                    资源使用趋势图表（近7天）
+                </div>
+            </div>
+
+            <!-- 资源使用分布 -->
+            <div class="card">
+                <div class="card-title">资源使用分布</div>
+                <div class="usage-distribution">
+                    <div class="distribution-card">
+                        <div class="distribution-header">按服务类型</div>
+                        <div class="distribution-item">
+                            <span>云服务器ECS</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 60%;"></div>
+                            </div>
+                            <span>60%</span>
+                        </div>
+                        <div class="distribution-item">
+                            <span>对象存储OSS</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 25%;"></div>
+                            </div>
+                            <span>25%</span>
+                        </div>
+                        <div class="distribution-item">
+                            <span>负载均衡SLB</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 10%;"></div>
+                            </div>
+                            <span>10%</span>
+                        </div>
+                        <div class="distribution-item">
+                            <span>云数据库RDS</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 5%;"></div>
+                            </div>
+                            <span>5%</span>
+                        </div>
+                    </div>
+                    <div class="distribution-card">
+                        <div class="distribution-header">按资源类型</div>
+                        <div class="distribution-item">
+                            <span>CPU</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 40%;"></div>
+                            </div>
+                            <span>40%</span>
+                        </div>
+                        <div class="distribution-item">
+                            <span>内存</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 30%;"></div>
+                            </div>
+                            <span>30%</span>
+                        </div>
+                        <div class="distribution-item">
+                            <span>存储</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 20%;"></div>
+                            </div>
+                            <span>20%</span>
+                        </div>
+                        <div class="distribution-item">
+                            <span>网络</span>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" style="width: 10%;"></div>
+                            </div>
+                            <span>10%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 计量数据列表 -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="card-title" style="margin: 0;">计量数据管理</h2>
+                    <div class="action-btns">
+                        <button class="btn btn-primary" onclick="showAddModal()">添加计量数据</button>
+                        <button class="btn btn-success" onclick="exportMetering()">导出数据</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>计量ID</th>
+                                <th>资产ID</th>
+                                <th>资产名称</th>
+                                <th>服务名称</th>
+                                <th>规格</th>
+                                <th>计量维度</th>
+                                <th>使用开始时间</th>
+                                <th>使用结束时间</th>
+                                <th>使用量</th>
+                                <th>单位</th>
+                                <th>状态</th>
+                                <th>备注</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="meteringTableBody">
+                            <!-- 数据由JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑计量数据弹窗 -->
+    <div class="modal" id="meteringModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">添加计量数据</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="meteringId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>资产ID *</label>
+                        <input type="text" id="assetId" placeholder="请输入资产ID">
+                    </div>
+                    <div class="form-group">
+                        <label>资产名称 *</label>
+                        <input type="text" id="assetName" placeholder="请输入资产名称">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>服务名称 *</label>
+                        <select id="serviceName">
+                            <option value="云服务器ECS">云服务器ECS</option>
+                            <option value="对象存储OSS">对象存储OSS</option>
+                            <option value="负载均衡SLB">负载均衡SLB</option>
+                            <option value="云数据库RDS">云数据库RDS</option>
+                            <option value="CDN加速">CDN加速</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>规格 *</label>
+                        <input type="text" id="serviceSpec" placeholder="请输入规格">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>计量维度 *</label>
+                        <select id="metricDimension">
+                            <option value="小时">小时</option>
+                            <option value="GB">GB</option>
+                            <option value="TB">TB</option>
+                            <option value="GB时">GB时</option>
+                            <option value="核时">核时</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>单位 *</label>
+                        <select id="usageUnit">
+                            <option value="小时">小时</option>
+                            <option value="GB">GB</option>
+                            <option value="TB">TB</option>
+                            <option value="GB时">GB时</option>
+                            <option value="核时">核时</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>使用开始时间 *</label>
+                        <input type="datetime-local" id="usageStart">
+                    </div>
+                    <div class="form-group">
+                        <label>使用结束时间 *</label>
+                        <input type="datetime-local" id="usageEnd">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>使用量 *</label>
+                        <input type="number" id="usageAmount" placeholder="请输入使用量" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>状态 *</label>
+                        <select id="meteringStatus">
+                            <option value="success">成功</option>
+                            <option value="warning">警告</option>
+                            <option value="error">错误</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="meteringRemark" placeholder="请输入备注信息" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveMetering()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟计量数据（基于Excel字段结构）
+        let meteringData = [
+            {
+                id: 1,
+                assetId: 'AST-2024-001',
+                assetName: '华为服务器',
+                serviceName: '云服务器ECS',
+                spec: '4核8G',
+                metricDimension: '小时',
+                usageStart: '2024-01-20 00:00:00',
+                usageEnd: '2024-01-20 23:59:59',
+                usageAmount: 24,
+                usageUnit: '小时',
+                status: 'success',
+                remark: '正常使用'
+            },
+            {
+                id: 2,
+                assetId: 'AST-2024-002',
+                assetName: '阿里云服务器',
+                serviceName: '云服务器ECS',
+                spec: '8核16G',
+                metricDimension: '小时',
+                usageStart: '2024-01-20 00:00:00',
+                usageEnd: '2024-01-20 23:59:59',
+                usageAmount: 24,
+                usageUnit: '小时',
+                status: 'success',
+                remark: '正常使用'
+            },
+            {
+                id: 3,
+                assetId: 'AST-2024-003',
+                assetName: '对象存储桶',
+                serviceName: '对象存储OSS',
+                spec: '标准存储',
+                metricDimension: 'GB',
+                usageStart: '2024-01-20 00:00:00',
+                usageEnd: '2024-01-20 23:59:59',
+                usageAmount: 1024,
+                usageUnit: 'GB',
+                status: 'success',
+                remark: '数据存储'
+            },
+            {
+                id: 4,
+                assetId: 'AST-2024-004',
+                assetName: '负载均衡实例',
+                serviceName: '负载均衡SLB',
+                spec: '标准型',
+                metricDimension: '小时',
+                usageStart: '2024-01-20 00:00:00',
+                usageEnd: '2024-01-20 23:59:59',
+                usageAmount: 24,
+                usageUnit: '小时',
+                status: 'warning',
+                remark: '流量较大'
+            },
+            {
+                id: 5,
+                assetId: 'AST-2024-005',
+                assetName: 'MySQL数据库',
+                serviceName: '云数据库RDS',
+                spec: '4核8G',
+                metricDimension: '小时',
+                usageStart: '2024-01-20 00:00:00',
+                usageEnd: '2024-01-20 23:59:59',
+                usageAmount: 24,
+                usageUnit: '小时',
+                status: 'success',
+                remark: '数据库使用'
+            }
+        ];
+
+        let filteredData = [...meteringData];
+        let currentEditId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            renderTable();
+        });
+
+        // 更新统计数据
+        function updateStats() {
+            const total = meteringData.length;
+            const totalUsage = meteringData
+                .reduce((sum, m) => sum + m.usageAmount, 0);
+
+            document.getElementById('totalMetering').textContent = total;
+            document.getElementById('cpuUsage').textContent = totalUsage.toFixed(1);
+            document.getElementById('memUsage').textContent = totalUsage.toFixed(1);
+            document.getElementById('diskUsage').textContent = totalUsage.toFixed(1);
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('meteringTableBody');
+            tbody.innerHTML = filteredData.map(metering => `
+                <tr>
+                    <td>${metering.id}</td>
+                    <td>${metering.assetId}</td>
+                    <td>${metering.assetName}</td>
+                    <td>${metering.serviceName}</td>
+                    <td>${metering.spec}</td>
+                    <td>${metering.metricDimension}</td>
+                    <td>${metering.usageStart}</td>
+                    <td>${metering.usageEnd}</td>
+                    <td>${metering.usageAmount.toFixed(2)}</td>
+                    <td>${metering.usageUnit}</td>
+                    <td><span class="status-tag status-${metering.status}">${getStatusText(metering.status)}</span></td>
+                    <td>${metering.remark}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-primary" onclick="viewMetering(${metering.id})">查看</button>
+                            <button class="btn btn-success" onclick="editMetering(${metering.id})">编辑</button>
+                            <button class="btn btn-danger" onclick="deleteMetering(${metering.id})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'success': '成功',
+                'warning': '警告',
+                'error': '错误'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 搜索计量数据
+        function searchMetering() {
+            const service = document.getElementById('filterService').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            filteredData = meteringData.filter(metering => {
+                return (!service || metering.serviceName === service) &&
+                       (!startDate || metering.usageStart >= startDate) &&
+                       (!endDate || metering.usageEnd <= endDate);
+            });
+
+            renderTable();
+        }
+
+        // 重置筛选
+        function resetFilter() {
+            document.getElementById('filterService').value = '';
+            document.getElementById('filterResource').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            filteredData = [...meteringData];
+            renderTable();
+        }
+
+        // 查看计量数据
+        function viewMetering(id) {
+            const metering = meteringData.find(m => m.id === id);
+            if (metering) {
+                alert(`计量数据详情：\nID：${metering.id}\n资产ID：${metering.assetId}\n资产名称：${metering.assetName}\n服务名称：${metering.serviceName}\n规格：${metering.spec}\n计量维度：${metering.metricDimension}\n使用开始时间：${metering.usageStart}\n使用结束时间：${metering.usageEnd}\n使用量：${metering.usageAmount.toFixed(2)} ${metering.usageUnit}\n状态：${getStatusText(metering.status)}\n备注：${metering.remark}`);
+            }
+        }
+
+        // 显示添加弹窗
+        function showAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = '添加计量数据';
+            document.getElementById('meteringId').value = '';
+            document.getElementById('assetId').value = '';
+            document.getElementById('assetName').value = '';
+            document.getElementById('serviceName').value = '云服务器ECS';
+            document.getElementById('serviceSpec').value = '';
+            document.getElementById('metricDimension').value = '小时';
+            document.getElementById('usageUnit').value = '小时';
+            document.getElementById('usageStart').value = '';
+            document.getElementById('usageEnd').value = '';
+            document.getElementById('usageAmount').value = '';
+            document.getElementById('meteringStatus').value = 'success';
+            document.getElementById('meteringRemark').value = '';
+            document.getElementById('meteringModal').classList.add('active');
+        }
+
+        // 编辑计量数据
+        function editMetering(id) {
+            const metering = meteringData.find(m => m.id === id);
+            if (!metering) return;
+            
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = '编辑计量数据';
+            document.getElementById('meteringId').value = metering.id;
+            document.getElementById('assetId').value = metering.assetId;
+            document.getElementById('assetName').value = metering.assetName;
+            document.getElementById('serviceName').value = metering.serviceName;
+            document.getElementById('serviceSpec').value = metering.spec;
+            document.getElementById('metricDimension').value = metering.metricDimension;
+            document.getElementById('usageUnit').value = metering.usageUnit;
+            document.getElementById('usageStart').value = metering.usageStart.replace(' ', 'T');
+            document.getElementById('usageEnd').value = metering.usageEnd.replace(' ', 'T');
+            document.getElementById('usageAmount').value = metering.usageAmount;
+            document.getElementById('meteringStatus').value = metering.status;
+            document.getElementById('meteringRemark').value = metering.remark || '';
+            document.getElementById('meteringModal').classList.add('active');
+        }
+
+        // 删除计量数据
+        function deleteMetering(id) {
+            if (!confirm('确定要删除该计量数据吗？')) return;
+            
+            const index = meteringData.findIndex(m => m.id === id);
+            if (index >= 0) {
+                meteringData.splice(index, 1);
+                filteredData = [...meteringData];
+                updateStats();
+                renderTable();
+                alert('删除成功');
+            }
+        }
+
+        // 保存计量数据
+        function saveMetering() {
+            const id = document.getElementById('meteringId').value;
+            const assetId = document.getElementById('assetId').value;
+            const assetName = document.getElementById('assetName').value;
+            const serviceName = document.getElementById('serviceName').value;
+            const spec = document.getElementById('serviceSpec').value;
+            const metricDimension = document.getElementById('metricDimension').value;
+            const usageStart = document.getElementById('usageStart').value;
+            const usageEnd = document.getElementById('usageEnd').value;
+            const usageAmount = parseFloat(document.getElementById('usageAmount').value);
+            const usageUnit = document.getElementById('usageUnit').value;
+            const status = document.getElementById('meteringStatus').value;
+            const remark = document.getElementById('meteringRemark').value;
+
+            if (!assetId || !assetName || !serviceName || !spec || !metricDimension || !usageStart || !usageEnd || !usageAmount || !usageUnit) {
+                alert('请填写所有必填字段');
+                return;
+            }
+
+            const formattedUsageStart = usageStart.replace('T', ' ');
+            const formattedUsageEnd = usageEnd.replace('T', ' ');
+
+            if (currentEditId) {
+                // 编辑
+                const index = meteringData.findIndex(m => m.id === currentEditId);
+                if (index >= 0) {
+                    meteringData[index] = {
+                        ...meteringData[index],
+                        assetId,
+                        assetName,
+                        serviceName,
+                        spec,
+                        metricDimension,
+                        usageStart: formattedUsageStart,
+                        usageEnd: formattedUsageEnd,
+                        usageAmount,
+                        usageUnit,
+                        status,
+                        remark
+                    };
+                }
+            } else {
+                // 添加
+                const newId = Math.max(...meteringData.map(m => m.id), 0) + 1;
+                meteringData.push({
+                    id: newId,
+                    assetId,
+                    assetName,
+                    serviceName,
+                    spec,
+                    metricDimension,
+                    usageStart: formattedUsageStart,
+                    usageEnd: formattedUsageEnd,
+                    usageAmount,
+                    usageUnit,
+                    status,
+                    remark
+                });
+            }
+
+            filteredData = [...meteringData];
+            updateStats();
+            renderTable();
+            closeModal();
+            alert(currentEditId ? '编辑成功' : '添加成功');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('meteringModal').classList.remove('active');
+        }
+
+        // 导出计量数据
+        function exportMetering() {
+            alert('导出功能：将导出当前筛选条件下的计量数据到Excel文件');
+        }
+    </script>
+</body>
+</html>

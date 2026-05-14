@@ -1,0 +1,93 @@
+@startuml
+
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam boxBorderColor #CCCCCC
+skinparam boxBackgroundColor #F5F5F5
+skinparam actorStyle awesome
+
+' 角色定义
+actor "用户" as User
+actor "资产管理员" as AssetAdmin
+actor "资源分配管理员" as ResourceAdmin
+actor "服务器管理员" as ServerAdmin
+actor "网络设备管理员" as NetworkAdmin
+actor "安全设备管理员" as SecurityAdmin
+actor "FinOps运维管理员" as FinOpsAdmin
+participant "FinOps系统" as FinOpsSystem
+participant "云管系统" as CloudManageSystem
+
+' 资源申请运维流程
+User -> ResourceAdmin : 1. 提交计算资源申请
+
+ResourceAdmin -> ResourceAdmin : 2. 判断资源是否充足
+alt 资源不充足
+    ResourceAdmin -> AssetAdmin : 3. 资产采购申请
+    AssetAdmin -> AssetAdmin : 4. 采购后入库
+    FinOpsSystem -> FinOpsSystem : 5. 每天从资产系统同步资产信息
+else 资源充足
+    ResourceAdmin -> FinOpsSystem : 6. 资源配置
+    ResourceAdmin -> ResourceAdmin : 7. 判断是否有相关SKU
+    alt 有相关SKU
+        ResourceAdmin -> FinOpsSystem : 8. 直接关联
+        CloudManageSystem -> User : 9. 实例创建成功
+    else 无相关SKU
+        ResourceAdmin -> FinOpsAdmin : 10. 联系新增SKU
+        FinOpsAdmin -> FinOpsAdmin : 11. 判断是否需要新增规格
+        alt 需要新增规格
+            FinOpsAdmin -> CloudManageSystem : 12. 云管系统操作新增规格
+            FinOpsAdmin -> FinOpsSystem : 13. 维护SKU上下架信息
+        end
+    end
+end
+
+FinOpsAdmin -> FinOpsAdmin : 14. 维护计费资产成本信息
+FinOpsAdmin -> FinOpsAdmin : 15. 判断是否需要新增资产细分
+alt 需要新增资产细分
+    FinOpsAdmin -> FinOpsSystem : 16. 资产细分tab页，添加资产细分类型
+    FinOpsAdmin -> FinOpsAdmin : 17. 是否数据中心范围
+    alt 是数据中心范围
+        FinOpsSystem -> FinOpsSystem : 18. 计费
+    else 不是数据中心范围
+        FinOpsSystem -> FinOpsSystem : 19. 不计费
+    end
+    FinOpsAdmin -> FinOpsAdmin : 20. 判断该资产细分是否为计算资源（物理机资产）
+    alt 是计算资源
+        FinOpsAdmin -> FinOpsSystem : 21. 维护资产细分对应的标准规格配置信息
+    end
+end
+
+FinOpsAdmin -> FinOpsSystem : 22. 维护资产所属资产细分、使用方式（动态调整）与设备状态
+
+' FinOps运维流程
+FinOpsSystem -> FinOpsSystem : 23. 根据资产细分、使用方式生成资产设备成本项
+FinOpsSystem -> FinOpsSystem : 24. 每天同步/支持添加资产后手动同步
+
+FinOpsAdmin -> FinOpsSystem : 25. 修正设备成本项、录入修正其他非设备成本
+
+' FinOps系统管理员操作
+actor "FinOps系统管理员" as FinOpsSystemAdmin
+FinOpsSystemAdmin -> FinOpsSystem : 26. 管理成本池及成本池关联成本项
+FinOpsSystemAdmin -> FinOpsSystem : 27. 管理SKU关联成本池，发布定价
+
+FinOpsSystem -> FinOpsSystem : 28. 校验成本项、成本池、SKU是否关联完整
+alt 验证通过
+    FinOpsSystem -> FinOpsSystem : 29. 生成定价单
+else 验证不通过
+    FinOpsSystem -> FinOpsSystemAdmin : 30. 继续调整
+end
+
+' 月底出账流程
+FinOpsSystem -> FinOpsSystem : 31. 月底出账日前7天、当天，判断本月是否生成了定价单
+alt 未生成定价单
+    FinOpsSystem -> FinOpsAdmin : 32. 发送通知
+end
+
+FinOpsSystem -> FinOpsSystem : 33. 出账日根据最新版定价单计量计费出账单
+
+' 次月1日，新数据生成
+FinOpsSystem -> FinOpsSystem : 34. 默认展示上月成本项、成本池、定价单（草稿版）数据
+FinOpsAdmin -> FinOpsSystem : 35. 修正设备成本项、成本池、定价单数据
+FinOpsAdmin -> FinOpsSystem : 36. 发布确认定价单
+
+@enduml

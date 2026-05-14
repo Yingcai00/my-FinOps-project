@@ -1,0 +1,48 @@
+sequenceDiagram
+    participant FinOps运维管理员
+    participant FinOps系统
+    participant 成本计算引擎
+    participant 定价管理模块
+
+    Note over FinOps运维管理员,定价管理模块: 阶段1: 创建成本池
+    FinOps运维管理员->>FinOps系统: 录入成本池信息（名称、计费资源、单位）
+    FinOps系统->>FinOps系统: 验证成本池名称唯一性
+    FinOps系统->>FinOps系统: 保存成本池基础信息
+
+    Note over FinOps运维管理员,定价管理模块: 阶段2: 关联成本项
+    FinOps运维管理员->>FinOps系统: 选择关联的成本项
+    FinOps系统->>FinOps系统: 校验成本项状态（已确认）
+    FinOps系统->>FinOps系统: 建立成本池-成本项关联关系
+    FinOps系统-->>成本计算引擎: 触发成本计算
+
+    Note over FinOps运维管理员,定价管理模块: 阶段3: 成本计算
+    成本计算引擎->>成本计算引擎: 汇总关联成本项的总成本
+    成本计算引擎->>成本计算引擎: 统计计费资源总量
+    成本计算引擎->>成本计算引擎: 计算资源单价（总成本/资源总量）
+    成本计算引擎->>FinOps系统: 返回计算结果
+    FinOps系统->>FinOps系统: 更新成本池数据（总成本、资源总量、单价）
+
+    Note over FinOps运维管理员,定价管理模块: 阶段4: 关联服务规格
+    FinOps运维管理员->>FinOps系统: 将服务规格关联到成本池
+    FinOps系统->>FinOps系统: 建立规格-成本池关联关系
+    FinOps系统-->>定价管理模块: 通知规格关联变更
+
+    Note over FinOps运维管理员,定价管理模块: 阶段5: 成本池变更
+    alt 新增/移除成本项
+        FinOps运维管理员->>FinOps系统: 修改成本项关联
+        FinOps系统-->>成本计算引擎: 触发重新计算
+        成本计算引擎->>成本计算引擎: 重新计算总成本和单价
+    else 修改成本池配置
+        FinOps运维管理员->>FinOps系统: 修改成本池信息
+        FinOps系统->>FinOps系统: 保存配置
+    end
+
+    Note over FinOps运维管理员,定价管理模块: 阶段6: 成本池审核
+    FinOps运维管理员->>FinOps系统: 查看成本池列表
+    alt 成本池完整（有关联规格）
+        FinOps运维管理员->>FinOps系统: 确认成本池
+        FinOps系统->>FinOps系统: 标记为已确认
+    else 成本池未关联规格
+        FinOps系统-->>FinOps运维管理员: 提示"存在未计费成本池"
+        FinOps运维管理员->>FinOps系统: 关联服务规格
+    end

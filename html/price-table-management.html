@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 价格表管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e8e8e8;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #262626;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 比价优势样式 */
+        .price-advantage-good {
+            color: #52c41a;
+            font-weight: 600;
+        }
+
+        .price-advantage-bad {
+            color: #ff4d4f;
+            font-weight: 600;
+        }
+
+        /* 月份选择器 */
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .month-selector label {
+            font-weight: 500;
+        }
+
+        .month-selector input[type="month"] {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* 生成时间 */
+        .generate-time {
+            color: #999;
+            font-size: 13px;
+            margin-left: auto;
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            color: #1890ff;
+            background-color: white;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        .sub-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sub-menu-item {
+            display: block;
+            padding: 10px 20px 10px 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sub-menu-item:hover, .sub-menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        /* 只读样式 */
+        .readonly-table td {
+            color: #666;
+        }
+
+        .readonly-table input:disabled {
+            background-color: #f5f5f5;
+            border: none;
+            color: #333;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .pagination button {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .pagination button:disabled {
+            cursor: not-allowed;
+            color: #999;
+        }
+
+        .pagination .page-info {
+            color: #666;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
+                菜单导航
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="asset-ledger-management.html" class="menu-item">
+                        <span>B类资产管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="cost-overview.html" class="menu-item">
+                        <span>成本管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
+                        </li>
+                        <li>
+                            <a href="cost-pool-management.html" class="sub-menu-item">成本池管理</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="pricing-management.html" class="menu-item">
+                        <span>定价管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="usage-management.html" class="menu-item">
+                        <span>用量管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li><a href="usage-management.html" class="sub-menu-item">用量明细</a></li>
+                        <li><a href="usage-confirm-view-pc.html?bill_period=2026-04" class="sub-menu-item">PC 用量确认</a></li>
+                        <li><a href="usage-confirm-view-mobile.html?bill_period=2026-04" class="sub-menu-item">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="pricing-pending-todos-demo.html" class="menu-item">
+                        <span>待办管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="bill-overview.html" class="menu-item">
+                        <span>账单管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li><a href="bill-monthly-overview.html" class="sub-menu-item">月度账单总览</a></li>
+                        <li><a href="bill-management.html" class="sub-menu-item">账单详情</a></li>
+                        <li><a href="bill-overview.html" class="sub-menu-item">账单分析</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="usage-push-strategy-management.html" class="menu-item">
+                        <span>消息推送</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li><a href="usage-push-strategy-management.html" class="sub-menu-item">消息推送</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="allocation-management.html" class="menu-item">
+                        <span>分账管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="system-management.html" class="menu-item">
+                        <span>系统管理</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <div class="content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="card-title" style="margin: 0;">月度价格表</h2>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="month-selector">
+                            <label>账期：</label>
+                            <input type="month" id="priceMonth" value="2026-02">
+                        </div>
+                        <button class="btn btn-primary" onclick="refreshPriceTable()">刷新价格表</button>
+                    </div>
+                </div>
+
+                <div class="generate-time" id="generateTime"></div>
+
+                <div class="table-container">
+                    <table class="readonly-table">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>产品名称（含规格）</th>
+                                <th>计价月</th>
+                                <th>月度价格</th>
+                                <th>阿里云价格</th>
+                                <th>腾讯云价格</th>
+                                <th>华为云价格</th>
+                                <th>比价优势</th>
+                            </tr>
+                        </thead>
+                        <tbody id="priceTableBody">
+                            <!-- 数据由JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination">
+                    <button onclick="prevPage()" id="prevBtn">上一页</button>
+                    <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+                    <button onclick="nextPage()" id="nextBtn">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 产品数据（从产品定价管理同步）
+        let productsData = JSON.parse(localStorage.getItem('productsData')) || [
+            { id: 1, name: '标准物理机-小型', type: '物理机', cpu: '8核', mem: '32GB', disk: '500GB', ruleName: '物理机', formula: '物理机成本' },
+            { id: 2, name: '容器实例-标准', type: '容器', cpu: '4核', mem: '16GB', disk: '100GB', ruleName: '容器', formula: 'CPU单价*CPU数量' },
+            { id: 3, name: 'MySQL数据库-共享', type: '数据库', cpu: '2核', mem: '8GB', disk: '200GB', ruleName: '容器型数据库-共享', formula: 'CPU单价*CPU数量' },
+            { id: 4, name: 'MySQL数据库-独享', type: '数据库', cpu: '8核', mem: '32GB', disk: '500GB', ruleName: '容器数据库-独享', formula: 'CPU单价*CPU数量+人工服务费' }
+        ];
+
+        // 成本数据（用于计算价格）
+        let costData = JSON.parse(localStorage.getItem('costItems')) || [];
+
+        // 分页配置
+        let currentPage = 1;
+        const pageSize = 10;
+        let totalPages = 1;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshPriceTable();
+        });
+
+        // 刷新价格表
+        function refreshPriceTable() {
+            // 从localStorage获取最新数据
+            const savedProducts = JSON.parse(localStorage.getItem('productsData'));
+            if (savedProducts) {
+                productsData = savedProducts;
+            }
+
+            const savedCosts = JSON.parse(localStorage.getItem('costItems'));
+            if (savedCosts) {
+                costData = savedCosts;
+            }
+
+            // 生成价格数据
+            generatePriceData();
+
+            // 渲染表格
+            renderTable();
+
+            // 更新生成时间
+            const now = new Date();
+            document.getElementById('generateTime').textContent = 
+                '价格表生成时间：' + now.toLocaleString('zh-CN');
+        }
+
+        // 生成价格数据
+        function generatePriceData() {
+            // 为每个产品计算月度价格和公有云比价
+            productsData.forEach(function(product) {
+                product.monthlyPrice = calculatePrice(product);
+                // 计算公有云比价（模拟数据，实际应从公有云API获取）
+                const cloudPrices = calculateCloudPrice(product);
+                product.aliyunPrice = cloudPrices.aliyun;
+                product.tencentPrice = cloudPrices.tencent;
+                product.huaweiPrice = cloudPrices.huawei;
+            });
+        }
+
+        // 计算公有云价格（模拟）
+        function calculateCloudPrice(product) {
+            const basePrice = product.monthlyPrice || 1000;
+            // 模拟公有云价格（通常比私有云贵20%-50%）
+            return {
+                aliyun: Math.round(basePrice * (1.3 + Math.random() * 0.2)), // 贵30%-50%
+                tencent: Math.round(basePrice * (1.25 + Math.random() * 0.2)), // 贵25%-45%
+                huawei: Math.round(basePrice * (1.35 + Math.random() * 0.2)) // 贵35%-55%
+            };
+        }
+
+        // 计算比价优势
+        function calculatePriceAdvantage(privatePrice, aliyun, tencent, huawei) {
+            const avgCloudPrice = (aliyun + tencent + huawei) / 3;
+            const savingPercent = ((avgCloudPrice - privatePrice) / avgCloudPrice * 100).toFixed(1);
+            return {
+                percent: savingPercent,
+                amount: Math.round(avgCloudPrice - privatePrice)
+            };
+        }
+
+        // 计算产品价格
+        function calculatePrice(product) {
+            // 根据产品类型和定价规则计算价格
+            // 这里使用模拟计算逻辑，实际应根据公式解析计算
+            let basePrice = 0;
+
+            switch (product.type) {
+                case '物理机':
+                    basePrice = 5000;
+                    break;
+                case '容器':
+                    // CPU单价 * CPU数量（假设CPU单价500元/核）
+                    const cpuMatch = product.cpu.match(/(\d+)/);
+                    const cpuCount = cpuMatch ? parseInt(cpuMatch[1]) : 1;
+                    basePrice = 500 * cpuCount;
+                    break;
+                case '虚拟机':
+                    basePrice = 2000;
+                    break;
+                case '存储':
+                    basePrice = 1000;
+                    break;
+                case '数据库':
+                    // CPU单价 * CPU数量 + 人工服务费
+                    const dbCpuMatch = product.cpu.match(/(\d+)/);
+                    const dbCpuCount = dbCpuMatch ? parseInt(dbCpuMatch[1]) : 1;
+                    const serviceFee = product.formula.includes('人工服务费') ? 500 : 0;
+                    basePrice = 500 * dbCpuCount + serviceFee;
+                    break;
+                default:
+                    basePrice = 1000;
+            }
+
+            return basePrice;
+        }
+
+        // 生成带规格的产品名称
+        function generateProductName(baseName, cpu, mem, disk) {
+            const specs = [];
+            if (cpu) specs.push(cpu);
+            if (mem) specs.push(mem);
+            if (disk) specs.push(disk);
+
+            if (specs.length > 0) {
+                return `${baseName}(${specs.join('/')})`;
+            }
+            return baseName;
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('priceTableBody');
+            tbody.innerHTML = '';
+
+            // 计算分页
+            totalPages = Math.ceil(productsData.length / pageSize) || 1;
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = productsData.slice(start, end);
+
+            // 获取计价月
+            const priceMonth = document.getElementById('priceMonth').value;
+
+            pageData.forEach(function(product, index) {
+                const displayName = generateProductName(product.name, product.cpu, product.mem, product.disk);
+                const row = document.createElement('tr');
+                
+                // 计算比价优势
+                const advantage = calculatePriceAdvantage(
+                    product.monthlyPrice || 0,
+                    product.aliyunPrice || 0,
+                    product.tencentPrice || 0,
+                    product.huaweiPrice || 0
+                );
+                
+                // 根据优势值设置颜色
+                let advantageClass = '';
+                let advantageText = '';
+                if (parseFloat(advantage.percent) > 0) {
+                    advantageClass = 'price-advantage-good';
+                    advantageText = `节省 ${advantage.percent}%<br><small>约 ¥${advantage.amount.toLocaleString()}/月</small>`;
+                } else {
+                    advantageClass = 'price-advantage-bad';
+                    advantageText = `高出 ${Math.abs(advantage.percent)}%`;
+                }
+                
+                row.innerHTML = `
+                    <td>${start + index + 1}</td>
+                    <td>${displayName}</td>
+                    <td>${priceMonth}</td>
+                    <td style="color: #1890ff; font-weight: 600;">¥${(product.monthlyPrice || 0).toLocaleString()}</td>
+                    <td style="color: #ff6b6b;">¥${(product.aliyunPrice || 0).toLocaleString()}</td>
+                    <td style="color: #ff6b6b;">¥${(product.tencentPrice || 0).toLocaleString()}</td>
+                    <td style="color: #ff6b6b;">¥${(product.huaweiPrice || 0).toLocaleString()}</td>
+                    <td class="${advantageClass}">${advantageText}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 更新分页信息
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        // 上一页
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        }
+
+        // 下一页
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        }
+
+        // 月份选择变化
+        document.getElementById('priceMonth').addEventListener('change', function() {
+            refreshPriceTable();
+        });
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+</body>
+</html>

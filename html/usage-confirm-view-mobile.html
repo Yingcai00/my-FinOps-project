@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="theme-color" content="#1890ff">
+    <title>用量确认</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 15px;
+            line-height: 1.45;
+            color: rgba(0,0,0,.88);
+            background: #f5f5f5;
+            padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+            min-height: 100vh;
+        }
+        .m-header {
+            background: linear-gradient(180deg, #1890ff 0%, #096dd9 100%);
+            color: #fff;
+            padding: 12px 16px calc(14px + env(safe-area-inset-top, 0px));
+            padding-top: calc(12px + env(safe-area-inset-top, 0px));
+        }
+        .m-header h1 { font-size: 17px; font-weight: 600; }
+        .m-header-sub { font-size: 12px; opacity: .9; margin-top: 4px; }
+        .m-filter {
+            margin: -10px 12px 12px;
+            background: #fff;
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            position: relative;
+            z-index: 2;
+        }
+        .m-filter-label { font-size: 12px; color: #666; display: block; margin-bottom: 8px; }
+        .m-tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .m-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            font-size: 13px;
+            line-height: 1.35;
+            border: 1px solid #d9d9d9;
+            border-radius: 999px;
+            background: #fafafa;
+            color: rgba(0,0,0,.75);
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            font-family: inherit;
+            max-width: 100%;
+            text-align: left;
+        }
+        .m-tag:active { opacity: .85; }
+        .m-tag:focus-visible {
+            outline: 2px solid #91caff;
+            outline-offset: 2px;
+        }
+        .m-tag.active {
+            background: #e6f7ff;
+            border-color: #1890ff;
+            color: #1890ff;
+            font-weight: 500;
+        }
+        .m-summary {
+            margin: -10px 12px 12px;
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            position: relative;
+            z-index: 2;
+        }
+        .m-summary .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
+        .m-summary .row:last-child { margin-bottom: 0; }
+        .m-summary .label { color: #666; }
+        .m-summary .warn { color: #d46b08; font-weight: 600; }
+        .m-list { padding: 0 12px 12px; }
+        .svc-head {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 16px 4px 8px;
+            padding-left: 8px;
+            border-left: 3px solid #1890ff;
+        }
+        .svc-head:first-child { margin-top: 4px; }
+        .inst-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,.04);
+        }
+        .inst-card.done { opacity: .65; background: #fafafa; }
+        .inst-card.obj {
+            opacity: .72;
+            background: #f0f0f0;
+            border-color: #e0e0e0;
+        }
+        .inst-card-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .inst-card-row > input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .inst-card.done .inst-card-row > input,
+        .inst-card.obj .inst-card-row > input {
+            cursor: not-allowed;
+            opacity: .45;
+        }
+        .inst-card-body { flex: 1; min-width: 0; }
+        .inst-name { font-weight: 600; font-size: 15px; word-break: break-all; }
+        .inst-id { font-size: 11px; color: #888; font-family: ui-monospace, monospace; margin-top: 2px; }
+        .inst-kv { font-size: 13px; color: #444; margin-top: 8px; }
+        .inst-kv .k { color: #888; display: inline-block; min-width: 72px; }
+        .inst-status { font-size: 11px; margin-top: 8px; color: #1890ff; }
+        .inst-status.done { color: #52c41a; }
+        .inst-status.obj { color: #8c8c8c; }
+        .m-footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+            background: rgba(255,255,255,.98);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            gap: 12px;
+            z-index: 30;
+        }
+        .m-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .m-btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .m-btn-danger { color: #cf1322; border-color: #ffa39e; background: #fff; }
+        .m-btn:disabled { opacity: .45; }
+        .sheet-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.5);
+            z-index: 50;
+            align-items: flex-end;
+        }
+        .sheet-overlay.open { display: flex; }
+        .sheet {
+            width: 100%;
+            max-height: 85vh;
+            background: #fff;
+            border-radius: 14px 14px 0 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .sheet-hd { padding: 16px; font-weight: 600; font-size: 16px; border-bottom: 1px solid #f0f0f0; }
+        .sheet-bd { padding: 12px 16px; overflow-y: auto; flex: 1; }
+        .sheet-ft { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; gap: 10px; }
+        .sheet-ft .m-btn { flex: 1; }
+        .chk-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+        }
+        .chk-line:last-child { border-bottom: none; }
+        .chk-line input { margin-top: 4px; width: 18px; height: 18px; flex-shrink: 0; }
+        .chk-line.disabled { opacity: .5; }
+        .chk-meta { font-size: 12px; color: #888; margin-top: 4px; line-height: 1.4; }
+        .sheet-bd select.mob-obj-type {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        #objInstWrapMob.hidden { display: none; }
+        .sheet textarea {
+            width: 100%;
+            min-height: 72px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .svc-sub { font-size: 13px; font-weight: 600; margin: 12px 0 6px; color: #333; }
+    </style>
+</head>
+<body>
+    <header class="m-header">
+        <h1>用量确认</h1>
+        <div class="m-header-sub">按服务分类 · 服务标签平铺筛选 · 企业微信内打开（原型）</div>
+    </header>
+
+    <section class="m-summary">
+        <div class="row"><span class="label">账期</span><strong id="mPeriod">2026-04</strong></div>
+        <div class="row"><span class="label">截止</span><span class="warn" id="mDeadline">2026-05-09 24:00</span></div>
+        <div class="row"><span class="label">用户</span><span id="mUser">zhangsan</span></div>
+        <div class="row" style="font-size:12px;color:#666;line-height:1.45;padding-top:4px;border-top:1px dashed #f0f0f0;margin-top:8px;">
+            勾选实例后可批量确认或提交异议，异议弹窗会带出已选实例（少算实例除外）。已提交异议的实例灰显且不可再选。
+        </div>
+    </section>
+
+    <div class="m-filter">
+        <div class="m-filter-label" id="svcFilterLabel">服务标签</div>
+        <div class="m-tag-row" id="svcTagRow" role="group" aria-labelledby="svcFilterLabel"></div>
+    </div>
+
+    <div class="m-list" id="listRoot"></div>
+
+    <div class="m-footer">
+        <button type="button" class="m-btn m-btn-primary" id="mConfirm">确认</button>
+        <button type="button" class="m-btn m-btn-danger" id="mObject">异议</button>
+    </div>
+
+    <div class="sheet-overlay" id="objSheet" aria-hidden="true">
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+            <div class="sheet-hd" id="sheetTitle">提交异议</div>
+            <div class="sheet-bd">
+                <label style="font-size:13px;font-weight:600;display:block;">异议类型</label>
+                <select id="mobObjType" class="mob-obj-type">
+                    <option value="">请选择异议类型</option>
+                    <option value="over">多算实例</option>
+                    <option value="under">少算实例</option>
+                    <option value="wrong">实例数据错误（配置、归属、使用时长）</option>
+                </select>
+                <p id="mobObjHint" style="font-size:12px;color:#666;line-height:1.5;margin-top:10px;">请先选择异议类型。</p>
+                <div id="objInstWrapMob" class="hidden">
+                    <div id="objListMob"></div>
+                </div>
+                <p id="mobNoteLabel" style="font-size:13px;font-weight:600;margin-top:12px;">补充说明（选填）</p>
+                <textarea id="objNoteMob" placeholder="可填写争议点等"></textarea>
+            </div>
+            <div class="sheet-ft">
+                <button type="button" class="m-btn" id="objCloseMob">取消</button>
+                <button type="button" class="m-btn m-btn-primary" id="objSendMob">提交异议</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+(function () {
+    'use strict';
+
+    var rows = [
+        { id: 'i-7a8b9c0d1', name: 'web-api-prod-01', spec: '4 vCPU / 8 GiB / 系统盘 100GB', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '云主机 ECS', status: 'pending' },
+        { id: 'i-2e3f4a5b6', name: 'batch-worker-03', spec: '8 vCPU / 16 GiB / 数据盘 500GB', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '云主机 ECS', status: 'pending' },
+        { id: 'i-oss-bucket-a', name: 'archive-logs-prd', spec: '标准存储 / 低频访问', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '对象存储 OSS', status: 'pending' },
+        { id: 'i-rds-mysql-01', name: 'order-db-primary', spec: 'MySQL 8.0 / 高可用 2 节点', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '云数据库 RDS', status: 'pending' }
+    ];
+
+    var svcFilter = '';
+
+    function qs(name) {
+        var m = new RegExp('[?&]' + name + '=([^&]*)').exec(location.search || '');
+        return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+    }
+
+    function rowsForList() {
+        if (!svcFilter) return rows;
+        return rows.filter(function (r) {
+            return r.svc === svcFilter;
+        });
+    }
+
+    function groupByService(list) {
+        var order = [];
+        var map = {};
+        list.forEach(function (r) {
+            if (!map[r.svc]) {
+                map[r.svc] = [];
+                order.push(r.svc);
+            }
+            map[r.svc].push(r);
+        });
+        return order.map(function (s) {
+            return { svc: s, items: map[s] };
+        });
+    }
+
+    function escAttr(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;');
+    }
+
+    function selectedMobListIds() {
+        var out = [];
+        document.querySelectorAll('.inst-chk-mob:checked').forEach(function (c) {
+            out.push(c.getAttribute('data-id'));
+        });
+        return out;
+    }
+
+    function escHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function initSvcFilter() {
+        var row = document.getElementById('svcTagRow');
+        var cur = svcFilter;
+        var seen = {};
+        var tagDefs = [{ value: '', label: '全部' }];
+        rows.forEach(function (r) {
+            if (!seen[r.svc]) {
+                seen[r.svc] = true;
+                tagDefs.push({ value: r.svc, label: r.svc });
+            }
+        });
+        var valid = tagDefs.some(function (t) {
+            return t.value === cur;
+        });
+        if (!valid) {
+            svcFilter = '';
+            cur = '';
+        }
+        row.innerHTML = tagDefs
+            .map(function (t) {
+                var active = t.value === cur;
+                return (
+                    '<button type="button" class="m-tag' +
+                    (active ? ' active' : '') +
+                    '" data-svc="' +
+                    escAttr(t.value) +
+                    '">' +
+                    escHtml(t.label) +
+                    '</button>'
+                );
+            })
+            .join('');
+    }
+
+    function counts() {
+        var pend = rows.filter(function (r) {
+            return r.status === 'pending';
+        }).length;
+        document.getElementById('mConfirm').disabled = pend === 0;
+        document.getElementById('mObject').disabled = pend === 0;
+    }
+
+    function statusLine(r) {
+        if (r.status === 'done') return '<div class="inst-status done">已确认</div>';
+        if (r.status === 'objection') return '<div class="inst-status obj">异议处理中 · 运维跟进</div>';
+        return '<div class="inst-status">待确认</div>';
+    }
+
+    function renderList() {
+        var root = document.getElementById('listRoot');
+        var list = rowsForList();
+        if (!list.length) {
+            root.innerHTML =
+                '<p style="padding:24px 8px;text-align:center;color:#999;font-size:14px;">当前服务标签下暂无实例。</p>';
+            return;
+        }
+        root.innerHTML = groupByService(list)
+            .map(function (g) {
+                var cards = g.items
+                    .map(function (r) {
+                        var cls = 'inst-card';
+                        if (r.status === 'done') cls += ' done';
+                        if (r.status === 'objection') cls += ' obj';
+                        var chk =
+                            '<input type="checkbox" class="inst-chk-mob" data-id="' +
+                            escAttr(r.id) +
+                            '" ' +
+                            (r.status === 'pending'
+                                ? 'aria-label="选择 ' + escAttr(r.name) + '"'
+                                : 'disabled aria-disabled="true"') +
+                            '>';
+                        return (
+                            '<div class="' +
+                            cls +
+                            '">' +
+                            '<div class="inst-card-row">' +
+                            chk +
+                            '<div class="inst-card-body">' +
+                            '<div class="inst-name">' +
+                            r.name +
+                            '</div>' +
+                            '<div class="inst-id">' +
+                            r.id +
+                            '</div>' +
+                            '<div class="inst-kv"><span class="k">服务标签</span>' +
+                            r.svc +
+                            '</div>' +
+                            '<div class="inst-kv"><span class="k">配置快照</span>' +
+                            r.spec +
+                            '</div>' +
+                            '<div class="inst-kv"><span class="k">起止时间</span>' +
+                            r.start +
+                            ' ～ ' +
+                            r.end +
+                            '</div>' +
+                            statusLine(r) +
+                            '</div></div></div>'
+                        );
+                    })
+                    .join('');
+                return '<div><div class="svc-head">' + g.svc + '</div>' + cards + '</div>';
+            })
+            .join('');
+    }
+
+    function renderObjSheet() {
+        var el = document.getElementById('objListMob');
+        el.innerHTML = groupByService(rows)
+            .map(function (g) {
+                var lines = g.items
+                    .map(function (r) {
+                        if (r.status !== 'pending') {
+                            return (
+                                '<div class="chk-line disabled">' +
+                                '<input type="checkbox" disabled>' +
+                                '<div><div>' +
+                                r.name +
+                                '</div><div class="chk-meta">' +
+                                (r.status === 'done' ? '已确认' : '已提交异议，不可再选') +
+                                '</div></div></div>'
+                            );
+                        }
+                        return (
+                            '<label class="chk-line">' +
+                            '<input type="checkbox" class="mob-obj-chk" value="' +
+                            r.id +
+                            '">' +
+                            '<div><div style="font-weight:500;">' +
+                            r.name +
+                            '</div><div class="chk-meta mono">' +
+                            r.id +
+                            '</div><div class="chk-meta">' +
+                            r.spec +
+                            '</div></div>' +
+                            '</label>'
+                        );
+                    })
+                    .join('');
+                return '<div class="svc-sub">' + g.svc + '</div>' + lines;
+            })
+            .join('');
+    }
+
+    function syncMobObjTypeUi() {
+        var t = document.getElementById('mobObjType').value;
+        var wrap = document.getElementById('objInstWrapMob');
+        var hint = document.getElementById('mobObjHint');
+        var lbl = document.getElementById('mobNoteLabel');
+        if (!t) {
+            wrap.classList.add('hidden');
+            hint.textContent = '请先选择异议类型。';
+            lbl.textContent = '补充说明（选填）';
+            return;
+        }
+        if (t === 'under') {
+            wrap.classList.add('hidden');
+            hint.textContent =
+                '少算实例无需选择已有实例，请在下方填写补充说明（必填）。提交后将通知运维管理员跟进。';
+            lbl.textContent = '补充说明（必填）';
+            return;
+        }
+        wrap.classList.remove('hidden');
+        hint.textContent = '请勾选存在用量争议的实例，可多选。提交后将通知运维管理员处理。';
+        lbl.textContent = '补充说明（选填）';
+    }
+
+    function openSheet() {
+        if (!rows.some(function (r) { return r.status === 'pending'; })) {
+            alert('当前没有待确认的实例。');
+            return;
+        }
+        var preIds = selectedMobListIds();
+        renderObjSheet();
+        document.getElementById('mobObjType').value = '';
+        document.getElementById('objNoteMob').value = '';
+        document.querySelectorAll('.mob-obj-chk').forEach(function (c) {
+            c.checked = preIds.indexOf(c.value) >= 0;
+        });
+        syncMobObjTypeUi();
+        document.getElementById('objSheet').classList.add('open');
+        document.getElementById('objSheet').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSheet() {
+        document.getElementById('objSheet').classList.remove('open');
+        document.getElementById('objSheet').setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('mPeriod').textContent = qs('bill_period') || qs('period') || '2026-04';
+
+    document.getElementById('svcTagRow').addEventListener('click', function (e) {
+        var btn = e.target.closest('.m-tag');
+        if (!btn || !document.getElementById('svcTagRow').contains(btn)) return;
+        var v = btn.getAttribute('data-svc');
+        if (v === null) return;
+        svcFilter = v;
+        document.querySelectorAll('#svcTagRow .m-tag').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-svc') === v);
+        });
+        renderList();
+    });
+
+    document.getElementById('mobObjType').addEventListener('change', syncMobObjTypeUi);
+
+    document.getElementById('mConfirm').addEventListener('click', function () {
+        var pend = rows.filter(function (r) {
+            return r.status === 'pending';
+        });
+        if (!pend.length) {
+            alert('没有待确认的实例。');
+            return;
+        }
+        var ids = selectedMobListIds();
+        var toConfirm = pend.filter(function (r) {
+            return ids.indexOf(r.id) >= 0;
+        });
+        if (!toConfirm.length) {
+            alert('请先勾选需要确认的实例。');
+            return;
+        }
+        if (!confirm('确认对已勾选的 ' + toConfirm.length + ' 条实例的本期用量无异议？')) return;
+        toConfirm.forEach(function (r) {
+            r.status = 'done';
+        });
+        counts();
+        initSvcFilter();
+        renderList();
+        alert('【原型】已提交确认。');
+    });
+
+    document.getElementById('mObject').addEventListener('click', openSheet);
+    document.getElementById('objCloseMob').addEventListener('click', closeSheet);
+    document.getElementById('objSheet').addEventListener('click', function (e) {
+        if (e.target === document.getElementById('objSheet')) closeSheet();
+    });
+
+    document.getElementById('objSendMob').addEventListener('click', function () {
+        var type = document.getElementById('mobObjType').value;
+        var note = (document.getElementById('objNoteMob').value || '').trim();
+        if (!type) {
+            alert('请先选择异议类型。');
+            return;
+        }
+        if (type === 'under') {
+            if (!note) {
+                alert('少算实例请填写补充说明。');
+                return;
+            }
+            closeSheet();
+            alert(
+                '【原型】已提交异议（少算实例）。\n\n说明：' +
+                    note +
+                    '\n\n未绑定具体实例，已通知运维管理员按说明核对补录。'
+            );
+            return;
+        }
+        var ids = [];
+        document.querySelectorAll('.mob-obj-chk:checked').forEach(function (c) {
+            ids.push(c.value);
+        });
+        if (!ids.length) {
+            alert('请至少选择一个异议实例。');
+            return;
+        }
+        ids.forEach(function (id) {
+            rows.forEach(function (r) {
+                if (r.id === id && r.status === 'pending') r.status = 'objection';
+            });
+        });
+        counts();
+        initSvcFilter();
+        renderList();
+        closeSheet();
+        alert('【原型】异议已提交（' + ids.length + ' 个实例）。\n\n已提醒运维管理员处理，请留意通知。');
+    });
+
+    initSvcFilter();
+    counts();
+    renderList();
+})();
+    </script>
+</body>
+</html>

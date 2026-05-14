@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant FinOps运维管理员
+    participant FinOps系统
+    participant 成本计算引擎
+    participant 资产系统
+
+    Note over FinOps运维管理员,资产系统: 场景A: 自动生成资产成本项
+    资产系统->>FinOps系统: 同步资产变更（新增/变更/删除）
+    FinOps系统->>成本计算引擎: 触发成本项自动生成
+    alt 新增资产
+        成本计算引擎->>成本计算引擎: 生成"资产细分-公用"成本项（公摊=是）
+    else 资产使用方式变更
+        成本计算引擎->>成本计算引擎: 删除旧成本项中的资产成本
+        成本计算引擎->>成本计算引擎: 新增"资产细分-具体使用方式"成本项（公摊=否）
+    else 资产删除/报废
+        成本计算引擎->>成本计算引擎: 从所有成本项中删除该资产成本
+    end
+    FinOps系统->>FinOps系统: 保存成本项（source='auto'，不可编辑）
+
+    Note over FinOps运维管理员,资产系统: 场景B: 手动录入非设备成本
+    FinOps运维管理员->>FinOps系统: 录入非设备成本（人力、机柜租金、电费等）
+    FinOps系统->>FinOps系统: 写入成本项表（source='manual'，可编辑）
+    FinOps系统->>FinOps系统: 保存成本项
+
+    Note over FinOps运维管理员,资产系统: 场景C: 成本项变更处理
+    alt 手动成本项编辑
+        FinOps运维管理员->>FinOps系统: 修改手动录入的成本项
+        FinOps系统->>FinOps系统: 验证并保存修改
+        FinOps系统-->>成本计算引擎: 触发成本池重新计算
+    else 自动成本项变更请求
+        FinOps运维管理员->>FinOps系统: 请求修改自动生成的成本项
+        FinOps系统-->>FinOps运维管理员: 提示"自动生成的成本项不可编辑"
+    end
+
+    Note over FinOps运维管理员,资产系统: 场景D: 成本项审核
+    FinOps运维管理员->>FinOps系统: 查看成本项列表
+    FinOps系统->>FinOps系统: 校验成本项完整性
+    alt 校验通过
+        FinOps运维管理员->>FinOps系统: 确认成本项
+        FinOps系统->>FinOps系统: 标记成本项为已确认
+    else 校验失败（存在未关联成本项）
+        FinOps系统-->>FinOps运维管理员: 提示未关联成本项清单
+        FinOps运维管理员->>FinOps系统: 关联成本池或标记为公摊
+    end

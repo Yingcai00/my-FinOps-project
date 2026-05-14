@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 成本优化</title>
+    <!-- 自定义样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff7875;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-warning {
+            color: #fa8c16;
+        }
+
+        .text-success {
+            color: #52c41a;
+        }
+
+        .text-danger {
+            color: #ff4d4f;
+        }
+
+        .text-primary {
+            color: #1890ff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-warning {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .badge-success {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+
+        .badge-danger {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+        }
+
+        .badge-primary {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 20px;
+            gap: 8px;
+        }
+
+        .pagination button {
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .pagination button:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination .active {
+            background-color: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+        }
+
+        .stat-change.positive {
+            color: #52c41a;
+        }
+
+        .stat-change.negative {
+            color: #ff4d4f;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar" style="width: 220px; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09); overflow: hidden; position: sticky; top: 20px; height: calc(100vh - 40px);">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                <span>菜单导航</span>
+                <button id="collapse-btn" style="background: none; border: none; color: white; font-size: 14px; cursor: pointer;">
+                    ▼
+                </button>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0; overflow-y: auto; height: calc(100% - 60px);">
+                <li class="menu-item-container">
+                    <a href="cost-overview.html" class="menu-item" data-page="cost-management" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; border-left: 3px solid transparent; transition: all 0.3s; font-size: 14px; font-weight: 500;">
+                        <span>成本管理</span>
+                        <span class="menu-arrow">▼</span>
+                    </a>
+                    <ul class="sub-menu" style="list-style: none; padding: 0; margin: 0; background-color: #f9f9f9; display: block;">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item" data-subpage="cost-overview" style="display: block; padding: 10px 20px 10px 40px; color: #666; text-decoration: none; transition: all 0.3s; font-size: 13px; border-left: 3px solid transparent;">
+                                成本总览
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cost-analysis.html" class="sub-menu-item" data-subpage="cost-analysis" style="display: block; padding: 10px 20px 10px 40px; color: #666; text-decoration: none; transition: all 0.3s; font-size: 13px; border-left: 3px solid transparent;">
+                                成本分析
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cost-optimization.html" class="sub-menu-item" data-subpage="cost-optimization" style="display: block; padding: 10px 20px 10px 40px; color: #666; text-decoration: none; transition: all 0.3s; font-size: 13px; border-left: 3px solid transparent;">
+                                成本优化
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 右侧内容 -->
+        <div class="content">
+            <!-- 说明模块 -->
+            <div class="card">
+                <div class="card-title">说明</div>
+                <p style="color: #666; line-height: 1.6;">本页面提供成本优化建议列表，您可以查看、筛选和管理成本优化建议，以降低企业运营成本。</p>
+            </div>
+            
+            <!-- 顶部统计概览 -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">总优化建议数</div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-change positive">较上月增加 3</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">预计节省金额</div>
+                    <div class="stat-value">¥350,000</div>
+                    <div class="stat-change positive">较上月增加 ¥50,000</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">已实施建议数</div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-change positive">完成率 50%</div>
+                </div>
+            </div>
+
+            <!-- 操作按钮区 -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="batch-implement-btn">批量实施</button>
+                <button class="btn btn-default" id="batch-ignore-btn">批量忽略</button>
+                <button class="btn btn-default" id="export-btn">导出建议</button>
+            </div>
+
+            <!-- 成本优化建议列表 -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="min-width: 40px;"><input type="checkbox"></th>
+                            <th style="min-width: 120px;">建议类型</th>
+                            <th style="min-width: 150px;">相关成本项</th>
+                            <th style="min-width: 120px;">预计节省金额</th>
+                            <th style="min-width: 100px;">实施难度</th>
+                            <th style="min-width: 100px;">优先级</th>
+                            <th style="min-width: 100px;">状态</th>
+                            <th style="min-width: 200px;">建议描述</th>
+                            <th style="min-width: 120px;">创建时间</th>
+                            <th style="min-width: 100px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>资源优化</td>
+                            <td><a href="cost-detail.html?id=1" class="text-primary">服务器A</a></td>
+                            <td>¥120,000</td>
+                            <td><span class="badge badge-warning">中等</span></td>
+                            <td><span class="badge badge-danger">高</span></td>
+                            <td><span class="badge badge-primary">待实施</span></td>
+                            <td>服务器A的CPU使用率较低，建议降低配置或进行资源整合，预计可节省120,000元/年。</td>
+                            <td>2026-01-01</td>
+                            <td>
+                                <button class="btn btn-primary" style="padding: 4px 8px; margin-right: 4px;">实施</button>
+                                <button class="btn btn-default" style="padding: 4px 8px;">忽略</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>合约优化</td>
+                            <td><a href="cost-detail.html?id=4" class="text-primary">容器平台</a></td>
+                            <td>¥80,000</td>
+                            <td><span class="badge badge-success">低</span></td>
+                            <td><span class="badge badge-danger">高</span></td>
+                            <td><span class="badge badge-primary">待实施</span></td>
+                            <td>容器平台的合约即将到期，建议重新谈判或寻找替代方案，预计可节省80,000元/年。</td>
+                            <td>2026-01-05</td>
+                            <td>
+                                <button class="btn btn-primary" style="padding: 4px 8px; margin-right: 4px;">实施</button>
+                                <button class="btn btn-default" style="padding: 4px 8px;">忽略</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>使用优化</td>
+                            <td><a href="cost-detail.html?id=3" class="text-primary">网络带宽</a></td>
+                            <td>¥50,000</td>
+                            <td><span class="badge badge-success">低</span></td>
+                            <td><span class="badge badge-warning">中</span></td>
+                            <td><span class="badge badge-success">已实施</span></td>
+                            <td>网络带宽的使用存在峰值波动，建议调整带宽策略或使用弹性带宽，预计可节省50,000元/年。</td>
+                            <td>2026-01-10</td>
+                            <td>
+                                <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">查看</button>
+                                <button class="btn btn-default" style="padding: 4px 8px;">详情</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>架构优化</td>
+                            <td><a href="cost-detail.html?id=2" class="text-primary">服务器B</a></td>
+                            <td>¥100,000</td>
+                            <td><span class="badge badge-danger">高</span></td>
+                            <td><span class="badge badge-danger">高</span></td>
+                            <td><span class="badge badge-primary">待实施</span></td>
+                            <td>服务器B的架构设计不合理，建议进行架构重构，预计可节省100,000元/年。</td>
+                            <td>2026-01-15</td>
+                            <td>
+                                <button class="btn btn-primary" style="padding: 4px 8px; margin-right: 4px;">实施</button>
+                                <button class="btn btn-default" style="padding: 4px 8px;">忽略</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>资源优化</td>
+                            <td><a href="cost-detail.html?id=1" class="text-primary">服务器A</a></td>
+                            <td>¥30,000</td>
+                            <td><span class="badge badge-success">低</span></td>
+                            <td><span class="badge badge-warning">中</span></td>
+                            <td><span class="badge badge-warning">实施中</span></td>
+                            <td>服务器A的内存使用率较低，建议降低内存配置，预计可节省30,000元/年。</td>
+                            <td>2026-01-20</td>
+                            <td>
+                                <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">查看</button>
+                                <button class="btn btn-default" style="padding: 4px 8px;">详情</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination">
+                <button disabled>上一页</button>
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>4</button>
+                <button>5</button>
+                <button>下一页</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量实施弹窗 -->
+    <div class="modal" id="batch-implement-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">批量实施</h3>
+                <button class="modal-close" onclick="closeBatchImplementModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 16px;">您确定要批量实施选中的成本优化建议吗？</p>
+                <div class="form-group">
+                    <label>实施说明</label>
+                    <textarea placeholder="请输入实施说明（可选）" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeBatchImplementModal()">取消</button>
+                <button class="btn btn-primary" onclick="batchImplement()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量忽略弹窗 -->
+    <div class="modal" id="batch-ignore-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">批量忽略</h3>
+                <button class="modal-close" onclick="closeBatchIgnoreModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 16px;">您确定要批量忽略选中的成本优化建议吗？</p>
+                <div class="form-group">
+                    <label>忽略原因</label>
+                    <textarea placeholder="请输入忽略原因（可选）" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeBatchIgnoreModal()">取消</button>
+                <button class="btn btn-primary" onclick="batchIgnore()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 菜单折叠/展开功能
+        const collapseBtn = document.getElementById('collapse-btn');
+        const sidebar = document.querySelector('.sidebar');
+        let isCollapsed = false;
+        
+        collapseBtn.addEventListener('click', function() {
+            isCollapsed = !isCollapsed;
+            if (isCollapsed) {
+                sidebar.style.width = '60px';
+                sidebar.querySelector('span').style.display = 'none';
+                sidebar.querySelector('.menu-item span:first-child').style.display = 'none';
+                sidebar.querySelector('.sub-menu').style.display = 'none';
+                collapseBtn.textContent = '▶';
+            } else {
+                sidebar.style.width = '220px';
+                sidebar.querySelector('span').style.display = 'inline';
+                sidebar.querySelector('.menu-item span:first-child').style.display = 'inline';
+                sidebar.querySelector('.sub-menu').style.display = 'block';
+                collapseBtn.textContent = '▼';
+            }
+        });
+
+        // 左侧菜单点击事件
+        document.querySelectorAll('.menu-item').forEach(menu => {
+            // 悬停效果
+            menu.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = '#f0f7ff';
+                    this.style.color = '#1890ff';
+                }
+            });
+            
+            menu.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = 'transparent';
+                    this.style.color = '#333';
+                }
+            });
+            
+            // 点击事件
+            menu.addEventListener('click', function(e) {
+                // 移除所有左侧菜单的active类
+                document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.style.backgroundColor = 'transparent';
+                    item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                    item.style.borderLeftColor = 'transparent';
+                });
+                
+                // 添加当前菜单的active类
+                this.classList.add('active');
+                this.style.backgroundColor = '#e6f7ff';
+                this.style.color = '#1890ff';
+                this.style.borderLeftColor = '#1890ff';
+            });
+        });
+
+        // 左侧二级菜单点击事件
+        document.querySelectorAll('.sub-menu-item').forEach(subMenu => {
+            // 悬停效果
+            subMenu.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = '#f0f7ff';
+                    this.style.color = '#1890ff';
+                }
+            });
+            
+            subMenu.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.backgroundColor = 'transparent';
+                    this.style.color = '#666';
+                }
+            });
+            
+            // 点击事件
+            subMenu.addEventListener('click', function(e) {
+                // 移除所有左侧菜单的active类
+                document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.style.backgroundColor = 'transparent';
+                    item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                    item.style.borderLeftColor = 'transparent';
+                });
+                
+                // 添加当前二级菜单的active类
+                this.classList.add('active');
+                this.style.backgroundColor = '#e6f7ff';
+                this.style.color = '#1890ff';
+                this.style.borderLeftColor = '#1890ff';
+                
+                // 添加父级菜单的active类
+                const parentMenu = this.closest('li').parentElement.previousElementSibling;
+                parentMenu.classList.add('active');
+                parentMenu.style.backgroundColor = '#e6f7ff';
+                parentMenu.style.color = '#1890ff';
+                parentMenu.style.borderLeftColor = '#1890ff';
+            });
+        });
+
+        // 标记当前页面的菜单项为active
+        const currentUrl = window.location.href;
+        const menuItems = document.querySelectorAll('.menu-item, .sub-menu-item');
+        menuItems.forEach(item => {
+            if (currentUrl.includes(item.getAttribute('href'))) {
+                item.classList.add('active');
+                item.style.backgroundColor = '#e6f7ff';
+                item.style.color = '#1890ff';
+                item.style.borderLeftColor = '#1890ff';
+                
+                // 如果是二级菜单，也标记父级菜单为active
+                if (item.classList.contains('sub-menu-item')) {
+                    const parentMenu = item.closest('li').parentElement.previousElementSibling;
+                    parentMenu.classList.add('active');
+                    parentMenu.style.backgroundColor = '#e6f7ff';
+                    parentMenu.style.color = '#1890ff';
+                    parentMenu.style.borderLeftColor = '#1890ff';
+                }
+            }
+        });
+
+        // 批量实施按钮
+        document.getElementById('batch-implement-btn').addEventListener('click', function() {
+            document.getElementById('batch-implement-modal').classList.add('active');
+        });
+
+        // 批量忽略按钮
+        document.getElementById('batch-ignore-btn').addEventListener('click', function() {
+            document.getElementById('batch-ignore-modal').classList.add('active');
+        });
+
+        // 导出按钮
+        document.getElementById('export-btn').addEventListener('click', function() {
+            alert('建议导出成功');
+        });
+
+        // 关闭批量实施弹窗
+        function closeBatchImplementModal() {
+            document.getElementById('batch-implement-modal').classList.remove('active');
+        }
+
+        // 关闭批量忽略弹窗
+        function closeBatchIgnoreModal() {
+            document.getElementById('batch-ignore-modal').classList.remove('active');
+        }
+
+        // 批量实施
+        function batchImplement() {
+            document.getElementById('batch-implement-modal').classList.remove('active');
+            alert('批量实施成功');
+        }
+
+        // 批量忽略
+        function batchIgnore() {
+            document.getElementById('batch-ignore-modal').classList.remove('active');
+            alert('批量忽略成功');
+        }
+    </script>
+</body>
+</html>

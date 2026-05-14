@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 定价待办（Demo）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-x: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #333; background: #f5f5f5; min-height: 100vh; }
+        .header { background: #1890ff; color: #fff; padding: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,.1); margin-bottom: 20px; }
+        .header-content { width: 100%; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+        .header .btn { background: rgba(255,255,255,.95); border-color: rgba(255,255,255,.6); }
+        .header .btn:hover { background: #fff; border-color: #fff; color: #1890ff; }
+        .container { width: 100%; padding: 0 20px 20px; display: flex; gap: 16px; min-height: calc(100vh - 120px); box-sizing: border-box; }
+        .sidebar { width: 220px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.09); flex-shrink: 0; position: sticky; top: 16px; align-self: flex-start; max-height: calc(100vh - 32px); overflow: auto; }
+        .sidebar-head { background: #1890ff; color: #fff; padding: 16px; font-weight: 600; font-size: 15px; }
+        .menu-item { display: block; padding: 12px 16px; color: #333; text-decoration: none; border-left: 3px solid transparent; font-weight: 500; }
+        .menu-item:hover, .menu-item.active { background: #e6f7ff; color: #1890ff; border-left-color: #1890ff; }
+        .sub-menu { list-style: none; background: #f9f9f9; margin: 0; padding: 0; }
+        .sub-menu-item { display: block; padding: 10px 16px 10px 28px; color: #666; text-decoration: none; font-size: 13px; border-left: 3px solid transparent; }
+        .sub-menu-item:hover { background: #f0f0f0; color: #1890ff; }
+        .sub-menu-item.active { background: #e6f7ff; color: #1890ff; border-left-color: #1890ff; font-weight: 500; }
+        .content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.09); padding: 20px; margin-bottom: 20px; }
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #333; }
+        .toolbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+        .toolbar label { font-weight: 500; }
+        .btn { padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer; border: 1px solid #d9d9d9; background: #fff; color: #333; text-decoration: none; display: inline-block; }
+        .btn:hover { border-color: #1890ff; color: #1890ff; }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; color: #fff; border-color: #40a9ff; }
+        .todo-tabs-nav { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #f0f0f0; margin-bottom: 16px; }
+        .todo-tab { padding: 10px 18px; border: none; background: transparent; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 4px 4px 0 0; }
+        .todo-tab:hover { color: #1890ff; }
+        .todo-tab.active { color: #1890ff; font-weight: 600; border-bottom-color: #1890ff; background: #f0f7ff; }
+        .todo-tab-count { font-weight: 500; color: #8c8c8c; margin-left: 4px; font-variant-numeric: tabular-nums; }
+        .todo-tab.active .todo-tab-count { color: #1890ff; }
+        .todo-panel { display: none; }
+        .todo-panel.active { display: block; }
+        .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .mini-table th, .mini-table td { border: 1px solid #f0f0f0; padding: 8px 10px; text-align: left; vertical-align: middle; }
+        .mini-table th { background: #fafafa; font-weight: 600; }
+        .mini-table td:last-child { white-space: nowrap; width: 1%; }
+        .empty-hint { color: #888; font-size: 13px; padding: 12px 0; }
+        .badge-missing-month { display: inline-block; margin-left: 6px; padding: 0 6px; font-size: 11px; border-radius: 2px; background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+
+        #modalLinkCostItem, #modalLinkPoolToCluster, #modalSpecLinkPool { z-index: 1100; }
+        #modalLinkPoolToCluster .modal-content { overflow: visible; max-height: 92vh; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #fff; border-radius: 12px; width: 500px; max-width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,.15); }
+        #modalLinkPoolToCluster .modal-content { width: 720px; max-width: 96vw; }
+        .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fafafa; border-radius: 12px 12px 0 0; }
+        .modal-title { font-size: 17px; font-weight: 600; }
+        .modal-close { font-size: 22px; color: #999; cursor: pointer; background: none; border: none; line-height: 1; }
+        .modal-close:hover { color: #333; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f0f0f0; }
+        .modal-cascade-row { margin-bottom: 12px; }
+        .modal-cascade-row label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; }
+        .cluster-cascader-wrap { position: relative; width: 100%; }
+        .cluster-cascader-trigger { width: 100%; padding: 8px 36px 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; cursor: pointer; background: #fff; text-align: left; box-sizing: border-box; }
+        .cluster-cascader-trigger:hover, .cluster-cascader-trigger.is-open { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,.15); }
+        .cluster-cascader-trigger-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; color: #999; pointer-events: none; }
+        .cluster-cascader-trigger.is-open + .cluster-cascader-trigger-arrow { transform: translateY(-50%) rotate(180deg); }
+        .cluster-cascader-panel { display: none; position: absolute; left: 0; top: calc(100% + 4px); z-index: 200; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; box-shadow: 0 3px 12px rgba(0,0,0,.12); width: min(880px, 96vw); min-height: 180px; max-height: 320px; }
+        .cluster-cascader-panel.is-open { display: flex; }
+        .cluster-cascader-col { flex: 1; min-width: 0; display: flex; flex-direction: column; border-right: 1px solid #f0f0f0; }
+        .cluster-cascader-col:last-child { border-right: none; }
+        .cluster-cascader-col-head { flex-shrink: 0; padding: 8px 12px; font-size: 12px; color: #888; background: #fafafa; border-bottom: 1px solid #f0f0f0; font-weight: 500; }
+        .cluster-cascader-col ul { margin: 0; padding: 4px 0; list-style: none; overflow-y: auto; flex: 1; }
+        .cluster-cascader-item { padding: 8px 28px 8px 12px; font-size: 13px; cursor: pointer; position: relative; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cluster-cascader-item:hover, .cluster-cascader-item.is-active { background: #e6f7ff; }
+        .cluster-cascader-item.has-child::after { content: '›'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #999; }
+        .cluster-cascader-item.is-leaf { padding-right: 12px; }
+
+        .mini-table-scroll {
+            overflow-x: auto;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 4px;
+        }
+        .mini-table-scroll .mini-table { min-width: 640px; }
+        .mini-table-scroll.wide .mini-table { min-width: 980px; }
+        .mini-table-scroll.usage-unconfirmed-mini .mini-table { min-width: 1680px; }
+        .usage-tag-pending { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+        .usage-tag-inst { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; padding: 0 12px 20px; }
+            .sidebar { width: 100%; position: static; max-height: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div>
+                <h1>FinOps财务运营管理平台</h1>
+                <span class="header-sub">定价待办（Demo）</span>
+            </div>
+            <a class="btn" id="backToPricingDemo" href="pricing-management-cost-linkage-demo.html">返回定价管理 Demo</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar" aria-label="主导航">
+            <div class="sidebar-head">菜单导航</div>
+            <ul style="list-style:none;padding:0;margin:0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item active" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a class="menu-item" href="usage-push-strategy-management.html">消息推送</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li><a class="menu-item" href="system-management.html">系统管理</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+        <div class="card">
+            <div class="toolbar">
+                <label for="todoMonth">账期</label>
+                <input type="month" id="todoMonth" value="2026-02" max="2026-02" style="padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;">
+            </div>
+            <p style="font-size:13px;color:#888;">数据来自 <code>localStorage</code>（<code>pricingDemoServiceData</code>、<code>costPools</code>、<code>costItems</code>）。异议等宽表区域可横向滑动查看全部列。</p>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">待办明细</h2>
+            <div class="todo-tabs-nav" role="tablist">
+                <button type="button" class="todo-tab active" role="tab" aria-selected="true" data-tab="items">未计费成本项<span class="todo-tab-count" id="tabCountItems">(0)</span></button>
+                <button type="button" class="todo-tab" role="tab" aria-selected="false" data-tab="pools">未计费成本池<span class="todo-tab-count" id="tabCountPools">(0)</span></button>
+                <button type="button" class="todo-tab" role="tab" aria-selected="false" data-tab="specs">未关联成本池规格<span class="todo-tab-count" id="tabCountSpecs">(0)</span></button>
+                <button type="button" class="todo-tab" role="tab" aria-selected="false" data-tab="usage-unconfirmed">未确认用量明细<span class="todo-tab-count" id="tabCountUsageUnconfirmed">(0)</span></button>
+                <button type="button" class="todo-tab" role="tab" aria-selected="false" data-tab="usage-disputes">待处理用量异议数据<span class="todo-tab-count" id="tabCountUsageDisputes">(0)</span></button>
+            </div>
+            <div id="panel-items" class="todo-panel active" role="tabpanel"></div>
+            <div id="panel-pools" class="todo-panel" role="tabpanel"></div>
+            <div id="panel-specs" class="todo-panel" role="tabpanel"></div>
+            <div id="panel-usage-unconfirmed" class="todo-panel" role="tabpanel"></div>
+            <div id="panel-usage-disputes" class="todo-panel" role="tabpanel"></div>
+        </div>
+        </main>
+    </div>
+
+    <div class="modal" id="modalLinkCostItem">
+        <div class="modal-content" style="width:480px;max-width:90vw;">
+            <div class="modal-header">
+                <h3 class="modal-title">选择关联成本池</h3>
+                <button type="button" class="modal-close" onclick="closeModalLinkCostItem()" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalLinkCostItemSummary" style="font-size:13px;color:#666;margin-bottom:12px;"></p>
+                <label style="display:block;margin-bottom:8px;font-weight:500;">成本池</label>
+                <select id="modalLinkCostItemPoolSelect" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:14px;"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" onclick="closeModalLinkCostItem()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitModalLinkCostItem()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalLinkPoolToCluster">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">关联规格</h3>
+                <button type="button" class="modal-close" onclick="closeModalLinkPoolToCluster()" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalLinkPoolToClusterSummary" style="font-size:13px;color:#666;margin-bottom:12px;"></p>
+                <p style="font-size:12px;color:#888;margin-bottom:12px;">点击输入框展开级联：前三列为服务目录 › 服务分类 › 规格簇，第四列为当月且「关联成本池」为空的具体规格；可单选一条规格，或选择「批量」将该簇下全部未关联规格写入本池。</p>
+                <div class="modal-cascade-row">
+                    <label>选择规格</label>
+                    <div class="cluster-cascader-wrap" id="modalClusterCascaderWrap">
+                        <input type="text" class="cluster-cascader-trigger" id="modalClusterCascaderTrigger" readonly placeholder="请选择服务目录 › 服务分类 › 规格簇 › 规格" onclick="toggleModalClusterCascaderPanel(event)">
+                        <span class="cluster-cascader-trigger-arrow" aria-hidden="true">▼</span>
+                        <div class="cluster-cascader-panel" id="modalClusterCascaderPanel" onclick="event.stopPropagation()">
+                            <div class="cluster-cascader-col">
+                                <div class="cluster-cascader-col-head">服务目录</div>
+                                <ul id="modalClusterCol1"></ul>
+                            </div>
+                            <div class="cluster-cascader-col">
+                                <div class="cluster-cascader-col-head">服务分类</div>
+                                <ul id="modalClusterCol2"></ul>
+                            </div>
+                            <div class="cluster-cascader-col">
+                                <div class="cluster-cascader-col-head">规格簇</div>
+                                <ul id="modalClusterCol3"></ul>
+                            </div>
+                            <div class="cluster-cascader-col">
+                                <div class="cluster-cascader-col-head">规格</div>
+                                <ul id="modalClusterCol4"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" onclick="closeModalLinkPoolToCluster()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitModalLinkPoolToCluster()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalSpecLinkPool">
+        <div class="modal-content" style="width:480px;max-width:90vw;">
+            <div class="modal-header">
+                <h3 class="modal-title">关联成本池</h3>
+                <button type="button" class="modal-close" onclick="closeModalSpecLinkPool()" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalSpecLinkPoolSummary" style="font-size:13px;color:#666;margin-bottom:12px;"></p>
+                <input type="hidden" id="modalSpecServiceId" value="">
+                <label style="display:block;margin-bottom:8px;font-weight:500;">成本池</label>
+                <select id="modalSpecLinkPoolSelect" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:14px;"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" onclick="closeModalSpecLinkPool()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitModalSpecLinkPool()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEMO_EMBEDDED_COST_ITEMS = [
+            { id: 9901, code: 'UNBILLED-EX-001', name: '示例-专线接入端口租赁（未归池）', shareType: '非公摊成本', monthlyCost: '5600', costMonth: '2026-02', category: '网络费用', description: '', unconfirmedUsage: '720 h' },
+            { id: 9902, code: 'UNBILLED-EX-002', name: '示例-GPU推理卡折旧（未归池）', shareType: '非公摊成本', monthlyCost: '12800', costMonth: '2026-02', category: '设备费用', description: '', unconfirmedUsage: '—' },
+            { id: 9903, code: 'UNBILLED-EX-003', name: '示例-年度软件订阅（未归池）', shareType: '非公摊成本', monthlyCost: '3200', costMonth: '2026-02', category: '软件费用', description: '', unconfirmedUsage: '1 套·月' }
+        ];
+
+        /** Demo：与账期对齐的待处理用量异议（对接用量异议模块后替换） */
+        const DEMO_PENDING_USAGE_DISPUTES = [
+            { id: 'DIS-2026-0211', type: '多算实例', billPeriod: '2026-02', dept: '研发中心', applicant: '张明', status: '待处理', submittedAt: '2026-03-02 10:12', summary: '停机窗口内仍按在运计费，申请核减用量。' },
+            { id: 'DIS-2026-0212', type: '实例信息错误', billPeriod: '2026-02', dept: '产品部', applicant: '李华', status: '处理中', submittedAt: '2026-03-03 14:40', summary: '费用归属与系统记录不一致。' },
+            { id: 'DIS-2026-0410', type: '少算实例', billPeriod: '2026-04', dept: '运维中心', applicant: '王磊', status: '待处理', submittedAt: '2026-05-01 09:05', summary: '补充说明中描述待补录资源。' }
+        ];
+
+        /**
+         * 未确认用量明细 Tab：字段与「用量管理 › 用量明细」表头一致（示意数据，按账单月筛选）。
+         * 对接后由待办中心返回与用量明细同一套字段。
+         */
+        const DEMO_UNCONFIRMED_USAGE_TODO_ROWS = [
+            { billMonth: '2026-02', id: 'vol-001aaa', name: 'data-disk-01', svc: '存储/块存储', dept: '研发中心', specCluster: '高性能云盘', spec: 'ESSD PL1', config: '500 GB / 单盘挂载', product: '订单库数据卷', owner: '张明', admin: '运维-马超', consumer: '张明', env: '生产', startTime: '2026-02-01 00:00', endTime: '2026-02-28 23:59', instState: '正常' },
+            { billMonth: '2026-02', id: 'mq-kafka-02', name: 'event-bus', svc: '中间件/Kafka', dept: '基础架构组', specCluster: 'Kafka 标准版', spec: 'ckafka.3x.small', config: '3 节点 / 100GB 磁盘', product: '事件总线（备案）', owner: '赵强', admin: '运维-马超', consumer: '赵强', env: '生产', startTime: '2026-02-01 00:00', endTime: '2026-02-28 23:59', instState: '正常' },
+            { billMonth: '2026-02', id: 'lb-001b2c', name: 'slb-prod', svc: '网络/负载均衡', dept: '运营部', specCluster: '应用型 SLB', spec: 'slb.s3.medium', config: '公网 / 100 LCU', product: '运营活动入口', owner: '孙静', admin: '运维-周洋', consumer: '孙静', env: '生产', startTime: '2026-02-01 00:00', endTime: '2026-02-28 23:59', instState: '正常' },
+            { billMonth: '2026-04', id: 'vol-001aaa', name: 'data-disk-01', svc: '存储/块存储', dept: '研发中心', specCluster: '高性能云盘', spec: 'ESSD PL1', config: '500 GB / 单盘挂载', product: '订单库数据卷', owner: '张明', admin: '运维-马超', consumer: '张明', env: '生产', startTime: '2026-04-01 00:00', endTime: '2026-04-30 23:59', instState: '正常' },
+            { billMonth: '2026-04', id: 'mq-kafka-02', name: 'event-bus', svc: '中间件/Kafka', dept: '基础架构组', specCluster: 'Kafka 标准版', spec: 'ckafka.3x.small', config: '3 节点 / 100GB 磁盘', product: '事件总线（备案）', owner: '赵强', admin: '运维-马超', consumer: '赵强', env: '生产', startTime: '2026-04-01 00:00', endTime: '2026-04-30 23:59', instState: '正常' },
+            { billMonth: '2026-04', id: 'i-cc4d5e6f', name: 'uat-server-01', svc: '虚机化/虚拟机', dept: '产品部', specCluster: '通用型 g6', spec: 'ecs.g6.large', config: '2 vCPU / 4 GB / ESSD 40G', product: 'UAT 联调环境', owner: '陈思远', admin: '运维-周洋', consumer: '陈思远', env: 'UAT', startTime: '2026-04-01 00:00', endTime: '2026-04-30 23:59', instState: '正常' },
+            { billMonth: '2026-04', id: 'pm-legacy-01', name: 'legacy-bare-01', svc: '物理机/通算服务器', dept: '基础架构组', specCluster: '裸金属', spec: 'pm.r740.g6230', config: '2×Gold 6230 / 256GB / 4×1.2T SAS', product: '遗留账务批处理', owner: '赵强', admin: '运维-马超', consumer: '赵强', env: '生产', startTime: '2026-04-01 00:00', endTime: '2026-04-30 23:59', instState: '正常' }
+        ];
+
+        const serviceCategoryData = {
+            '物理机': { '通算服务器': ['标准通用服务器', '高性能服务器', '存储型服务器'], '智算服务器': ['图形渲染', 'AI推理', 'AI训练'], '硬件存储服务器': ['块存储-SAN'] },
+            '虚机化': { '虚拟机': ['通用型-虚拟机', '高性能型-虚拟机'] },
+            '容器': { '容器': ['通算型-容器', '智算型-容器'] },
+            '存储': { '对象存储': ['对象存储服务 HDD', '对象存储服务 SSD'], '文件存储NAS': ['通用型（NFS）', '高性能型'], '块存储': ['块存储 HDD', '块存储 SSD', '商业存储'] },
+            '中间件': { 'Kafka': ['经济型', '通用型'], 'RocketMQ': ['经济型', '通用型'], 'RabbitMQ': ['经济型', '通用型'], 'Elasticsearch': ['经济型', '通用型', '高性能型'] },
+            '数据库': { 'MySQL': ['经济型', '通用型', '高性能型'], 'Oracle': ['通用型', '高性能型'], 'PostgreSQL': ['经济型', '通用型', '高性能型'], 'Redis': ['经济型', '通用型', '高性能型'], 'MongoDB': ['经济型', '通用型', '高性能型'] },
+            '网络': { '流量': ['互联网出口带宽', '专线接入'], '二级域名': [], '公网DNS': ['域名解析 A 解析', '域名解析 Cname 解析'], '内网DNS': ['域名解析 A 解析', '域名解析 Cname 解析'], '负载均衡': ['负载均衡 Http', '负载均衡 Https', '负载均衡 TCP'], '端口映射': ['公网端口映射'], '域名证书': [], '防火墙策略': ['策略'], '流量管控': ['策略'] }
+        };
+
+        let cachedServices = [];
+        let modalLinkCostItemId = null;
+        let modalLinkPoolName = '';
+        let modalClusterCascaderMonth = '';
+        let modalClusterCascaderSelection = null;
+        let modalClusterCascaderHover = { l1: null, l2: null, l3: null };
+        let modalClusterCascaderPanelOpen = false;
+
+        function trimStr(v) {
+            return (v == null || v === undefined) ? '' : String(v).trim();
+        }
+
+        function getParticipatingPoolsForMonth(filterMonth, poolsRaw) {
+            const pools = Array.isArray(poolsRaw) ? poolsRaw : [];
+            return pools.filter((pool) => {
+                const cm = pool.costMonth;
+                if (cm === undefined || cm === null || trimStr(cm) === '') return true;
+                return trimStr(cm) === filterMonth;
+            });
+        }
+
+        function getCostItemsSnapshot() {
+            const byId = new Map();
+            DEMO_EMBEDDED_COST_ITEMS.forEach((it) => {
+                if (it && it.id != null) byId.set(Number(it.id), { ...it });
+            });
+            try {
+                const raw = localStorage.getItem('costItems');
+                if (raw) {
+                    const arr = JSON.parse(raw);
+                    if (Array.isArray(arr)) {
+                        arr.forEach((it) => {
+                            if (it && it.id != null) byId.set(Number(it.id), it);
+                        });
+                    }
+                }
+            } catch (e) { /* ignore */ }
+            return Array.from(byId.values());
+        }
+
+        function getLinkedCostItemIds(participatingPools) {
+            const set = new Set();
+            participatingPools.forEach((p) => {
+                (p.selectedItems || []).forEach((id) => set.add(Number(id)));
+            });
+            return set;
+        }
+
+        function isNonSharedCostItem(item) {
+            const st = trimStr(item.shareType);
+            return st === '非公摊成本' || st.indexOf('非公摊') !== -1;
+        }
+
+        function loadServiceDataFromStorage() {
+            try {
+                const raw = localStorage.getItem('pricingDemoServiceData');
+                if (raw) {
+                    const arr = JSON.parse(raw);
+                    return Array.isArray(arr) ? arr : [];
+                }
+            } catch (e) { /* ignore */ }
+            return [];
+        }
+
+        function loadPoolsFromStorage() {
+            try {
+                const raw = localStorage.getItem('costPools');
+                if (raw) {
+                    const arr = JSON.parse(raw);
+                    return Array.isArray(arr) ? arr : [];
+                }
+            } catch (e) { /* ignore */ }
+            return [];
+        }
+
+        function persistServiceData() {
+            try {
+                localStorage.setItem('pricingDemoServiceData', JSON.stringify(cachedServices));
+            } catch (e) { /* ignore */ }
+        }
+
+        function computeBillingReadiness(filterMonth, poolsRaw, services) {
+            const participating = getParticipatingPoolsForMonth(filterMonth, poolsRaw);
+            const linkedIds = getLinkedCostItemIds(participating);
+            const items = getCostItemsSnapshot();
+            const itemsInMonth = items.filter((it) => {
+                const cm = it.costMonth;
+                if (!cm || trimStr(cm) === '') return true;
+                return trimStr(cm) === filterMonth;
+            });
+            const unbilledItems = itemsInMonth.filter((it) => isNonSharedCostItem(it) && !linkedIds.has(Number(it.id)));
+            const servicesMonth = services.filter((s) => s.month === filterMonth);
+            const unbilledPools = participating.filter((P) => {
+                const n = trimStr(P.name);
+                return !servicesMonth.some((s) => trimStr(s.costPool) === n);
+            }).map((p) => ({
+                name: p.name,
+                billingResource: p.billingResource,
+                totalCost: p.totalCost,
+                costMonth: p.costMonth,
+                missingCostMonth: !p.costMonth || trimStr(p.costMonth) === '',
+                unconfirmedUsage: p.unconfirmedUsage
+            }));
+            const unlinkedPoolSpecs = servicesMonth.filter((s) => trimStr(s.costPool) === '');
+            return {
+                unbilledItems,
+                unbilledPools,
+                unlinkedPoolSpecs,
+                unbilledItemCount: unbilledItems.length,
+                unbilledPoolCount: unbilledPools.length,
+                unlinkedPoolSpecCount: unlinkedPoolSpecs.length
+            };
+        }
+
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s == null ? '' : String(s);
+            return d.innerHTML;
+        }
+
+        function sortKeysBySidebarOrder(keys, orderList) {
+            const idx = (k) => {
+                const i = orderList.indexOf(k);
+                return i === -1 ? 9999 : i;
+            };
+            return [...keys].sort((a, b) => idx(a) - idx(b) || String(a).localeCompare(String(b), 'zh'));
+        }
+
+        function rankL3WithinSidebar(l1, l2, l3) {
+            try {
+                const arr = serviceCategoryData[l1] && serviceCategoryData[l1][l2];
+                if (!Array.isArray(arr)) return 500;
+                const j = arr.indexOf(l3);
+                return j === -1 ? 500 : j;
+            } catch (e) {
+                return 500;
+            }
+        }
+
+        function getMonthSpecsAll(month) {
+            return cachedServices.filter((s) => s.month === month);
+        }
+
+        function getSortedClusterTriples(month) {
+            const specs = getMonthSpecsAll(month);
+            const tripleMap = new Map();
+            specs.forEach((s) => {
+                const l1 = trimStr(s.categoryLevel1);
+                const l2 = trimStr(s.categoryLevel2);
+                const l3 = trimStr(s.categoryLevel3);
+                const k = l1 + '\t' + l2 + '\t' + l3;
+                if (!tripleMap.has(k)) tripleMap.set(k, { l1, l2, l3 });
+            });
+            const triples = Array.from(tripleMap.values());
+            const l1Order = Object.keys(serviceCategoryData);
+            triples.sort((a, b) => {
+                const i1a = l1Order.indexOf(a.l1);
+                const i1b = l1Order.indexOf(b.l1);
+                const o1 = (i1a === -1 ? 1000 : i1a) - (i1b === -1 ? 1000 : i1b);
+                if (o1 !== 0) return o1;
+                if (a.l1 !== b.l1) return a.l1.localeCompare(b.l1, 'zh');
+                const keys2a = serviceCategoryData[a.l1] ? Object.keys(serviceCategoryData[a.l1]) : [];
+                const keys2b = serviceCategoryData[b.l1] ? Object.keys(serviceCategoryData[b.l1]) : [];
+                const i2a = keys2a.indexOf(a.l2);
+                const i2b = keys2b.indexOf(b.l2);
+                const o2 = (i2a === -1 ? 500 : i2a) - (i2b === -1 ? 500 : i2b);
+                if (o2 !== 0) return o2;
+                if (a.l2 !== b.l2) return a.l2.localeCompare(b.l2, 'zh');
+                const o3 = rankL3WithinSidebar(a.l1, a.l2, a.l3) - rankL3WithinSidebar(b.l1, b.l2, b.l3);
+                if (o3 !== 0) return o3;
+                return a.l3.localeCompare(b.l3, 'zh');
+            });
+            return triples;
+        }
+
+        function closeClusterCascaderPanelUI() {
+            modalClusterCascaderPanelOpen = false;
+            const panel = document.getElementById('modalClusterCascaderPanel');
+            const trig = document.getElementById('modalClusterCascaderTrigger');
+            if (panel) panel.classList.remove('is-open');
+            if (trig) trig.classList.remove('is-open');
+        }
+
+        function toggleModalClusterCascaderPanel(ev) {
+            if (ev) ev.stopPropagation();
+            const panel = document.getElementById('modalClusterCascaderPanel');
+            const trig = document.getElementById('modalClusterCascaderTrigger');
+            modalClusterCascaderPanelOpen = !modalClusterCascaderPanelOpen;
+            panel.classList.toggle('is-open', modalClusterCascaderPanelOpen);
+            trig.classList.toggle('is-open', modalClusterCascaderPanelOpen);
+            if (modalClusterCascaderPanelOpen) {
+                renderModalClusterCol1();
+                if (modalClusterCascaderHover.l1) {
+                    renderModalClusterCol2();
+                    if (modalClusterCascaderHover.l2) {
+                        renderModalClusterCol3();
+                        if (modalClusterCascaderHover.l3) renderModalClusterCol4();
+                        else document.getElementById('modalClusterCol4').innerHTML = '';
+                    } else {
+                        document.getElementById('modalClusterCol3').innerHTML = '';
+                        document.getElementById('modalClusterCol4').innerHTML = '';
+                    }
+                } else {
+                    document.getElementById('modalClusterCol2').innerHTML = '';
+                    document.getElementById('modalClusterCol3').innerHTML = '';
+                    document.getElementById('modalClusterCol4').innerHTML = '';
+                }
+            }
+        }
+
+        function renderModalClusterCol1() {
+            const ul = document.getElementById('modalClusterCol1');
+            if (!ul) return;
+            const triples = getSortedClusterTriples(modalClusterCascaderMonth);
+            const l1Set = Array.from(new Set(triples.map((t) => t.l1)));
+            const l1Order = Object.keys(serviceCategoryData);
+            const sortedL1 = sortKeysBySidebarOrder(l1Set, l1Order);
+            ul.innerHTML = '';
+            sortedL1.forEach((l1) => {
+                const li = document.createElement('li');
+                li.className = 'cluster-cascader-item has-child';
+                if (modalClusterCascaderHover.l1 === l1) li.classList.add('is-active');
+                li.textContent = l1;
+                li.onclick = function (e) {
+                    e.stopPropagation();
+                    modalClusterPickL1(l1);
+                };
+                ul.appendChild(li);
+            });
+        }
+
+        function renderModalClusterCol2() {
+            const ul = document.getElementById('modalClusterCol2');
+            if (!ul) return;
+            ul.innerHTML = '';
+            const l1 = modalClusterCascaderHover.l1;
+            if (!l1) return;
+            const triples = getSortedClusterTriples(modalClusterCascaderMonth).filter((t) => t.l1 === l1);
+            const l2Set = Array.from(new Set(triples.map((t) => t.l2)));
+            const keys2 = serviceCategoryData[l1] ? Object.keys(serviceCategoryData[l1]) : [];
+            const sortedL2 = sortKeysBySidebarOrder(l2Set, keys2);
+            sortedL2.forEach((l2) => {
+                const li = document.createElement('li');
+                li.className = 'cluster-cascader-item has-child';
+                if (modalClusterCascaderHover.l2 === l2) li.classList.add('is-active');
+                li.textContent = l2;
+                li.onclick = function (e) {
+                    e.stopPropagation();
+                    modalClusterPickL2(l1, l2);
+                };
+                ul.appendChild(li);
+            });
+        }
+
+        function renderModalClusterCol3() {
+            const ul = document.getElementById('modalClusterCol3');
+            if (!ul) return;
+            ul.innerHTML = '';
+            const l1 = modalClusterCascaderHover.l1;
+            const l2 = modalClusterCascaderHover.l2;
+            if (!l1 || !l2) return;
+            const triples = getSortedClusterTriples(modalClusterCascaderMonth).filter((t) => t.l1 === l1 && t.l2 === l2);
+            const l3List = Array.from(new Set(triples.map((t) => t.l3))).sort((a, b) =>
+                rankL3WithinSidebar(l1, l2, a) - rankL3WithinSidebar(l1, l2, b) || a.localeCompare(b, 'zh')
+            );
+            const hovL3 = modalClusterCascaderHover.l3;
+            l3List.forEach((l3) => {
+                const li = document.createElement('li');
+                li.className = 'cluster-cascader-item has-child';
+                if (hovL3 === l3) li.classList.add('is-active');
+                li.textContent = l3;
+                li.onclick = function (e) {
+                    e.stopPropagation();
+                    modalClusterPickL3(l1, l2, l3);
+                };
+                ul.appendChild(li);
+            });
+        }
+
+        function renderModalClusterCol4() {
+            const ul = document.getElementById('modalClusterCol4');
+            if (!ul) return;
+            ul.innerHTML = '';
+            const l1 = modalClusterCascaderHover.l1;
+            const l2 = modalClusterCascaderHover.l2;
+            const l3 = modalClusterCascaderHover.l3;
+            if (!l1 || !l2 || !l3) return;
+            const month = modalClusterCascaderMonth;
+            const candidates = cachedServices.filter(function (s) {
+                if (s.month !== month) return false;
+                if (trimStr(s.categoryLevel1) !== trimStr(l1)) return false;
+                if (trimStr(s.categoryLevel2) !== trimStr(l2)) return false;
+                if (trimStr(s.categoryLevel3) !== trimStr(l3)) return false;
+                if (trimStr(s.costPool) !== '') return false;
+                return true;
+            });
+            candidates.sort(function (a, b) {
+                const ca = String(a.serviceCode || '');
+                const cb = String(b.serviceCode || '');
+                if (ca !== cb) return ca.localeCompare(cb, 'zh');
+                return String(a.serviceName || '').localeCompare(String(b.serviceName || ''), 'zh');
+            });
+            const sel = modalClusterCascaderSelection;
+            const pathMatch = function (p) {
+                return p && trimStr(p.l1) === trimStr(l1) && trimStr(p.l2) === trimStr(l2) && trimStr(p.l3) === trimStr(l3);
+            };
+
+            if (candidates.length > 0) {
+                const liBatch = document.createElement('li');
+                liBatch.className = 'cluster-cascader-item is-leaf';
+                liBatch.style.fontWeight = '600';
+                liBatch.textContent = '「批量」该规格簇下全部未关联规格';
+                if (sel && sel.batch === true && pathMatch(sel)) liBatch.classList.add('is-active');
+                liBatch.onclick = function (e) {
+                    e.stopPropagation();
+                    modalClusterPickClusterBatch(l1, l2, l3);
+                };
+                ul.appendChild(liBatch);
+            }
+
+            candidates.forEach(function (svc) {
+                const li = document.createElement('li');
+                li.className = 'cluster-cascader-item is-leaf';
+                const code = svc.serviceCode || '';
+                const name = (svc.serviceName || '').trim();
+                li.textContent = (code + ' ' + name).trim() || ('#' + svc.id);
+                li.title = li.textContent;
+                if (sel && sel.batch !== true && sel.serviceId != null && Number(sel.serviceId) === Number(svc.id) && pathMatch(sel)) {
+                    li.classList.add('is-active');
+                }
+                li.onclick = function (e) {
+                    e.stopPropagation();
+                    modalClusterPickSpec(l1, l2, l3, svc);
+                };
+                ul.appendChild(li);
+            });
+
+            if (candidates.length === 0) {
+                const liEmpty = document.createElement('li');
+                liEmpty.className = 'cluster-cascader-item is-leaf';
+                liEmpty.style.cursor = 'default';
+                liEmpty.style.color = '#999';
+                liEmpty.textContent = '当前规格簇下无待关联规格';
+                ul.appendChild(liEmpty);
+            }
+        }
+
+        function modalClusterPickL1(l1) {
+            modalClusterCascaderHover = { l1: l1, l2: null, l3: null };
+            modalClusterCascaderSelection = null;
+            document.getElementById('modalClusterCascaderTrigger').value = '';
+            renderModalClusterCol1();
+            renderModalClusterCol2();
+            document.getElementById('modalClusterCol3').innerHTML = '';
+            document.getElementById('modalClusterCol4').innerHTML = '';
+        }
+
+        function modalClusterPickL2(l1, l2) {
+            modalClusterCascaderHover = { l1: l1, l2: l2, l3: null };
+            modalClusterCascaderSelection = null;
+            document.getElementById('modalClusterCascaderTrigger').value = '';
+            renderModalClusterCol1();
+            renderModalClusterCol2();
+            renderModalClusterCol3();
+            document.getElementById('modalClusterCol4').innerHTML = '';
+        }
+
+        function modalClusterPickL3(l1, l2, l3) {
+            modalClusterCascaderHover = { l1: l1, l2: l2, l3: l3 };
+            modalClusterCascaderSelection = null;
+            document.getElementById('modalClusterCascaderTrigger').value = l1 + ' › ' + l2 + ' › ' + l3 + ' …';
+            renderModalClusterCol1();
+            renderModalClusterCol2();
+            renderModalClusterCol3();
+            renderModalClusterCol4();
+        }
+
+        function modalClusterPickSpec(l1, l2, l3, svc) {
+            modalClusterCascaderSelection = { l1: l1, l2: l2, l3: l3, serviceId: Number(svc.id) };
+            modalClusterCascaderHover = { l1: l1, l2: l2, l3: l3 };
+            const code = svc.serviceCode || '';
+            const name = (svc.serviceName || '').trim();
+            const tail = (code + ' ' + name).trim() || ('#' + svc.id);
+            document.getElementById('modalClusterCascaderTrigger').value = l1 + ' › ' + l2 + ' › ' + l3 + ' › ' + tail;
+            closeClusterCascaderPanelUI();
+            renderModalClusterCol1();
+            renderModalClusterCol2();
+            renderModalClusterCol3();
+            renderModalClusterCol4();
+        }
+
+        function modalClusterPickClusterBatch(l1, l2, l3) {
+            modalClusterCascaderSelection = { l1: l1, l2: l2, l3: l3, batch: true };
+            modalClusterCascaderHover = { l1: l1, l2: l2, l3: l3 };
+            document.getElementById('modalClusterCascaderTrigger').value =
+                l1 + ' › ' + l2 + ' › ' + l3 + ' › 「批量」该簇下全部未关联';
+            closeClusterCascaderPanelUI();
+            renderModalClusterCol1();
+            renderModalClusterCol2();
+            renderModalClusterCol3();
+            renderModalClusterCol4();
+        }
+
+        function openModalLinkCostItem(itemId) {
+            modalLinkCostItemId = itemId;
+            const items = getCostItemsSnapshot();
+            const item = items.find((x) => Number(x.id) === Number(itemId));
+            const label = item ? (item.code || '') + ' ' + (item.name || '') : '#' + itemId;
+            document.getElementById('modalLinkCostItemSummary').textContent = '将成本项「' + label.trim() + '」归入所选成本池（写入该池已选成本项 selectedItems）。';
+            const month = document.getElementById('todoMonth').value;
+            const pools = loadPoolsFromStorage();
+            const part = getParticipatingPoolsForMonth(month, pools);
+            const sel = document.getElementById('modalLinkCostItemPoolSelect');
+            sel.innerHTML = '';
+            if (part.length === 0) {
+                const o = document.createElement('option');
+                o.value = '';
+                o.textContent = '无当期成本池，请先在成本池管理维护';
+                sel.appendChild(o);
+            } else {
+                part.forEach((p) => {
+                    const o = document.createElement('option');
+                    o.value = p.name;
+                    o.textContent = p.name + (p.billingResource ? '（' + p.billingResource + '）' : '');
+                    sel.appendChild(o);
+                });
+            }
+            document.getElementById('modalLinkCostItem').classList.add('active');
+        }
+
+        function closeModalLinkCostItem() {
+            document.getElementById('modalLinkCostItem').classList.remove('active');
+            modalLinkCostItemId = null;
+        }
+
+        function submitModalLinkCostItem() {
+            if (modalLinkCostItemId == null) return;
+            const poolName = document.getElementById('modalLinkCostItemPoolSelect').value;
+            if (!poolName) {
+                alert('请选择成本池');
+                return;
+            }
+            let pools = loadPoolsFromStorage();
+            const pool = pools.find((p) => p.name === poolName);
+            if (!pool) {
+                alert('未找到成本池');
+                return;
+            }
+            pool.selectedItems = pool.selectedItems || [];
+            const nid = Number(modalLinkCostItemId);
+            if (!pool.selectedItems.includes(nid)) pool.selectedItems.push(nid);
+            pool.costItemCount = pool.selectedItems.length;
+            try {
+                localStorage.setItem('costPools', JSON.stringify(pools));
+            } catch (e) { /* ignore */ }
+            closeModalLinkCostItem();
+            refreshAll();
+            alert('已关联到成本池');
+        }
+
+        function openModalLinkPoolToCluster(poolName) {
+            modalLinkPoolName = poolName;
+            const month = document.getElementById('todoMonth').value;
+            modalClusterCascaderMonth = month;
+            modalClusterCascaderSelection = null;
+            modalClusterCascaderHover = { l1: null, l2: null, l3: null };
+            document.getElementById('modalClusterCascaderTrigger').value = '';
+            document.getElementById('modalLinkPoolToClusterSummary').textContent =
+                '为成本池「' + poolName + '」关联规格：请展开级联至第四列，选择一条具体规格或「批量」写入该规格簇下当月且「关联成本池」为空的全部规格。';
+            closeClusterCascaderPanelUI();
+            document.getElementById('modalClusterCol1').innerHTML = '';
+            document.getElementById('modalClusterCol2').innerHTML = '';
+            document.getElementById('modalClusterCol3').innerHTML = '';
+            document.getElementById('modalClusterCol4').innerHTML = '';
+            document.getElementById('modalLinkPoolToCluster').classList.add('active');
+        }
+
+        function closeModalLinkPoolToCluster() {
+            closeClusterCascaderPanelUI();
+            modalClusterCascaderSelection = null;
+            modalClusterCascaderHover = { l1: null, l2: null, l3: null };
+            modalLinkPoolName = '';
+            document.getElementById('modalLinkPoolToCluster').classList.remove('active');
+        }
+
+        function submitModalLinkPoolToCluster() {
+            const month = document.getElementById('todoMonth').value;
+            const parsed = modalClusterCascaderSelection;
+            if (!parsed || !parsed.l1 || !parsed.l2 || !parsed.l3) {
+                alert('请先展开级联，在第四列选择一条规格或「批量」关联。');
+                return;
+            }
+            if (parsed.batch !== true && (parsed.serviceId == null || parsed.serviceId === '')) {
+                alert('请在第四列选择一条具体规格，或选择「批量」关联该簇下全部未关联规格。');
+                return;
+            }
+            const l1 = trimStr(parsed.l1);
+            const l2 = trimStr(parsed.l2);
+            const l3 = trimStr(parsed.l3);
+            let pools = loadPoolsFromStorage();
+            const pool = pools.find((p) => p.name === modalLinkPoolName);
+            if (!pool) {
+                alert('未找到成本池');
+                return;
+            }
+            const br = pool.billingResource || '';
+            let n = 0;
+
+            if (parsed.batch === true) {
+                for (let i = 0; i < cachedServices.length; i++) {
+                    const s = cachedServices[i];
+                    if (s.month !== month) continue;
+                    if (trimStr(s.categoryLevel1) !== l1 || trimStr(s.categoryLevel2) !== l2 || trimStr(s.categoryLevel3) !== l3) continue;
+                    if (trimStr(s.costPool) !== '') continue;
+                    cachedServices[i] = Object.assign({}, s, { costPool: modalLinkPoolName, billingResource: br || s.billingResource || '' });
+                    n++;
+                }
+            } else {
+                const sid = Number(parsed.serviceId);
+                let found = false;
+                for (let i = 0; i < cachedServices.length; i++) {
+                    const s = cachedServices[i];
+                    if (Number(s.id) !== sid) continue;
+                    found = true;
+                    if (s.month !== month) {
+                        alert('所选规格不在当前账期，无法关联。');
+                        return;
+                    }
+                    if (trimStr(s.costPool) !== '') {
+                        alert('该规格已有关联成本池；若需调整请先在定价数据中修改。');
+                        return;
+                    }
+                    if (trimStr(s.categoryLevel1) !== l1 || trimStr(s.categoryLevel2) !== l2 || trimStr(s.categoryLevel3) !== l3) {
+                        alert('所选规格与级联路径不一致，请重新选择。');
+                        return;
+                    }
+                    cachedServices[i] = Object.assign({}, s, { costPool: modalLinkPoolName, billingResource: br || s.billingResource || '' });
+                    n = 1;
+                    break;
+                }
+                if (!found) {
+                    alert('未找到所选规格。');
+                    return;
+                }
+            }
+
+            if (n === 0) {
+                alert('没有可写入的当月未关联规格（批量时该簇下可能已全部关联）。');
+                return;
+            }
+            const poolNameDone = modalLinkPoolName;
+            persistServiceData();
+            closeModalLinkPoolToCluster();
+            refreshAll();
+            if (parsed.batch === true) {
+                alert('已为成本池「' + poolNameDone + '」批量关联路径「' + l1 + ' › ' + l2 + ' › ' + l3 + '」，共更新 ' + n + ' 条。');
+            } else {
+                alert('已为成本池「' + poolNameDone + '」关联 1 条规格（' + l1 + ' › ' + l2 + ' › ' + l3 + '）。');
+            }
+        }
+
+        function openModalSpecLinkPool(serviceId) {
+            const sid = Number(serviceId);
+            const s = cachedServices.find((x) => Number(x.id) === sid);
+            if (!s) {
+                alert('未找到规格');
+                return;
+            }
+            document.getElementById('modalSpecServiceId').value = String(sid);
+            document.getElementById('modalSpecLinkPoolSummary').textContent =
+                '规格「' + (s.serviceCode || '') + ' ' + (s.serviceName || '').trim() + '」当前未关联成本池，请选择成本池后确定。';
+            const month = document.getElementById('todoMonth').value;
+            const pools = loadPoolsFromStorage();
+            const part = getParticipatingPoolsForMonth(month, pools);
+            const sel = document.getElementById('modalSpecLinkPoolSelect');
+            sel.innerHTML = '';
+            if (part.length === 0) {
+                const o = document.createElement('option');
+                o.value = '';
+                o.textContent = '无当期成本池';
+                sel.appendChild(o);
+            } else {
+                part.forEach((p) => {
+                    const o = document.createElement('option');
+                    o.value = p.name;
+                    o.textContent = p.name + (p.billingResource ? '（' + p.billingResource + '）' : '');
+                    sel.appendChild(o);
+                });
+            }
+            document.getElementById('modalSpecLinkPool').classList.add('active');
+        }
+
+        function closeModalSpecLinkPool() {
+            document.getElementById('modalSpecLinkPool').classList.remove('active');
+            document.getElementById('modalSpecServiceId').value = '';
+        }
+
+        function submitModalSpecLinkPool() {
+            const sid = Number(document.getElementById('modalSpecServiceId').value);
+            const poolName = document.getElementById('modalSpecLinkPoolSelect').value;
+            if (!poolName) {
+                alert('请选择成本池');
+                return;
+            }
+            const pools = loadPoolsFromStorage();
+            const pool = pools.find((p) => p.name === poolName);
+            if (!pool) {
+                alert('未找到成本池');
+                return;
+            }
+            const br = pool.billingResource || '';
+            const idx = cachedServices.findIndex((x) => Number(x.id) === sid);
+            if (idx < 0) {
+                alert('未找到规格');
+                return;
+            }
+            cachedServices[idx] = Object.assign({}, cachedServices[idx], {
+                costPool: poolName,
+                billingResource: br || cachedServices[idx].billingResource || ''
+            });
+            persistServiceData();
+            closeModalSpecLinkPool();
+            refreshAll();
+            alert('已更新关联成本池');
+        }
+
+        function renderMainPanels(r) {
+            const pItems = document.getElementById('panel-items');
+            const pPools = document.getElementById('panel-pools');
+            const pSpecs = document.getElementById('panel-specs');
+
+            if (r.unbilledItems.length === 0) {
+                pItems.innerHTML = '<p class="empty-hint">当前账期下无非公摊未归池成本项。</p>';
+            } else {
+                const rows = r.unbilledItems.map((it) => {
+                    const id = Number(it.id);
+                    return '<tr><td>' + escapeHtml(it.code || '') + '</td><td>' + escapeHtml(it.name || '') + '</td><td>' + escapeHtml(String(it.monthlyCost != null ? it.monthlyCost : '')) + '</td><td><button type="button" class="btn btn-primary" style="padding:2px 10px;font-size:12px;" onclick="openModalLinkCostItem(' + id + ')">关联成本池</button></td></tr>';
+                }).join('');
+                pItems.innerHTML = '<table class="mini-table"><thead><tr><th>编码</th><th>名称</th><th>月成本</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table>';
+            }
+
+            if (r.unbilledPools.length === 0) {
+                pPools.innerHTML = '<p class="empty-hint">当前账期下无「无服务规格关联」的成本池。</p>';
+            } else {
+                const rows = r.unbilledPools.map((p) => {
+                    const badge = p.missingCostMonth ? '<span class="badge-missing-month">未标月份</span>' : '';
+                    const poolJson = JSON.stringify(String(p.name));
+                    return '<tr><td>' + escapeHtml(p.name || '') + badge + '</td><td>' + escapeHtml(String(p.billingResource || '')) + '</td><td>' + (p.totalCost != null ? p.totalCost : '') + '</td><td><button type="button" class="btn btn-primary" style="padding:2px 10px;font-size:12px;" onclick=\'openModalLinkPoolToCluster(' + poolJson + ')\'>关联规格</button></td></tr>';
+                }).join('');
+                pPools.innerHTML = '<table class="mini-table"><thead><tr><th>成本池</th><th>计费资源</th><th>总价</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table>';
+            }
+
+            if (r.unlinkedPoolSpecs.length === 0) {
+                pSpecs.innerHTML = '<p class="empty-hint">当前账期下无「关联成本池」为空的规格。</p>';
+            } else {
+                const rows = r.unlinkedPoolSpecs.map((s) => {
+                    const id = Number(s.id);
+                    return '<tr><td>' + escapeHtml(s.serviceCode || '') + '</td><td>' + escapeHtml(s.serviceName || '') + '</td><td>' + escapeHtml(s.billingResource || '') + '</td><td><button type="button" class="btn btn-primary" style="padding:2px 10px;font-size:12px;" onclick="openModalSpecLinkPool(' + id + ')">关联成本池</button></td></tr>';
+                }).join('');
+                pSpecs.innerHTML = '<table class="mini-table"><thead><tr><th>规格编码</th><th>规格名称</th><th>计费资源</th><th>操作</th></tr></thead><tbody>' + rows + '</tbody></table>';
+            }
+        }
+
+        function getPendingDisputesForMonth(month) {
+            return DEMO_PENDING_USAGE_DISPUTES.filter(function (d) {
+                if (trimStr(d.billPeriod) !== month) return false;
+                const st = trimStr(d.status);
+                return st === '待处理' || st === '处理中' || st === '待确认';
+            });
+        }
+
+        function renderUsageUnconfirmedPanel(month) {
+            const el = document.getElementById('panel-usage-unconfirmed');
+            const m = trimStr(month);
+            const list = DEMO_UNCONFIRMED_USAGE_TODO_ROWS.filter(function (row) {
+                return trimStr(row.billMonth) === m;
+            });
+            if (list.length === 0) {
+                el.innerHTML = '<p class="empty-hint">当前账期下无未确认用量明细（字段与「用量管理 › 用量明细」一致；对接后由待办中心按账期返回）。</p>';
+                return;
+            }
+            const thead =
+                '<thead><tr>' +
+                '<th>账期</th><th>实例ID</th><th>实例名称</th><th>服务分类</th><th>部门</th>' +
+                '<th>规格簇</th><th>规格</th><th>配置</th><th>备案产品</th><th>费用归属人</th><th>管理员</th><th>使用人</th><th>环境</th>' +
+                '<th>开始使用时间</th><th>结束使用时间</th><th>确认状态</th><th>实例状态</th><th>操作</th>' +
+                '</tr></thead>';
+            const rows = list.map(function (row) {
+                const href = 'usage-management.html?bill_month=' + encodeURIComponent(row.billMonth) + '&tab=detail';
+                const dash = '—';
+                return (
+                    '<tr>' +
+                    '<td>' + escapeHtml(row.billMonth) + '</td>' +
+                    '<td>' + escapeHtml(row.id) + '</td>' +
+                    '<td>' + escapeHtml(row.name) + '</td>' +
+                    '<td>' + escapeHtml(row.svc || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.dept || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.specCluster || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.spec || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.config || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.product || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.owner || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.admin || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.consumer || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.env || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.startTime || dash) + '</td>' +
+                    '<td>' + escapeHtml(row.endTime || dash) + '</td>' +
+                    '<td><span class="usage-tag-pending">待确认</span></td>' +
+                    '<td><span class="usage-tag-inst">' + escapeHtml(row.instState || '正常') + '</span></td>' +
+                    '<td><a class="btn btn-primary" style="padding:2px 10px;font-size:12px;" href="' + href + '">去确认</a></td>' +
+                    '</tr>'
+                );
+            }).join('');
+            el.innerHTML = '<div class="mini-table-scroll wide usage-unconfirmed-mini"><table class="mini-table">' + thead + '<tbody>' + rows + '</tbody></table></div>';
+        }
+
+        function renderUsageDisputesPanel(month) {
+            const el = document.getElementById('panel-usage-disputes');
+            const list = getPendingDisputesForMonth(month);
+            if (list.length === 0) {
+                el.innerHTML = '<p class="empty-hint">当前账期下无待处理用量异议（Demo 按账期 <code>billPeriod</code> 与状态筛选）。</p>';
+                return;
+            }
+            const rows = list.map(function (d) {
+                return '<tr><td>' + escapeHtml(d.id) + '</td><td>' + escapeHtml(d.type) + '</td><td>' + escapeHtml(d.billPeriod) + '</td><td>' + escapeHtml(d.dept) + '</td><td>' + escapeHtml(d.applicant) + '</td><td>' + escapeHtml(d.status) + '</td><td>' + escapeHtml(d.submittedAt) + '</td><td>' + escapeHtml(d.summary) + '</td></tr>';
+            }).join('');
+            el.innerHTML = '<div class="mini-table-scroll wide"><table class="mini-table"><thead><tr><th>异议单号</th><th>类型</th><th>账期</th><th>部门</th><th>申请人</th><th>状态</th><th>提交时间</th><th>摘要</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+        }
+
+        function renderPanels(r, month) {
+            renderMainPanels(r);
+            renderUsageUnconfirmedPanel(month);
+            renderUsageDisputesPanel(month);
+        }
+
+        function refreshAll() {
+            const month = document.getElementById('todoMonth').value || '2026-02';
+            cachedServices = loadServiceDataFromStorage();
+            const pools = loadPoolsFromStorage();
+            const r = computeBillingReadiness(month, pools, cachedServices);
+
+            document.getElementById('tabCountItems').textContent = '(' + r.unbilledItemCount + ')';
+            document.getElementById('tabCountPools').textContent = '(' + r.unbilledPoolCount + ')';
+            document.getElementById('tabCountSpecs').textContent = '(' + r.unlinkedPoolSpecCount + ')';
+            const usageUnconfirmedCount = DEMO_UNCONFIRMED_USAGE_TODO_ROWS.filter(function (row) {
+                return trimStr(row.billMonth) === trimStr(month);
+            }).length;
+            document.getElementById('tabCountUsageUnconfirmed').textContent = '(' + usageUnconfirmedCount + ')';
+            document.getElementById('tabCountUsageDisputes').textContent = '(' + getPendingDisputesForMonth(month).length + ')';
+
+            renderPanels(r, month);
+
+            document.getElementById('backToPricingDemo').href =
+                'pricing-management-cost-linkage-demo.html?month=' + encodeURIComponent(month);
+        }
+
+        function initMonthFromUrl() {
+            const q = new URLSearchParams(window.location.search).get('month');
+            if (q && /^\d{4}-\d{2}$/.test(q)) {
+                document.getElementById('todoMonth').value = q;
+            }
+        }
+
+        document.querySelectorAll('.todo-tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const tab = this.getAttribute('data-tab');
+                document.querySelectorAll('.todo-tab').forEach(function (b) {
+                    b.classList.toggle('active', b === btn);
+                    b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+                });
+                document.querySelectorAll('.todo-panel').forEach(function (p) {
+                    p.classList.toggle('active', p.id === 'panel-' + tab);
+                });
+            });
+        });
+
+        document.getElementById('todoMonth').addEventListener('change', refreshAll);
+
+        document.addEventListener('click', function (e) {
+            if (!modalClusterCascaderPanelOpen) return;
+            const wrap = document.getElementById('modalClusterCascaderWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                closeClusterCascaderPanelUI();
+            }
+        });
+
+        initMonthFromUrl();
+        refreshAll();
+    </script>
+</body>
+</html>

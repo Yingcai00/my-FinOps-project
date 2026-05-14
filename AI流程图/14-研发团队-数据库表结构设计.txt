@@ -1,0 +1,177 @@
+## FinOps数据库表结构设计
+
+### 核心实体关系图
+```
+┌──────────────┐        ┌──────────────┐        ┌──────────────┐
+│   asset      │        │   cost_item  │        │  cost_pool   │
+│   资产明细    │        │   成本项     │        │   成本池     │
+├──────────────┤        ├──────────────┤        ├──────────────┤
+│ id (PK)      │        │ id (PK)      │        │ id (PK)      │
+│ asset_code   │        │ code         │        │ name         │
+│ asset_name   │        │ name         │        │ billing_     │
+│ serial_no    │        │ category     │        │   resource   │
+│ subdivide    │        │ pool         │        │ unit         │
+│ status       │        │ share_pool   │        │ total_cost   │
+│ use_type     │        │ share_type   │        │ total_res    │
+│ model        │        │ monthly_cost │        │ unit_price   │
+│ config       │        │ source       │        │ cost_month   │
+│ company      │        │ cost_month   │        └──────────────┘
+│ unit         │        └──────────────┘                │
+└──────┬───────┘                        ┌───────────────┼───────────────┐
+       │                                │               │               │
+       │                                ▼               ▼               ▼
+       │                      ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+       │                      │    product   │ │product_cost  │ │ usage_record │
+       │                      │    服务规格   │ │  _relation   │ │   使用记录   │
+       │                      ├──────────────┤ ├──────────────┤ ├──────────────┤
+       │                      │ id (PK)      │ │ id (PK)      │ │ id (PK)      │
+       │                      │ name         │ │ product_id   │ │ product_id   │
+       │                      │ cpu_spec     │ │ cost_pool_id │ │ user_id      │
+       │                      │ mem_spec     │ │ pricing_rule │ │ dept_id      │
+       │                      │ disk_spec    │ └──────────────┘ │ usage_time   │
+       │                      │ status       │                  │ unit_price   │
+       │                      │ cost_pool_id │                  │ amount       │
+       │                      └──────────────┘                  │ record_date  │
+       │                                                       └──────────────┘
+       ▼                                                              │
+┌──────────────┐                                                      │
+│    bill      │                                                      │
+│    账单      │                                                      │
+├──────────────┤                                                      │
+│ id (PK)      │◄─────────────────────────────────────────────────────┘
+│ dept_id      │
+│ period_start │
+│ period_end   │
+│ total_amount │
+│ status       │
+│ generate_time│
+└──────────────┘
+        │
+        ▼
+┌──────────────┐
+│  bill_item   │
+│  账单明细    │
+├──────────────┤
+│ id (PK)      │
+│ bill_id (FK) │
+│ product_id   │
+│ quantity     │
+│ unit_price   │
+│ amount       │
+└──────────────┘
+```
+
+### 表详细设计
+
+#### 1. asset（资产明细表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 资产ID |
+| asset_code | VARCHAR(64) | NOT NULL, UNIQUE | 资产编码 |
+| asset_name | VARCHAR(128) | NOT NULL | 资产名称 |
+| serial_no | VARCHAR(64) | UNIQUE | 设备序列号 |
+| subdivide | VARCHAR(64) | | 资产细分 |
+| status | VARCHAR(32) | NOT NULL | 资产状态（空闲/在用/下架/退回/报废） |
+| use_type | VARCHAR(32) | NOT NULL | 使用方式（公用/container/vm/物理机） |
+| model | VARCHAR(64) | | 资产型号 |
+| config | TEXT | | 资产配置描述 |
+| company | VARCHAR(64) | | 资产归属公司 |
+| unit | VARCHAR(16) | | 单位（台/套） |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| updated_at | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
+
+#### 2. cost_item（成本项表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 成本项ID |
+| code | VARCHAR(64) | NOT NULL, UNIQUE | 成本项编码 |
+| name | VARCHAR(128) | NOT NULL | 成本项名称 |
+| category | VARCHAR(32) | | 分类（设备费用/运营费用/基础设施） |
+| pool | VARCHAR(64) | | 所属池 |
+| share_pool | VARCHAR(64) | | 公摊池 |
+| share_type | VARCHAR(32) | | 公摊类型（公摊成本/非公摊成本） |
+| monthly_cost | DECIMAL(18,2) | NOT NULL | 月度成本 |
+| source | VARCHAR(32) | NOT NULL | 来源（auto/manual） |
+| cost_month | VARCHAR(7) | NOT NULL | 账期（格式：YYYY-MM） |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+#### 3. cost_pool（成本池表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 成本池ID |
+| name | VARCHAR(64) | NOT NULL, UNIQUE | 成本池名称 |
+| billing_resource | VARCHAR(32) | NOT NULL | 计费资源（CPU/内存/DISK/流量/物理机） |
+| unit | VARCHAR(16) | NOT NULL | 单位（核/GB/TB/台） |
+| total_cost | DECIMAL(18,2) | DEFAULT 0 | 总成本 |
+| total_resources | DECIMAL(18,4) | DEFAULT 0 | 资源总量 |
+| unit_price | DECIMAL(18,4) | DEFAULT 0 | 资源单价 |
+| cost_month | VARCHAR(7) | NOT NULL | 账期 |
+| description | TEXT | | 描述 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+#### 4. product（服务规格表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 规格ID |
+| name | VARCHAR(128) | NOT NULL | 规格名称 |
+| cpu_spec | VARCHAR(32) | | CPU规格 |
+| mem_spec | VARCHAR(32) | | 内存规格 |
+| disk_spec | VARCHAR(32) | | 存储规格 |
+| status | VARCHAR(32) | NOT NULL | 状态（草稿/已生效） |
+| cost_pool_id | BIGINT | FOREIGN KEY | 关联成本池ID |
+| unit_price | DECIMAL(18,4) | | 单价 |
+| billing_method | VARCHAR(32) | | 计费方式（按量计费/包年包月） |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+#### 5. product_cost_relation（规格成本关联表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 关联ID |
+| product_id | BIGINT | FOREIGN KEY | 规格ID |
+| cost_pool_id | BIGINT | FOREIGN KEY | 成本池ID |
+| pricing_rule | TEXT | | 定价规则公式 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+#### 6. usage_record（使用记录表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 记录ID |
+| product_id | BIGINT | FOREIGN KEY | 规格ID |
+| user_id | BIGINT | FOREIGN KEY | 用户ID |
+| dept_id | BIGINT | FOREIGN KEY | 部门ID |
+| usage_time | DECIMAL(18,4) | NOT NULL | 使用时长（小时） |
+| unit_price | DECIMAL(18,4) | NOT NULL | 单价 |
+| amount | DECIMAL(18,2) | NOT NULL | 费用金额 |
+| record_date | DATE | NOT NULL | 记录日期 |
+| instance_id | VARCHAR(64) | | 实例ID |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+#### 7. bill（账单表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 账单ID |
+| dept_id | BIGINT | FOREIGN KEY | 部门ID |
+| period_start | DATE | NOT NULL | 账期开始 |
+| period_end | DATE | NOT NULL | 账期结束 |
+| total_amount | DECIMAL(18,2) | NOT NULL | 总金额 |
+| status | VARCHAR(32) | NOT NULL | 状态（待确认/已确认/已出账） |
+| generate_time | DATETIME | DEFAULT CURRENT_TIMESTAMP | 生成时间 |
+| confirmed_time | DATETIME | | 确认时间 |
+
+#### 8. bill_item（账单明细表）
+| 字段名 | 类型 | 约束 | 说明 |
+|-------|------|------|------|
+| id | BIGINT | PRIMARY KEY, AUTO_INCREMENT | 明细ID |
+| bill_id | BIGINT | FOREIGN KEY | 账单ID |
+| product_id | BIGINT | FOREIGN KEY | 规格ID |
+| quantity | DECIMAL(18,4) | NOT NULL | 数量 |
+| unit_price | DECIMAL(18,4) | NOT NULL | 单价 |
+| amount | DECIMAL(18,2) | NOT NULL | 金额 |
+
+### 索引设计建议
+- asset: asset_code, status, subdivide, use_type
+- cost_item: code, share_type, cost_month
+- cost_pool: name, cost_month
+- product: name, status, cost_pool_id
+- usage_record: product_id, user_id, dept_id, record_date
+- bill: dept_id, period_start, period_end, status

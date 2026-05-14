@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant 资产管理员
+    participant 资产系统
+    participant FinOps系统
+    participant 资源分配管理员
+    participant FinOps运维管理员
+    participant 云管系统
+
+    Note over 资产管理员,云管系统: 场景：服务器新增机型（如GPU-AXX）
+
+    Note over 资产管理员,云管系统: 步骤1: 资产采购入库
+    资产管理员->>资产系统: 资产入库（新资产GPU-AXX-001）
+
+    Note over 资产管理员,云管系统: 步骤2: 数据同步
+    资产系统->>FinOps系统: 定时同步指定范围的资产数据
+
+    Note over 资产管理员,云管系统: 步骤3: 通知维护
+    FinOps系统-->>资源分配管理员: 通知：维护新资产的资产细分等信息
+
+    Note over 资产管理员,云管系统: 步骤4: 新增资产细分
+    资源分配管理员->>FinOps系统: 新增资产细分"GPU-AXX"
+
+    Note over 资产管理员,云管系统: 步骤5: 维护规格信息
+    资源分配管理员->>FinOps系统: 维护资产细分对应的规格信息<br>（如：32C/512G/24T SSD/AXX*2）
+
+    Note over 资产管理员,云管系统: 步骤6: 关联资产与细分
+    资源分配管理员->>FinOps系统: 将新增资产与"GPU-AXX"关联<br>使用方式=公用（初始状态）
+
+    Note over 资产管理员,云管系统: 步骤7: 云管增加规格
+    FinOps运维管理员->>云管系统: 增加通算服务器规格"通算型服务器机型十"
+
+    Note over 资产管理员,云管系统: 步骤8: 生成成本项
+    FinOps系统->>FinOps系统: 自动/手动生成成本项<br>（GPU-AXX-物理机，GPU-AXX-容器等）
+
+    Note over 资产管理员,云管系统: 步骤9: 添加成本池并关联
+    FinOps运维管理员->>FinOps系统: 添加成本池（如GPU-AXX物理机成本池）<br>关联相关成本项（如GPU-AXX-容器成本项）
+
+    Note over 资产管理员,云管系统: 步骤10: 规格关联成本池
+    FinOps运维管理员->>FinOps系统: 将"通算型服务器机型十"规格<br>关联至"GPU-AXX物理机成本池"

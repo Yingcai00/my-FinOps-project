@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>FinOps财务运营管理平台 - 系统管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.85);
+            background: #f0f2f5;
+        }
+        .header {
+            background: linear-gradient(90deg, #006eff 0%, #1890ff 100%);
+            color: #fff;
+            padding: 14px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,.12);
+        }
+        .header-content {
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+        .container {
+            display: flex;
+            gap: 16px;
+            padding: 16px 20px 32px;
+            min-height: calc(100vh - 56px);
+        }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+            flex-shrink: 0;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 32px);
+            overflow: auto;
+        }
+        .sidebar-head {
+            background: #1890ff;
+            color: #fff;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+        .sub-menu { list-style: none; background: #f9f9f9; margin: 0; padding: 0; }
+        .sub-menu-item {
+            display: block;
+            padding: 10px 16px 10px 28px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+        .sub-menu-item:hover { background: #f0f0f0; color: #1890ff; }
+        .sub-menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+            font-weight: 500;
+        }
+        .content { flex: 1; min-width: 0; }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+        }
+        .section-title { font-size: 15px; margin-bottom: 12px; font-weight: 600; }
+        .section-desc { font-size: 13px; color: #666; margin-bottom: 14px; line-height: 1.55; }
+        .sys-tabs {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 6px;
+            border-bottom: 1px solid #f0f0f0;
+            margin: -4px 0 16px;
+            padding-bottom: 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sys-tab {
+            padding: 10px 16px;
+            border: 1px solid transparent;
+            border-bottom: none;
+            background: transparent;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .sys-tab:hover { color: #1890ff; background: #f5faff; }
+        .sys-tab.active {
+            background: #fff;
+            color: #1890ff;
+            border-color: #d9d9d9;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+            font-weight: 600;
+        }
+        .sys-panel { display: none; }
+        .sys-panel.active { display: block; }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+        .field { min-width: 120px; }
+        .field.wide { min-width: 200px; }
+        .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .field input, .field select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 6px 16px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        .btn-danger { background: #fff; color: #cf1322; border-color: #ffccc7; }
+        .btn-danger:hover { background: #fff1f0; border-color: #ffa39e; color: #a8071a; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+        .table-wrap { overflow-x: auto; border: 1px solid #f0f0f0; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+        th { background: #fafafa; font-weight: 600; white-space: nowrap; }
+        tr:hover td { background: #fafafa; }
+        .muted { color: #999; font-size: 12px; }
+        .badge { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 12px; background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+        .badge-sys { background: #e6f4ff; color: #0958d9; border-color: #91caff; }
+        .badge-off { background: #fafafa; color: #8c8c8c; border-color: #d9d9d9; }
+        .cell-tight { white-space: nowrap; font-size: 12px; }
+        .sub-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+        .sub-block h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+        .matrix-wrap table { min-width: 920px; }
+        .data-wrap table { min-width: 480px; }
+        .op-gap { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-sheet {
+            background: #fff;
+            border-radius: 8px;
+            max-width: 960px;
+            width: 100%;
+            max-height: 92vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0,0,0,.18);
+        }
+        .modal-sheet-hd {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .modal-sheet-hd h3 { font-size: 16px; font-weight: 600; }
+        .modal-sheet-bd { padding: 16px 20px; overflow-y: auto; flex: 1; }
+        .modal-sheet-ft {
+            padding: 12px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+            background: #fafafa;
+        }
+        .modal-close {
+            border: none;
+            background: transparent;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            color: #999;
+            padding: 0 4px;
+        }
+        .modal-close:hover { color: #333; }
+        .role-modal-block { margin-bottom: 22px; }
+        .role-modal-block:last-child { margin-bottom: 0; }
+        .role-modal-block > h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .role-modal-block .hint { font-size: 12px; color: #888; margin-bottom: 10px; line-height: 1.5; }
+        .perm-tree-table { min-width: 100%; font-size: 13px; }
+        .perm-tree-table th.center, .perm-tree-table td.center { text-align: center; }
+        .perm-tree-table th { white-space: nowrap; }
+        .perm-name-cell { vertical-align: middle; }
+        .perm-toggle {
+            display: inline-block;
+            width: 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #666;
+            font-size: 11px;
+            vertical-align: middle;
+        }
+        .perm-toggle.collapsed { transform: rotate(-90deg); }
+        .perm-row-l0 .perm-name-cell { font-weight: 600; background: #fafafa; }
+        .perm-row-l0 td[colspan="2"] { background: #fafafa; }
+        .perm-row-l1 .perm-name-cell { padding-left: 22px; }
+        .perm-row-l2 .perm-name-cell { padding-left: 40px; color: #555; }
+        tr.perm-row-collapsed { display: none; }
+        .perm-tree-table input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; vertical-align: middle; }
+        .data-scope-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+        .data-scope-options label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .data-scope-options input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
+        #customDeptBlock { margin-top: 12px; padding: 12px; background: #fafafa; border-radius: 6px; border: 1px solid #f0f0f0; }
+        #customDeptBlock.is-hidden { display: none; }
+        .dept-chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .dept-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .dept-chip button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #1890ff;
+            font-size: 14px;
+            line-height: 1;
+            padding: 0 2px;
+        }
+        .dept-add-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+        .dept-add-row .field { min-width: 180px; flex: 1; }
+        .modal-inner-tabs {
+            display: flex;
+            gap: 0;
+            margin: -4px 0 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .modal-inner-tab {
+            padding: 10px 18px;
+            border: 1px solid transparent;
+            border-bottom: none;
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: -1px;
+        }
+        .modal-inner-tab:hover { color: #1890ff; background: #f0f8ff; }
+        .modal-inner-tab.active {
+            background: #fff;
+            color: #1890ff;
+            border-color: #d9d9d9;
+            border-bottom-color: #fff;
+            font-weight: 600;
+        }
+        .modal-inner-panel { display: none; }
+        .modal-inner-panel.active { display: block; }
+        .user-mgmt-layout {
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+            min-height: 440px;
+        }
+        .user-dept-sidebar {
+            width: 268px;
+            flex-shrink: 0;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            background: #fafafa;
+            padding: 12px 10px 14px;
+            max-height: 620px;
+            overflow: auto;
+        }
+        .user-dept-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            padding: 0 6px;
+        }
+        .dept-tree { padding: 0 2px; }
+        .dept-tree-item {
+            padding: 9px 10px 9px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-left: 3px solid transparent;
+            margin-bottom: 4px;
+        }
+        .dept-tree-item:hover { background: #f0f8ff; color: #1890ff; }
+        .dept-tree-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+            font-weight: 600;
+        }
+        .dept-tree-item .dept-id-tag {
+            font-size: 11px;
+            color: #8c8c8c;
+            font-weight: 400;
+            margin-left: auto;
+            font-family: ui-monospace, monospace;
+        }
+        .dept-tree-branch {
+            margin: 6px 0 10px 8px;
+            padding-left: 0;
+        }
+        .dept-tree-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            margin-bottom: 2px;
+        }
+        .dept-tree-toggle {
+            width: 26px;
+            height: 32px;
+            flex-shrink: 0;
+            border: none;
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #e8e8e8;
+            cursor: pointer;
+            color: #666;
+            font-size: 11px;
+            line-height: 30px;
+            padding: 0;
+        }
+        .dept-tree-toggle:hover { border-color: #91d5ff; color: #1890ff; }
+        .dept-tree-toggle.collapsed { transform: rotate(-90deg); }
+        .dept-tree-row .dept-tree-item {
+            flex: 1;
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #262626;
+        }
+        .dept-tree-branch-body {
+            margin: 4px 0 8px 30px;
+            padding: 6px 0 6px 14px;
+            border-left: 2px solid #91caff;
+            background: linear-gradient(90deg, rgba(230,247,255,.65) 0%, transparent 100%);
+            border-radius: 0 6px 6px 0;
+        }
+        .dept-tree-branch-body .dept-tree-item {
+            font-weight: 400;
+            font-size: 12.5px;
+            color: #434343;
+            margin-bottom: 6px;
+            padding-left: 12px;
+            border-left: 2px solid #d3e8ff;
+        }
+        .dept-tree-branch-body .dept-tree-item:last-child { margin-bottom: 0; }
+        .dept-tree-branch-body.is-collapsed { display: none; }
+        .user-list-main { flex: 1; min-width: 0; }
+        .user-scope-hint {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+        }
+        .modal-sheet.modal-sm { max-width: 440px; }
+        .role-assign-list label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .role-assign-list label:hover { border-color: #91d5ff; background: #f5fbff; }
+        .role-assign-list input { margin-top: 3px; flex-shrink: 0; }
+        .role-assign-list .ra-meta { font-size: 12px; color: #888; margin-top: 4px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+            <span class="header-sub">系统管理 · 用户与权限</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-head">菜单导航</div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a class="menu-item" href="usage-push-strategy-management.html">消息推送</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item active" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item active" href="system-management.html">用户与权限</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div class="card">
+                <div class="sys-tabs" role="tablist" aria-label="系统管理">
+                    <button type="button" class="sys-tab active" id="tab-users" data-panel="users" role="tab" aria-selected="true">用户管理</button>
+                    <button type="button" class="sys-tab" id="tab-roles" data-panel="roles" role="tab" aria-selected="false">角色管理</button>
+                </div>
+
+                <div id="panel-users" class="sys-panel active" role="tabpanel" aria-labelledby="tab-users">
+                    <h3 class="section-title">用户管理</h3>
+                    <p class="section-desc">左侧为<strong>部门树</strong>（含三级部门 ID），点选节点筛选右侧用户；「分配角色」打开弹窗勾选角色并保存（原型数据存于页内变量）。</p>
+                    <div class="user-mgmt-layout">
+                        <aside class="user-dept-sidebar" aria-label="部门树">
+                            <div class="user-dept-sidebar-title">部门</div>
+                            <div class="dept-tree" id="userDeptTree" role="tree">
+                                <div class="dept-tree-item active" data-node-id="root" data-path="" data-dept-label="广联达" role="treeitem" tabindex="0">广联达</div>
+                                <div class="dept-tree-item" data-node-id="dept-it" data-path="dept-it" data-dept-label="信息技术部" role="treeitem" tabindex="0">
+                                    信息技术部<span class="dept-id-tag">DEPT-L3-110101</span>
+                                </div>
+                                <div class="dept-tree-branch" data-branch="rd">
+                                    <div class="dept-tree-row">
+                                        <button type="button" class="dept-tree-toggle" data-branch-toggle="rd" aria-expanded="true" aria-label="展开或折叠">▼</button>
+                                        <div class="dept-tree-item" data-node-id="dept-rd" data-path="dept-rd" data-dept-label="研发中心" role="treeitem" tabindex="0">
+                                            研发中心<span class="dept-id-tag">DEPT-L2-2200</span>
+                                        </div>
+                                    </div>
+                                    <div class="dept-tree-branch-body" data-branch-body="rd">
+                                        <div class="dept-tree-item" data-node-id="dept-rd-pl" data-path="dept-rd/dept-rd-pl" data-dept-label="研发中心 / 平台组" role="treeitem" tabindex="0">
+                                            平台组<span class="dept-id-tag">DEPT-L3-220103</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="dept-tree-branch" data-branch="ops">
+                                    <div class="dept-tree-row">
+                                        <button type="button" class="dept-tree-toggle" data-branch-toggle="ops" aria-expanded="true" aria-label="展开或折叠">▼</button>
+                                        <div class="dept-tree-item" data-node-id="dept-ops" data-path="dept-ops" data-dept-label="云运营中心" role="treeitem" tabindex="0">
+                                            云运营中心<span class="dept-id-tag">DEPT-L2-3300</span>
+                                        </div>
+                                    </div>
+                                    <div class="dept-tree-branch-body" data-branch-body="ops">
+                                        <div class="dept-tree-item" data-node-id="dept-ops-bill" data-path="dept-ops/dept-ops-bill" data-dept-label="云运营中心 / 对账组" role="treeitem" tabindex="0">
+                                            对账组<span class="dept-id-tag">DEPT-L3-330205</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                        <div class="user-list-main">
+                            <p class="user-scope-hint" id="userDeptScopeHint">当前范围：<strong>广联达</strong></p>
+                            <div class="toolbar">
+                                <button type="button" class="btn btn-primary">新建用户</button>
+                                <div class="field wide">
+                                    <label for="userSearch">搜索</label>
+                                    <input type="search" id="userSearch" placeholder="登录名、姓名、手机" autocomplete="off">
+                                </div>
+                                <div class="field">
+                                    <label for="userStatus">状态</label>
+                                    <select id="userStatus">
+                                        <option value="">全部</option>
+                                        <option>启用</option>
+                                        <option>禁用</option>
+                                        <option>锁定</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn" id="btnUserFilter">查询</button>
+                                <button type="button" class="btn" id="btnUserFilterReset">重置</button>
+                            </div>
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>登录名</th>
+                                            <th>姓名</th>
+                                            <th>主岗部门</th>
+                                            <th>已绑定角色</th>
+                                            <th>数据范围摘要</th>
+                                            <th>状态</th>
+                                            <th>最近登录</th>
+                                            <th style="width:200px;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="userTableBody">
+                                        <tr data-login="admin.demo" data-path="dept-it" data-name="演示管理员" data-roles="TENANT_ADMIN" data-no-delete="1">
+                                            <td>admin.demo</td>
+                                            <td>演示管理员</td>
+                                            <td>信息技术部</td>
+                                            <td class="js-user-roles-cell">系统管理员</td>
+                                            <td>全租户</td>
+                                            <td><span class="badge">启用</span></td>
+                                            <td class="muted">2026-05-08 09:12</td>
+                                            <td class="cell-tight">
+                                                <span class="op-gap">
+                                                    <button type="button" class="btn btn-sm btn-primary js-assign-role">分配角色</button>
+                                                    <button type="button" class="btn btn-sm btn-danger js-user-delete">删除</button>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr data-login="ops.demo" data-path="dept-ops/dept-ops-bill" data-name="演示运营" data-roles="PRIVATE_CLOUD_OPS">
+                                            <td>ops.demo</td>
+                                            <td>演示运营</td>
+                                            <td>云运营中心 / 对账组</td>
+                                            <td class="js-user-roles-cell">私有云运营管理员</td>
+                                            <td>全租户</td>
+                                            <td><span class="badge">启用</span></td>
+                                            <td class="muted">2026-05-07 18:40</td>
+                                            <td class="cell-tight">
+                                                <span class="op-gap">
+                                                    <button type="button" class="btn btn-sm btn-primary js-assign-role">分配角色</button>
+                                                    <button type="button" class="btn btn-sm btn-danger js-user-delete">删除</button>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr data-login="dept.demo" data-path="dept-rd/dept-rd-pl" data-name="演示部门负责人" data-roles="DEPT_OWNER">
+                                            <td>dept.demo</td>
+                                            <td>演示部门负责人</td>
+                                            <td>研发中心 / 平台组</td>
+                                            <td class="js-user-roles-cell">部门负责人</td>
+                                            <td>本部门及下级</td>
+                                            <td><span class="badge">启用</span></td>
+                                            <td class="muted">2026-05-08 08:05</td>
+                                            <td class="cell-tight">
+                                                <span class="op-gap">
+                                                    <button type="button" class="btn btn-sm btn-primary js-assign-role">分配角色</button>
+                                                    <button type="button" class="btn btn-sm btn-danger js-user-delete">删除</button>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr data-login="user.demo" data-path="dept-rd" data-name="演示业务用户" data-roles="BIZ_USER">
+                                            <td>user.demo</td>
+                                            <td>演示业务用户</td>
+                                            <td>研发中心</td>
+                                            <td class="js-user-roles-cell">业务用户</td>
+                                            <td>本人资源</td>
+                                            <td><span class="badge">启用</span></td>
+                                            <td class="muted">2026-05-06 14:22</td>
+                                            <td class="cell-tight">
+                                                <span class="op-gap">
+                                                    <button type="button" class="btn btn-sm btn-primary js-assign-role">分配角色</button>
+                                                    <button type="button" class="btn btn-sm btn-danger js-user-delete">删除</button>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="muted" style="margin-top:10px;">部门树与组织主数据同步后，可按节点加载用户分页列表；当前为前端筛选示意。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-roles" class="sys-panel" role="tabpanel" aria-labelledby="tab-roles">
+                    <h3 class="section-title">角色管理</h3>
+                    <p class="section-desc">点击<strong>权限</strong>打开<strong>编辑角色权限</strong>弹窗；在弹窗内通过「功能权限 / 数据权限」子页签完成配置。</p>
+                    <div class="toolbar">
+                        <button type="button" class="btn btn-primary" id="btnOpenCreateRole">新建角色</button>
+                        <div class="field wide">
+                            <label for="roleSearch">搜索角色</label>
+                            <input type="search" id="roleSearch" placeholder="角色名称、标识" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>角色名称</th>
+                                    <th>角色标识</th>
+                                    <th>关联用户数</th>
+                                    <th>描述</th>
+                                    <th style="width:260px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roleTableBody">
+                                <tr data-role-id="TENANT_ADMIN">
+                                    <td>系统管理员</td>
+                                    <td><code>TENANT_ADMIN</code></td>
+                                    <td>3</td>
+                                    <td>租户内用户与角色、组织与安全策略；系统管理与配置类能力。</td>
+                                    <td class="cell-tight">
+                                        <span class="op-gap">
+                                            <button type="button" class="btn btn-sm">查看成员</button>
+                                            <button type="button" class="btn btn-sm btn-primary js-role-edit" data-role-id="TENANT_ADMIN" data-role-name="系统管理员">权限</button>
+                                            <button type="button" class="btn btn-sm btn-danger js-role-delete">删除</button>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr data-role-id="PRIVATE_CLOUD_OPS">
+                                    <td>私有云运营管理员</td>
+                                    <td><code>PRIVATE_CLOUD_OPS</code></td>
+                                    <td>8</td>
+                                    <td>全租户成本与账单、分账标签维护、定价查看等运营职责。</td>
+                                    <td class="cell-tight">
+                                        <span class="op-gap">
+                                            <button type="button" class="btn btn-sm">查看成员</button>
+                                            <button type="button" class="btn btn-sm btn-primary js-role-edit" data-role-id="PRIVATE_CLOUD_OPS" data-role-name="私有云运营管理员">权限</button>
+                                            <button type="button" class="btn btn-sm btn-danger js-role-delete">删除</button>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr data-role-id="DEPT_OWNER">
+                                    <td>部门负责人</td>
+                                    <td><code>DEPT_OWNER</code></td>
+                                    <td>24</td>
+                                    <td>仅账单详情、账单分析相关能力；无成本、定价、分账、系统管理菜单。</td>
+                                    <td class="cell-tight">
+                                        <span class="op-gap">
+                                            <button type="button" class="btn btn-sm">查看成员</button>
+                                            <button type="button" class="btn btn-sm btn-primary js-role-edit" data-role-id="DEPT_OWNER" data-role-name="部门负责人">权限</button>
+                                            <button type="button" class="btn btn-sm btn-danger js-role-delete">删除</button>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr data-role-id="BIZ_USER">
+                                    <td>业务用户</td>
+                                    <td><code>BIZ_USER</code></td>
+                                    <td>156</td>
+                                    <td>与部门负责人相同功能范围；数据范围为本人资源。</td>
+                                    <td class="cell-tight">
+                                        <span class="op-gap">
+                                            <button type="button" class="btn btn-sm">查看成员</button>
+                                            <button type="button" class="btn btn-sm btn-primary js-role-edit" data-role-id="BIZ_USER" data-role-name="业务用户">权限</button>
+                                            <button type="button" class="btn btn-sm btn-danger js-role-delete">删除</button>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="roleCreateModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="roleCreateModalTitle">
+        <div class="modal-sheet modal-sm">
+            <div class="modal-sheet-hd">
+                <div>
+                    <h3 id="roleCreateModalTitle">新建角色</h3>
+                    <p class="muted" style="margin-top:4px;font-size:12px;">保存后可在列表中配置权限，并分配给用户。</p>
+                </div>
+                <button type="button" class="modal-close" id="roleCreateModalClose" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-sheet-bd">
+                <div class="field" style="margin-bottom:12px;">
+                    <label for="newRoleName">角色名称 <span class="muted">*</span></label>
+                    <input type="text" id="newRoleName" placeholder="例如 分账复核员" autocomplete="off" maxlength="64">
+                </div>
+                <div class="field" style="margin-bottom:12px;">
+                    <label for="newRoleCode">角色标识 <span class="muted">*</span></label>
+                    <input type="text" id="newRoleCode" placeholder="大写字母、数字、下划线，例如 COST_REVIEWER" autocomplete="off" maxlength="64">
+                </div>
+                <div class="field">
+                    <label for="newRoleDesc">描述</label>
+                    <textarea id="newRoleDesc" rows="3" placeholder="职责说明（可选）" style="width:100%;padding:8px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-sheet-ft">
+                <button type="button" class="btn" id="roleCreateModalCancel">取消</button>
+                <button type="button" class="btn btn-primary" id="roleCreateModalSave">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rolePermModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="rolePermModalTitle">
+        <div class="modal-sheet">
+            <div class="modal-sheet-hd">
+                <div>
+                    <h3 id="rolePermModalTitle">编辑角色权限</h3>
+                    <p class="muted" style="margin-top:4px;font-size:12px;">角色：<strong id="rolePermRoleName">—</strong>（<span id="rolePermRoleId">—</span>）</p>
+                </div>
+                <button type="button" class="modal-close" id="rolePermModalClose" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-sheet-bd">
+                <div class="modal-inner-tabs" role="tablist" aria-label="角色权限编辑">
+                    <button type="button" class="modal-inner-tab active" id="roleModalTabFunc" data-modal-tab="func" role="tab" aria-selected="true">功能权限</button>
+                    <button type="button" class="modal-inner-tab" id="roleModalTabData" data-modal-tab="data" role="tab" aria-selected="false">数据权限</button>
+                </div>
+                <div id="roleModalPanelFunc" class="modal-inner-panel active" role="tabpanel" aria-labelledby="roleModalTabFunc">
+                <section class="role-modal-block" style="margin-bottom:0;">
+                    <p class="hint">树型表：一级为菜单分组（可折叠）；其下每一行是一条<strong>功能项</strong>（菜单查看、页面查看、字段权限、添加、删除、编辑、导出、账单详情内各 Tab 等），右侧勾选表示开通。对接后写入「角色 × 功能项」。</p>
+                    <div class="table-wrap">
+                        <table class="perm-tree-table">
+                            <thead>
+                                <tr>
+                                    <th>功能项</th>
+                                    <th class="center" style="width:88px;">开通</th>
+                                </tr>
+                            </thead>
+                            <tbody id="permTreeBody">
+                                <tr class="perm-row-l0" data-group-root="asset">
+                                    <td colspan="2" class="perm-name-cell">
+                                        <button type="button" class="perm-toggle" data-toggle="asset" aria-expanded="true" aria-label="折叠或展开">▼</button>
+                                        B 类资产管理
+                                    </td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="asset">
+                                    <td class="perm-name-cell">B 类资产管理 — 菜单查看（进入模块）</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="asset-menu-view" checked aria-label="菜单查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="asset">
+                                    <td class="perm-name-cell">资产台账 — 页面查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="asset-view" checked aria-label="页面查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="asset">
+                                    <td class="perm-name-cell">资产台账 — 字段权限</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="asset-field" checked aria-label="字段权限"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="asset">
+                                    <td class="perm-name-cell">资产台账 — 添加</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="asset-add" checked aria-label="添加"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="asset">
+                                    <td class="perm-name-cell">资产台账 — 删除</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="asset-delete" checked aria-label="删除"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="asset">
+                                    <td class="perm-name-cell">资产台账 — 编辑</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="asset-edit" checked aria-label="编辑"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="asset">
+                                    <td class="perm-name-cell">资产台账 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="asset-export" aria-label="导出"></td>
+                                </tr>
+                                <tr class="perm-row-l0" data-group-root="cost">
+                                    <td colspan="2" class="perm-name-cell">
+                                        <button type="button" class="perm-toggle" data-toggle="cost" aria-expanded="true" aria-label="折叠或展开">▼</button>
+                                        成本管理
+                                    </td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本管理 — 菜单查看（进入模块）</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-menu-view" checked aria-label="菜单查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本总览 — 页面查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-overview-view" checked aria-label="页面查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本总览 — 字段权限</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-overview-field" checked aria-label="字段权限"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本总览 — 添加</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-overview-add" checked aria-label="添加"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本总览 — 删除</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-overview-delete" checked aria-label="删除"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本总览 — 编辑</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-overview-edit" checked aria-label="编辑"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本总览 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-overview-export" checked aria-label="导出"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本池管理 — 页面查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-pool-view" checked aria-label="页面查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本池管理 — 字段权限</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-pool-field" checked aria-label="字段权限"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本池管理 — 添加</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-pool-add" checked aria-label="添加"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本池管理 — 删除</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-pool-delete" checked aria-label="删除"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本池管理 — 编辑</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-pool-edit" checked aria-label="编辑"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="cost">
+                                    <td class="perm-name-cell">成本池管理 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="cost-pool-export" aria-label="导出"></td>
+                                </tr>
+                                <tr class="perm-row-l0" data-group-root="pricing">
+                                    <td colspan="2" class="perm-name-cell">
+                                        <button type="button" class="perm-toggle" data-toggle="pricing" aria-expanded="true" aria-label="折叠或展开">▼</button>
+                                        定价管理
+                                    </td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="pricing">
+                                    <td class="perm-name-cell">定价管理 — 菜单查看（进入模块）</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="pricing-menu-view" checked aria-label="菜单查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="pricing">
+                                    <td class="perm-name-cell">定价管理 — 页面查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="pricing-view" checked aria-label="页面查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="pricing">
+                                    <td class="perm-name-cell">定价管理 — 字段权限</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="pricing-field" checked aria-label="字段权限"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="pricing">
+                                    <td class="perm-name-cell">定价管理 — 添加</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="pricing-add" checked aria-label="添加"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="pricing">
+                                    <td class="perm-name-cell">定价管理 — 删除</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="pricing-delete" checked aria-label="删除"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="pricing">
+                                    <td class="perm-name-cell">定价管理 — 编辑</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="pricing-edit" checked aria-label="编辑"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="pricing">
+                                    <td class="perm-name-cell">定价管理 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="pricing-export" aria-label="导出"></td>
+                                </tr>
+                                <tr class="perm-row-l0" data-group-root="alloc">
+                                    <td colspan="2" class="perm-name-cell">
+                                        <button type="button" class="perm-toggle" data-toggle="alloc" aria-expanded="true" aria-label="折叠或展开">▼</button>
+                                        分账管理
+                                    </td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="alloc">
+                                    <td class="perm-name-cell">分账管理 — 菜单查看（进入模块）</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="alloc-menu-view" checked aria-label="菜单查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="alloc">
+                                    <td class="perm-name-cell">分账标签主数据 — 页面查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="alloc-view" checked aria-label="页面查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="alloc">
+                                    <td class="perm-name-cell">分账标签主数据 — 字段权限</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="alloc-field" checked aria-label="字段权限"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="alloc">
+                                    <td class="perm-name-cell">分账标签主数据 — 添加</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="alloc-add" checked aria-label="添加"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="alloc">
+                                    <td class="perm-name-cell">分账标签主数据 — 删除</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="alloc-delete" checked aria-label="删除"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="alloc">
+                                    <td class="perm-name-cell">分账标签主数据 — 编辑</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="alloc-edit" checked aria-label="编辑"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="alloc">
+                                    <td class="perm-name-cell">分账标签主数据 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="alloc-export" aria-label="导出"></td>
+                                </tr>
+                                <tr class="perm-row-l0" data-group-root="sys">
+                                    <td colspan="2" class="perm-name-cell">
+                                        <button type="button" class="perm-toggle" data-toggle="sys" aria-expanded="true" aria-label="折叠或展开">▼</button>
+                                        系统管理
+                                    </td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">系统管理 — 菜单查看（进入模块）</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-menu-view" checked aria-label="菜单查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">用户管理 — 页面查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-user-view" checked aria-label="页面查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">用户管理 — 字段权限</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-user-field" checked aria-label="字段权限"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">用户管理 — 添加</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-user-add" checked aria-label="添加"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">用户管理 — 删除</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-user-delete" checked aria-label="删除"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">用户管理 — 编辑</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-user-edit" checked aria-label="编辑"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">用户管理 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-user-export" aria-label="导出"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">角色与权限 — 页面查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-role-view" checked aria-label="页面查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">角色与权限 — 字段权限</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-role-field" checked aria-label="字段权限"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">角色与权限 — 添加</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-role-add" checked aria-label="添加"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">角色与权限 — 删除</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-role-delete" checked aria-label="删除"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">角色与权限 — 编辑</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-role-edit" checked aria-label="编辑"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="sys">
+                                    <td class="perm-name-cell">角色与权限 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="sys-role-export" aria-label="导出"></td>
+                                </tr>
+                                <tr class="perm-row-l0" data-group-root="bill">
+                                    <td colspan="2" class="perm-name-cell">
+                                        <button type="button" class="perm-toggle" data-toggle="bill" aria-expanded="true" aria-label="折叠或展开">▼</button>
+                                        账单管理
+                                    </td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单管理 — 菜单查看（进入模块）</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-menu-view" checked aria-label="菜单查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单详情 — 账单 Tab</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-detail-tab-bill-view" checked aria-label="账单 Tab"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单详情 — 账单明细 Tab</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-detail-tab-multi-view" checked aria-label="账单明细 Tab"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单详情 — 资源明细 Tab</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-detail-tab-resource-view" checked aria-label="资源明细 Tab"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单详情 — 查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-detail-view" checked aria-label="查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单详情 — 账单导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-detail-export" checked aria-label="账单导出"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单详情 — 资源明细导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-detail-resource-export" checked aria-label="资源明细导出"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单分析 — 查看</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-analytics-view" checked aria-label="查看"></td>
+                                </tr>
+                                <tr class="perm-row-l1" data-parent="bill">
+                                    <td class="perm-name-cell">账单分析 — 导出</td>
+                                    <td class="center"><input type="checkbox" class="perm-cb" data-perm="bill-analytics-export" checked aria-label="导出"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                </div>
+                <div id="roleModalPanelData" class="modal-inner-panel" role="tabpanel" aria-labelledby="roleModalTabData">
+                <section class="role-modal-block" style="margin-bottom:0;">
+                    <p class="hint">选择本角色默认数据范围；「自定义」以<strong>三级部门</strong>为最小单元，通过部门 ID 配置多条并集（示意数据，保存后对接组织主数据）。</p>
+                    <div class="data-scope-options" id="dataScopeRadios">
+                        <label><input type="radio" name="dataScopeMode" value="global"> <span><strong>全局</strong>：租户内全部组织及相关账单、成本、资源数据。</span></label>
+                        <label><input type="radio" name="dataScopeMode" value="dept_sub"> <span><strong>本部门及下级部门</strong>：以主岗部门为根，含该节点及组织树上下级链路中的下级部门数据。</span></label>
+                        <label><input type="radio" name="dataScopeMode" value="self"> <span><strong>本人</strong>：仅与绑定资源相关的账单与明细（本人资源）。</span></label>
+                        <label><input type="radio" name="dataScopeMode" value="custom"> <span><strong>自定义数据权限合集</strong>：按三级部门 ID 多条并集；不含未列出的部门。</span></label>
+                    </div>
+                    <div id="customDeptBlock" class="is-hidden">
+                        <p class="hint" style="margin-bottom:8px;">每条对应组织树上<strong>三级部门</strong>节点（示例 ID 格式：<code>DEPT-L3-</code> 前缀 + 编码）。</p>
+                        <div class="dept-add-row">
+                            <div class="field">
+                                <label for="customDeptIdInput">三级部门 ID</label>
+                                <input type="text" id="customDeptIdInput" placeholder="例如 DEPT-L3-010203" autocomplete="off">
+                            </div>
+                            <div class="field">
+                                <label for="customDeptNameInput">部门名称（展示）</label>
+                                <input type="text" id="customDeptNameInput" placeholder="例如 研发中心 / 平台组" autocomplete="off">
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btnAddCustomDept">添加</button>
+                        </div>
+                        <div class="table-wrap" style="margin-top:8px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>三级部门 ID</th>
+                                        <th>部门名称</th>
+                                        <th style="width:72px;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customDeptTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                </div>
+            </div>
+            <div class="modal-sheet-ft">
+                <button type="button" class="btn" id="rolePermModalCancel">取消</button>
+                <button type="button" class="btn btn-primary" id="rolePermModalSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="userRoleModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="userRoleModalTitle">
+        <div class="modal-sheet modal-sm">
+            <div class="modal-sheet-hd">
+                <div>
+                    <h3 id="userRoleModalTitle">分配角色</h3>
+                    <p class="muted" style="margin-top:4px;font-size:12px;">用户：<strong id="assignUserDisplay">—</strong>（<span id="assignUserLogin">—</span>）</p>
+                </div>
+                <button type="button" class="modal-close" id="userRoleModalClose" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-sheet-bd">
+                <p class="hint" style="margin-bottom:12px;">勾选该用户拥有的角色（可多选）；多角色时功能与数据范围按产品规则取并集/就严。</p>
+                <div class="role-assign-list" id="assignRoleCheckboxes">
+                    <label data-assign-role="TENANT_ADMIN">
+                        <input type="checkbox" name="assignRoleCb" value="TENANT_ADMIN">
+                        <span><strong>系统管理员</strong> <code>TENANT_ADMIN</code><span class="ra-meta">租户内用户、角色、组织与安全策略；系统管理与配置。</span></span>
+                    </label>
+                    <label data-assign-role="PRIVATE_CLOUD_OPS">
+                        <input type="checkbox" name="assignRoleCb" value="PRIVATE_CLOUD_OPS">
+                        <span><strong>私有云运营管理员</strong> <code>PRIVATE_CLOUD_OPS</code><span class="ra-meta">全租户成本、账单、分账标签、定价查看等。</span></span>
+                    </label>
+                    <label data-assign-role="DEPT_OWNER">
+                        <input type="checkbox" name="assignRoleCb" value="DEPT_OWNER">
+                        <span><strong>部门负责人</strong> <code>DEPT_OWNER</code><span class="ra-meta">账单详情与分析相关能力；数据范围默认本部门及下级。</span></span>
+                    </label>
+                    <label data-assign-role="BIZ_USER">
+                        <input type="checkbox" name="assignRoleCb" value="BIZ_USER">
+                        <span><strong>业务用户</strong> <code>BIZ_USER</code><span class="ra-meta">与部门负责人相同功能范围；数据范围默认本人资源。</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-sheet-ft">
+                <button type="button" class="btn" id="userRoleModalCancel">取消</button>
+                <button type="button" class="btn btn-primary" id="userRoleModalSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/finops-session-header.js"></script>
+    <script>
+    (function () {
+        var VALID = { users: 1, roles: 1 };
+        var ROLE_LABELS = {
+            TENANT_ADMIN: '系统管理员',
+            PRIVATE_CLOUD_OPS: '私有云运营管理员',
+            DEPT_OWNER: '部门负责人',
+            BIZ_USER: '业务用户'
+        };
+
+        function showPanel(id) {
+            if (!VALID[id]) id = 'users';
+            document.querySelectorAll('.sys-tab').forEach(function (t) {
+                var on = t.getAttribute('data-panel') === id;
+                t.classList.toggle('active', on);
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            document.querySelectorAll('.sys-panel').forEach(function (p) {
+                p.classList.toggle('active', p.id === 'panel-' + id);
+            });
+            if (history.replaceState) {
+                history.replaceState(null, '', 'system-management.html#' + id);
+            }
+        }
+
+        document.querySelectorAll('.sys-tab').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                showPanel(tab.getAttribute('data-panel'));
+            });
+        });
+
+        var hash = (location.hash || '').replace(/^#/, '');
+        if (hash === 'config' || hash === 'functions' || hash === 'data') hash = 'roles';
+        if (VALID[hash]) showPanel(hash);
+
+        /* ---------- 角色权限弹窗 ---------- */
+        var modal = document.getElementById('rolePermModal');
+        var roleNameEl = document.getElementById('rolePermRoleName');
+        var roleIdEl = document.getElementById('rolePermRoleId');
+        var customBlock = document.getElementById('customDeptBlock');
+        var customDeptBody = document.getElementById('customDeptTableBody');
+        var deptIdInput = document.getElementById('customDeptIdInput');
+        var deptNameInput = document.getElementById('customDeptNameInput');
+
+        function setModalOpen(on) {
+            if (!modal) return;
+            modal.classList.toggle('open', on);
+            modal.setAttribute('aria-hidden', on ? 'false' : 'true');
+            if (on) document.body.style.overflow = 'hidden';
+            else document.body.style.overflow = '';
+        }
+
+        function showRoleModalInnerTab(tab) {
+            tab = tab === 'data' ? 'data' : 'func';
+            document.querySelectorAll('.modal-inner-tab').forEach(function (t) {
+                var on = t.getAttribute('data-modal-tab') === tab;
+                t.classList.toggle('active', on);
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            var pFunc = document.getElementById('roleModalPanelFunc');
+            var pData = document.getElementById('roleModalPanelData');
+            if (pFunc) pFunc.classList.toggle('active', tab === 'func');
+            if (pData) pData.classList.toggle('active', tab === 'data');
+        }
+
+        document.querySelectorAll('.modal-inner-tab').forEach(function (t) {
+            t.addEventListener('click', function () {
+                showRoleModalInnerTab(t.getAttribute('data-modal-tab'));
+            });
+        });
+
+        function clearCustomDeptRows() {
+            if (customDeptBody) customDeptBody.innerHTML = '';
+        }
+
+        function addCustomDeptRow(id, name) {
+            if (!customDeptBody) return;
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td><code>' +
+                escapeHtml(id) +
+                '</code></td><td>' +
+                escapeHtml(name || '—') +
+                '</td><td class="center"><button type="button" class="btn btn-sm js-remove-dept">移除</button></td>';
+            customDeptBody.appendChild(tr);
+        }
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            var d = document.createElement('div');
+            d.textContent = String(s);
+            return d.innerHTML;
+        }
+
+        function setAllPermCheckboxes(checked) {
+            document.querySelectorAll('#permTreeBody .perm-cb').forEach(function (cb) {
+                cb.checked = !!checked;
+            });
+        }
+
+        function applyRolePreset() {
+            setAllPermCheckboxes(false);
+            document.querySelectorAll('input[name="dataScopeMode"]').forEach(function (r) {
+                r.checked = r.value === 'dept_sub';
+            });
+            if (customBlock) customBlock.classList.add('is-hidden');
+            clearCustomDeptRows();
+            syncCustomBlockVisibility();
+        }
+
+        function syncCustomBlockVisibility() {
+            var custom = document.querySelector('input[name="dataScopeMode"][value="custom"]');
+            if (!customBlock || !custom) return;
+            if (custom.checked) {
+                customBlock.classList.remove('is-hidden');
+                if (customDeptBody && !customDeptBody.children.length) {
+                    addCustomDeptRow('DEPT-L3-010203', '研发中心 / 平台组');
+                    addCustomDeptRow('DEPT-L3-020088', '云运营中心 / 对账组');
+                }
+            } else {
+                customBlock.classList.add('is-hidden');
+            }
+        }
+
+        document.getElementById('dataScopeRadios').addEventListener('change', function () {
+            syncCustomBlockVisibility();
+        });
+
+        document.getElementById('btnAddCustomDept').addEventListener('click', function () {
+            var id = (deptIdInput && deptIdInput.value.trim()) || '';
+            var name = (deptNameInput && deptNameInput.value.trim()) || '';
+            if (!id) {
+                alert('请填写三级部门 ID。');
+                return;
+            }
+            addCustomDeptRow(id, name);
+            if (deptIdInput) deptIdInput.value = '';
+            if (deptNameInput) deptNameInput.value = '';
+        });
+
+        if (customDeptBody) {
+            customDeptBody.addEventListener('click', function (e) {
+                if (e.target.classList.contains('js-remove-dept')) {
+                    var tr = e.target.closest('tr');
+                    if (tr) tr.remove();
+                }
+            });
+        }
+
+        function openRolePermModal(btn) {
+            if (!modal || !btn) return;
+            var rid = btn.getAttribute('data-role-id') || '';
+            var rname = btn.getAttribute('data-role-name') || '';
+            if (roleNameEl) roleNameEl.textContent = rname;
+            if (roleIdEl) roleIdEl.textContent = rid;
+            modal.setAttribute('data-current-role', rid);
+            applyRolePreset();
+            document.querySelectorAll('.perm-toggle').forEach(function (b) {
+                b.setAttribute('aria-expanded', 'true');
+                b.textContent = '▼';
+                b.classList.remove('collapsed');
+            });
+            document.querySelectorAll('#permTreeBody tr[data-parent]').forEach(function (tr) {
+                tr.classList.remove('perm-row-collapsed');
+            });
+            var openTab = btn.getAttribute('data-open-tab') || 'func';
+            showRoleModalInnerTab(openTab);
+            setModalOpen(true);
+        }
+
+        var roleTableBody = document.getElementById('roleTableBody');
+        if (roleTableBody) {
+            roleTableBody.addEventListener('click', function (e) {
+                var permBtn = e.target.closest('.js-role-edit');
+                if (permBtn) {
+                    openRolePermModal(permBtn);
+                    return;
+                }
+                var delBtn = e.target.closest('.js-role-delete');
+                if (!delBtn) return;
+                var tr = delBtn.closest('tr');
+                if (!tr || !tr.getAttribute('data-role-id')) return;
+                var code = tr.getAttribute('data-role-id') || '';
+                var label = tr.querySelector('td') && tr.querySelector('td').textContent;
+                if (!confirm('确定删除角色「' + (label || code) + '」？（示意，未校验已分配用户）')) return;
+                tr.remove();
+                var assignLab = document.querySelector('#assignRoleCheckboxes label[data-assign-role="' + code.replace(/"/g, '') + '"]');
+                if (assignLab) assignLab.remove();
+                delete ROLE_LABELS[code];
+                applyRoleTableSearch();
+            });
+        }
+
+        function applyRoleTableSearch() {
+            var inp = document.getElementById('roleSearch');
+            var q = (inp && inp.value.trim().toLowerCase()) || '';
+            document.querySelectorAll('#roleTableBody tr').forEach(function (tr) {
+                if (!q) {
+                    tr.style.display = '';
+                    return;
+                }
+                var t = (tr.textContent || '').toLowerCase();
+                tr.style.display = t.indexOf(q) >= 0 ? '' : 'none';
+            });
+        }
+        var roleSearchInp = document.getElementById('roleSearch');
+        if (roleSearchInp) roleSearchInp.addEventListener('input', applyRoleTableSearch);
+
+        var roleCreateModal = document.getElementById('roleCreateModal');
+        var newRoleNameInp = document.getElementById('newRoleName');
+        var newRoleCodeInp = document.getElementById('newRoleCode');
+        var newRoleDescInp = document.getElementById('newRoleDesc');
+
+        function setRoleCreateModalOpen(on) {
+            if (!roleCreateModal) return;
+            roleCreateModal.classList.toggle('open', on);
+            roleCreateModal.setAttribute('aria-hidden', on ? 'false' : 'true');
+            if (on) document.body.style.overflow = 'hidden';
+            else document.body.style.overflow = '';
+        }
+
+        function openCreateRoleModal() {
+            if (newRoleNameInp) newRoleNameInp.value = '';
+            if (newRoleCodeInp) newRoleCodeInp.value = '';
+            if (newRoleDescInp) newRoleDescInp.value = '';
+            setRoleCreateModalOpen(true);
+            if (newRoleNameInp) newRoleNameInp.focus();
+        }
+
+        function closeCreateRoleModal() {
+            setRoleCreateModalOpen(false);
+        }
+
+        var btnOpenCreateRole = document.getElementById('btnOpenCreateRole');
+        if (btnOpenCreateRole) btnOpenCreateRole.addEventListener('click', openCreateRoleModal);
+        var roleCreateModalClose = document.getElementById('roleCreateModalClose');
+        if (roleCreateModalClose) roleCreateModalClose.addEventListener('click', closeCreateRoleModal);
+        var roleCreateModalCancel = document.getElementById('roleCreateModalCancel');
+        if (roleCreateModalCancel) roleCreateModalCancel.addEventListener('click', closeCreateRoleModal);
+        if (roleCreateModal) {
+            roleCreateModal.addEventListener('click', function (e) {
+                if (e.target === roleCreateModal) closeCreateRoleModal();
+            });
+        }
+
+        var roleCreateModalSave = document.getElementById('roleCreateModalSave');
+        if (roleCreateModalSave) {
+            roleCreateModalSave.addEventListener('click', function () {
+                var name = (newRoleNameInp && newRoleNameInp.value.trim()) || '';
+                var codeRaw = (newRoleCodeInp && newRoleCodeInp.value.trim().toUpperCase().replace(/\s+/g, '_')) || '';
+                var desc = (newRoleDescInp && newRoleDescInp.value.trim()) || '';
+                if (!name) {
+                    alert('请填写角色名称。');
+                    return;
+                }
+                if (!codeRaw || !/^[A-Z][A-Z0-9_]*$/.test(codeRaw)) {
+                    alert('角色标识须以大写字母开头，仅含大写字母、数字、下划线。');
+                    return;
+                }
+                if (document.querySelector('#roleTableBody tr[data-role-id="' + codeRaw + '"]')) {
+                    alert('该角色标识已存在。');
+                    return;
+                }
+                ROLE_LABELS[codeRaw] = name;
+                var tbody = document.getElementById('roleTableBody');
+                var assignBox = document.getElementById('assignRoleCheckboxes');
+                if (!tbody || !assignBox) return;
+                var tr = document.createElement('tr');
+                tr.setAttribute('data-role-id', codeRaw);
+                tr.innerHTML =
+                    '<td>' +
+                    escapeHtml(name) +
+                    '</td><td><code>' +
+                    escapeHtml(codeRaw) +
+                    '</code></td><td>0</td><td>' +
+                    escapeHtml(desc || '—') +
+                    '</td><td class="cell-tight"><span class="op-gap">' +
+                    '<button type="button" class="btn btn-sm">查看成员</button>' +
+                    '<button type="button" class="btn btn-sm btn-primary js-role-edit" data-role-id="' +
+                    escapeHtml(codeRaw) +
+                    '" data-role-name="' +
+                    escapeHtml(name) +
+                    '">权限</button>' +
+                    '<button type="button" class="btn btn-sm btn-danger js-role-delete">删除</button>' +
+                    '</span></td>';
+                tbody.appendChild(tr);
+
+                var lab = document.createElement('label');
+                lab.setAttribute('data-assign-role', codeRaw);
+                lab.innerHTML =
+                    '<input type="checkbox" name="assignRoleCb" value="' +
+                    escapeHtml(codeRaw) +
+                    '"><span><strong>' +
+                    escapeHtml(name) +
+                    '</strong> <code>' +
+                    escapeHtml(codeRaw) +
+                    '</code><span class="ra-meta">' +
+                    escapeHtml(desc || '—') +
+                    '</span></span>';
+                assignBox.appendChild(lab);
+
+                closeCreateRoleModal();
+                applyRoleTableSearch();
+                alert('已创建角色（示意）：' + name + '（' + codeRaw + '）');
+            });
+        }
+
+        function closeRoleModal() {
+            setModalOpen(false);
+        }
+
+        document.getElementById('rolePermModalClose').addEventListener('click', closeRoleModal);
+        document.getElementById('rolePermModalCancel').addEventListener('click', closeRoleModal);
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeRoleModal();
+        });
+        document.getElementById('rolePermModalSave').addEventListener('click', function () {
+            var rid = modal.getAttribute('data-current-role') || '';
+            var mode = (document.querySelector('input[name="dataScopeMode"]:checked') || {}).value || '';
+            var nPerm = document.querySelectorAll('#permTreeBody .perm-cb:checked').length;
+            var nDept = customDeptBody ? customDeptBody.querySelectorAll('tr').length : 0;
+            alert('已保存（示意）\n角色：' + rid + '\n已勾选功能点：' + nPerm + '\n数据范围：' + mode + (mode === 'custom' ? '\n自定义部门条数：' + nDept : ''));
+            closeRoleModal();
+        });
+
+        document.getElementById('permTreeBody').addEventListener('click', function (e) {
+            var btn = e.target.closest('.perm-toggle');
+            if (!btn) return;
+            var key = btn.getAttribute('data-toggle');
+            if (!key) return;
+            var expanded = btn.getAttribute('aria-expanded') === 'true';
+            document.querySelectorAll('#permTreeBody tr[data-parent="' + key + '"]').forEach(function (tr) {
+                tr.classList.toggle('perm-row-collapsed', expanded);
+            });
+            btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            btn.textContent = expanded ? '▶' : '▼';
+            btn.classList.toggle('collapsed', expanded);
+        });
+
+        /* ---------- 用户管理：部门树 + 分配角色 ---------- */
+        var userDeptSelectedPath = '';
+        var userAssignLogin = '';
+
+        function rolesToDisplay(codesStr) {
+            if (!codesStr) return '—';
+            return codesStr
+                .split(',')
+                .map(function (c) {
+                    return ROLE_LABELS[c.trim()] || c.trim();
+                })
+                .filter(Boolean)
+                .join('、');
+        }
+
+        function rowMatchesDeptPath(tr) {
+            var rp = tr.getAttribute('data-path') || '';
+            if (!userDeptSelectedPath) return true;
+            if (rp === userDeptSelectedPath) return true;
+            if (userDeptSelectedPath && rp.indexOf(userDeptSelectedPath + '/') === 0) return true;
+            return false;
+        }
+
+        function rowMatchesSearch(tr) {
+            var q = (document.getElementById('userSearch') && document.getElementById('userSearch').value.trim().toLowerCase()) || '';
+            if (!q) return true;
+            var cells = tr.querySelectorAll('td');
+            var text = '';
+            for (var i = 0; i < Math.min(4, cells.length); i++) {
+                text += (cells[i].textContent || '') + ' ';
+            }
+            return text.toLowerCase().indexOf(q) >= 0;
+        }
+
+        function rowMatchesStatus(tr) {
+            var sel = document.getElementById('userStatus');
+            var v = sel && sel.value;
+            if (!v) return true;
+            var badge = tr.querySelector('.badge');
+            return badge && badge.textContent.indexOf(v) >= 0;
+        }
+
+        function applyUserTableFilter() {
+            document.querySelectorAll('#userTableBody tr').forEach(function (tr) {
+                var ok = rowMatchesDeptPath(tr) && rowMatchesSearch(tr) && rowMatchesStatus(tr);
+                tr.style.display = ok ? '' : 'none';
+            });
+        }
+
+        document.getElementById('userDeptTree').addEventListener('click', function (e) {
+            var toggle = e.target.closest('.dept-tree-toggle');
+            if (toggle) {
+                e.preventDefault();
+                e.stopPropagation();
+                var key = toggle.getAttribute('data-branch-toggle');
+                var body = document.querySelector('.dept-tree-branch-body[data-branch-body="' + key + '"]');
+                var exp = toggle.getAttribute('aria-expanded') === 'true';
+                if (body) body.classList.toggle('is-collapsed', exp);
+                toggle.setAttribute('aria-expanded', exp ? 'false' : 'true');
+                toggle.textContent = exp ? '▶' : '▼';
+                toggle.classList.toggle('collapsed', exp);
+                return;
+            }
+            var item = e.target.closest('.dept-tree-item');
+            if (!item || !document.getElementById('userDeptTree').contains(item)) return;
+            document.querySelectorAll('#userDeptTree .dept-tree-item').forEach(function (el) {
+                el.classList.remove('active');
+            });
+            item.classList.add('active');
+            userDeptSelectedPath = item.getAttribute('data-path') || '';
+            var label = item.getAttribute('data-dept-label') || '已选部门';
+            var hint = document.getElementById('userDeptScopeHint');
+            if (hint) {
+                hint.innerHTML = '当前范围：<strong>' + escapeHtml(label) + '</strong>' + (userDeptSelectedPath ? ' <span class="muted">（路径 ' + escapeHtml(userDeptSelectedPath) + '）</span>' : '');
+            }
+            applyUserTableFilter();
+        });
+
+        document.getElementById('btnUserFilter').addEventListener('click', applyUserTableFilter);
+        document.getElementById('btnUserFilterReset').addEventListener('click', function () {
+            var s = document.getElementById('userSearch');
+            var st = document.getElementById('userStatus');
+            if (s) s.value = '';
+            if (st) st.value = '';
+            document.querySelectorAll('#userDeptTree .dept-tree-item').forEach(function (el) {
+                el.classList.remove('active');
+            });
+            var root = document.querySelector('#userDeptTree .dept-tree-item[data-node-id="root"]');
+            if (root) root.classList.add('active');
+            userDeptSelectedPath = '';
+            var hint = document.getElementById('userDeptScopeHint');
+            if (hint) hint.innerHTML = '当前范围：<strong>广联达</strong>';
+            applyUserTableFilter();
+        });
+
+        var userRoleModal = document.getElementById('userRoleModal');
+
+        function setUserRoleModalOpen(on) {
+            if (!userRoleModal) return;
+            userRoleModal.classList.toggle('open', on);
+            userRoleModal.setAttribute('aria-hidden', on ? 'false' : 'true');
+            if (on) document.body.style.overflow = 'hidden';
+            else document.body.style.overflow = '';
+        }
+
+        function openAssignRoleModal(tr) {
+            if (!tr) return;
+            userAssignLogin = tr.getAttribute('data-login') || '';
+            var name = tr.getAttribute('data-name') || '';
+            var codes = tr.getAttribute('data-roles') || '';
+            document.getElementById('assignUserLogin').textContent = userAssignLogin;
+            document.getElementById('assignUserDisplay').textContent = name || userAssignLogin;
+            document.querySelectorAll('input[name="assignRoleCb"]').forEach(function (cb) {
+                cb.checked = codes.split(',').indexOf(cb.value) >= 0;
+            });
+            userRoleModal.setAttribute('data-edit-login', userAssignLogin);
+            setUserRoleModalOpen(true);
+        }
+
+        document.getElementById('userTableBody').addEventListener('click', function (e) {
+            var assignBtn = e.target.closest('.js-assign-role');
+            if (assignBtn) {
+                openAssignRoleModal(assignBtn.closest('tr'));
+                return;
+            }
+            var delBtn = e.target.closest('.js-user-delete');
+            if (!delBtn) return;
+            var tr = delBtn.closest('tr');
+            if (!tr) return;
+            if (tr.getAttribute('data-no-delete') === '1') {
+                alert('该用户为系统内置演示账号，不可删除。');
+                return;
+            }
+            var login = tr.getAttribute('data-login') || '';
+            var name = tr.getAttribute('data-name') || login;
+            if (!confirm('确定删除用户「' + name + '」（' + login + '）？删除后不可恢复（示意，对接后端后生效）。')) return;
+            tr.remove();
+            applyUserTableFilter();
+            alert('已删除用户（示意）：' + login);
+        });
+
+        function closeUserRoleModal() {
+            setUserRoleModalOpen(false);
+        }
+
+        document.getElementById('userRoleModalClose').addEventListener('click', closeUserRoleModal);
+        document.getElementById('userRoleModalCancel').addEventListener('click', closeUserRoleModal);
+        userRoleModal.addEventListener('click', function (e) {
+            if (e.target === userRoleModal) closeUserRoleModal();
+        });
+
+        document.getElementById('userRoleModalSave').addEventListener('click', function () {
+            var login = userRoleModal.getAttribute('data-edit-login') || '';
+            var picked = [];
+            document.querySelectorAll('input[name="assignRoleCb"]:checked').forEach(function (cb) {
+                picked.push(cb.value);
+            });
+            if (!picked.length) {
+                if (!confirm('未勾选任何角色，确定保存？')) return;
+            }
+            var tr = document.querySelector('#userTableBody tr[data-login="' + login.replace(/"/g, '') + '"]');
+            if (tr) {
+                tr.setAttribute('data-roles', picked.join(','));
+                var cell = tr.querySelector('.js-user-roles-cell');
+                if (cell) cell.textContent = rolesToDisplay(picked.join(','));
+            }
+            alert('已更新角色（示意）：' + login + ' → ' + rolesToDisplay(picked.join(',')));
+            closeUserRoleModal();
+        });
+    })();
+    </script>
+</body>
+</html>

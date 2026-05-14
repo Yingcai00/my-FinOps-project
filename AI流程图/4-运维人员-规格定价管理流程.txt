@@ -1,0 +1,53 @@
+sequenceDiagram
+    participant FinOps运维管理员
+    participant 云管系统
+    participant FinOps系统
+    participant 定价管理模块
+    participant 成本池模块
+
+    Note over FinOps运维管理员,成本池模块: 阶段1: 新增规格（云管侧）
+    FinOps运维管理员->>云管系统: 新增服务规格（如"云主机16C/32G"）
+    云管系统->>云管系统: 保存规格信息，状态=草稿
+    Note over 云管系统: 草稿规格不同步至FinOps
+    FinOps运维管理员->>云管系统: 发布规格（状态变更为"已生效"）
+    云管系统->>FinOps系统: 同步已生效的规格信息
+
+    Note over FinOps运维管理员,成本池模块: 阶段2: 规格入库（FinOps侧）
+    FinOps系统->>FinOps系统: 写入规格表
+    FinOps运维管理员->>FinOps系统: 维护规格属性（CPU/内存/存储等）
+
+    Note over FinOps运维管理员,成本池模块: 阶段3: 规格关联成本池
+    FinOps运维管理员->>FinOps系统: 将规格关联至成本池
+    FinOps系统->>FinOps系统: 建立规格-成本池关联关系
+    FinOps系统->>定价管理模块: 触发单价计算
+    定价管理模块->>成本池模块: 获取成本池单价
+    成本池模块-->>定价管理模块: 返回成本池单价
+    定价管理模块->>定价管理模块: 根据定价规则计算规格单价
+    定价管理模块->>FinOps系统: 保存规格单价
+
+    Note over FinOps运维管理员,成本池模块: 阶段4: 规格状态管理
+    alt 编辑草稿规格
+        FinOps运维管理员->>云管系统: 编辑草稿状态的规格
+        云管系统->>云管系统: 更新规格信息，保持草稿状态
+        Note over 云管系统: 草稿规格不同步至FinOps
+    else 编辑/删除已生效规格
+        FinOps运维管理员->>云管系统: 尝试编辑/删除已生效的规格
+        云管系统->>云管系统: 检测规格状态=已生效
+        云管系统-->>FinOps运维管理员: 拒绝操作，提示"已生效的规格不允许编辑或删除"
+    end
+
+    Note over FinOps运维管理员,成本池模块: 阶段5: 定价规则配置
+    FinOps运维管理员->>FinOps系统: 创建定价规则
+    FinOps系统->>定价管理模块: 保存定价规则（基础公式、折扣策略等）
+    FinOps运维管理员->>FinOps系统: 将规则应用到规格
+    定价管理模块->>定价管理模块: 重新计算受影响规格的价格
+
+    Note over FinOps运维管理员,成本池模块: 阶段6: 价格审核发布
+    FinOps运维管理员->>FinOps系统: 审核规格价格
+    alt 审核通过
+        FinOps运维管理员->>FinOps系统: 发布价格
+        FinOps系统->>定价管理模块: 标记价格为已发布
+    else 审核不通过
+        FinOps运维管理员->>FinOps系统: 修改价格配置
+        定价管理模块->>定价管理模块: 重新计算价格
+    end

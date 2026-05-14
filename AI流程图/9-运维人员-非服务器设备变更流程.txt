@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant 领域设备管理员
+    participant FinOps运营管理员
+    participant FinOps系统
+    participant 成本计算引擎
+
+    Note over 领域设备管理员,成本计算引擎: 场景：网络/安全设备资产细分变更
+
+    Note over 领域设备管理员,成本计算引擎: 步骤1: 变更共识
+    领域设备管理员->>FinOps运营管理员: 确认设备资产细分更改（区分是否属于数据中心范围）
+
+    Note over 领域设备管理员,成本计算引擎: 步骤2: 资产细分维护
+    FinOps运营管理员->>FinOps系统: 新增/编辑/删除资产细分
+    FinOps运营管理员->>FinOps系统: 设置是否需要计费
+
+    Note over 领域设备管理员,成本计算引擎: 步骤3: 资产关联
+    领域设备管理员->>FinOps系统: 维护资产所属资产细分
+
+    Note over 领域设备管理员,成本计算引擎: 步骤4: 成本项生成
+    FinOps系统->>成本计算引擎: 检测需要计费的资产细分
+    成本计算引擎->>成本计算引擎: 自动生成成本项：资产细分（数据中心）-公用
+    FinOps系统->>FinOps系统: 保存成本项（公摊=是）
+
+    Note over 领域设备管理员,成本计算引擎: 步骤5: 成本池关联（可选）
+    alt 参与公摊
+        FinOps运营管理员->>FinOps系统: 将成本项加入公摊成本池
+    else 单独计费
+        FinOps运营管理员->>FinOps系统: 创建专用成本池
+        FinOps运营管理员->>FinOps系统: 关联成本项
+    end

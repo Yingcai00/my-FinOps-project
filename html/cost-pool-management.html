@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 成本池管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e8e8e8;
+        }
+
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff7875;
+        }
+
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 13px;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: auto;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #262626;
+            white-space: nowrap;
+            resize: horizontal;
+            overflow: auto;
+            min-width: 80px;
+        }
+
+        /* 冻结操作列 */
+        th:nth-child(10), td:nth-child(10) {
+            position: sticky;
+            right: 0;
+            background-color: white;
+            z-index: 1;
+            box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+        }
+
+        th:nth-child(10) {
+            background-color: #fafafa;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 700px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #262626;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        /* 成本项选择区域 */
+        .cost-items-section {
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            padding: 16px;
+            background-color: #fafafa;
+        }
+
+        .cost-items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .cost-items-header h4 {
+            font-size: 14px;
+            color: #262626;
+        }
+
+        .cost-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .cost-item-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cost-item-checkbox:hover {
+            background-color: #e6f7ff;
+        }
+
+        .cost-item-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .cost-item-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .cost-item-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #262626;
+            margin-bottom: 4px;
+        }
+
+        .cost-item-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .cost-item-details {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .cost-item-tag {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .tag-purpose {
+            background-color: #1890ff;
+        }
+
+        .tag-sharePool {
+            background-color: #52c41a;
+        }
+
+        .tag-shareType {
+            background-color: #faad14;
+        }
+
+        .cost-item-cost {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1890ff;
+            margin-left: 16px;
+        }
+
+        /* 计费资源选择 */
+        .billing-resource-section {
+            margin-top: 20px;
+        }
+
+        .billing-resource-options {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .resource-radio {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .resource-radio:hover {
+            background-color: #e6f7ff;
+        }
+
+        .resource-radio.selected {
+            background-color: #e6f7ff;
+            border-color: #1890ff;
+        }
+
+        .resource-radio input[type="radio"] {
+            margin-right: 8px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        .sub-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sub-menu-item {
+            display: block;
+            padding: 10px 20px 10px 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sub-menu-item:hover, .sub-menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
+                菜单导航
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="asset-ledger-management.html" class="menu-item">
+                        <span>B类资产管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="cost-overview.html" class="menu-item active">
+                        <span>成本管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
+                        </li>
+                        <li>
+                            <a href="cost-pool-management.html" class="sub-menu-item active">成本池管理</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="pricing-management.html" class="menu-item">
+                        <span>定价管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="usage-management.html" class="menu-item">
+                        <span>用量管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li><a href="usage-management.html" class="sub-menu-item">用量明细</a></li>
+                        <li><a href="usage-confirm-view-pc.html?bill_period=2026-04" class="sub-menu-item">PC 用量确认</a></li>
+                        <li><a href="usage-confirm-view-mobile.html?bill_period=2026-04" class="sub-menu-item">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="pricing-pending-todos-demo.html" class="menu-item">
+                        <span>待办管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="bill-overview.html" class="menu-item">
+                        <span>账单管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li><a href="bill-monthly-overview.html" class="sub-menu-item">月度账单总览</a></li>
+                        <li><a href="bill-management.html" class="sub-menu-item">账单详情</a></li>
+                        <li><a href="bill-overview.html" class="sub-menu-item">账单分析</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="usage-push-strategy-management.html" class="menu-item">
+                        <span>消息推送</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li><a href="usage-push-strategy-management.html" class="sub-menu-item">消息推送</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="allocation-management.html" class="menu-item">
+                        <span>分账管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="system-management.html" class="menu-item">
+                        <span>系统管理</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <div class="content">
+            <!-- 账期模块（包含数据统计、查询、列表） -->
+            <div class="cost-month-module" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09); padding: 20px; margin-bottom: 20px;">
+                <!-- 账期选择器 -->
+                <div class="month-selector-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <label style="font-weight: 600; color: #333; font-size: 14px;">账期</label>
+                        <input type="month" id="costMonth" value="2026-02" max="2026-02" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; background-color: white;">
+                        <span class="history-notice-inline" id="historyNotice" style="display: none; color: #fa8c16; font-size: 13px;">
+                            <span class="history-notice-icon">⚠️</span>
+                            <span class="history-notice-text">您正在查看历史成本数据，该数据已归档，仅支持查看和导出，不支持编辑、删除或修改操作。</span>
+                        </span>
+                    </div>
+                    <div class="month-indicator">
+                        <span class="month-badge current" id="monthBadge" style="background-color: #52c41a; color: white; padding: 6px 16px; border-radius: 4px; font-size: 12px; font-weight: 500;">当前月</span>
+                    </div>
+                </div>
+
+                <!-- 分隔线 -->
+                <div id="divider1" style="border-top: 1px solid #f0f0f0; margin: 16px 0;"></div>
+
+                <!-- 查询筛选区域 -->
+                <div class="search-filter-section" style="box-shadow: none; margin-bottom: 20px;">
+                    <div class="filter-form" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: end;">
+                        <div class="filter-item" style="flex: 1; min-width: 200px;">
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">成本池名称</label>
+                            <input type="text" id="filterPoolName" placeholder="请输入成本池名称" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                        </div>
+                        <div class="filter-item" style="flex: 1; min-width: 200px;">
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">计费资源</label>
+                            <select id="filterBillingResource" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                                <option value="">全部</option>
+                                <option value="CPU">CPU</option>
+                                <option value="内存">内存</option>
+                                <option value="DISK">DISK</option>
+                                <option value="流量">流量</option>
+                                <option value="物理机">物理机</option>
+                            </select>
+                        </div>
+                        <div class="filter-item filter-item-actions" style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary" onclick="searchPools()">查询</button>
+                            <button class="btn btn-default" onclick="resetFilter()">重置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分隔线 -->
+                <div style="border-top: 1px solid #f0f0f0; margin: 16px 0;"></div>
+
+                <!-- 成本池列表 -->
+                <div class="table-container">
+                    <!-- 功能操作区（仅当前月显示） -->
+                    <div class="function-actions" style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 16px; gap: 8px;">
+                        <button class="btn btn-primary" onclick="openAddModal()">添加成本池</button>
+                        <button class="btn btn-default" onclick="exportPools()">导出</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>成本池名称</th>
+                                <th>描述</th>
+                                <th>关联成本项</th>
+                                <th>关联成本项数</th>
+                                <th>计费资源</th>
+                                <th>总成本（元）</th>
+                                <th>资源总量</th>
+                                <th>单位</th>
+                                <th>账期</th>
+                                <th>资源单价</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="poolTableBody">
+                            <!-- 数据由JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑成本池弹窗 -->
+    <div class="modal" id="poolModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">添加成本池</span>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="poolId">
+                
+                <!-- 成本池名称 -->
+                <div class="form-group">
+                    <label>成本池名称 *</label>
+                    <input type="text" id="poolName" placeholder="请输入成本池名称">
+                </div>
+
+                <!-- 计费资源选择 -->
+                <div class="form-group">
+                    <label>选择计费资源 *</label>
+                    <select id="billingResource" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                        <option value="">请选择计费资源</option>
+                        <option value="CPU">CPU</option>
+                        <option value="内存">内存</option>
+                        <option value="存储">机械存储</option>
+                        <option value="存储">固态存储</option>
+                        <option value="流量">流量</option>
+                        <option value="物理机">物理机</option>
+                    </select>
+                </div>
+
+                <!-- 单位 -->
+                <div class="form-group">
+                    <label>单位 *</label>
+                    <select id="poolUnit" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                        <option value="">请选择单位</option>
+                        <option value="核">核</option>
+                        <option value="GB">GB</option>
+                        <option value="TB">TB</option>
+                        <option value="台">台</option>
+                        <option value="台">套</option>
+                    </select>
+                </div>
+
+                <!-- 账期 -->
+                <div class="form-group">
+                    <label>账期</label>
+                    <input type="month" id="poolCostMonth" value="2026-02" max="2026-02" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                </div>
+
+                <!-- 成本项选择 -->
+                <div class="form-group">
+                    <label>选择成本项</label>
+                    <div class="cost-items-section">
+                        <div class="cost-items-header" style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+                            <div style="position: relative; width: 350px;">
+                                <input type="text" id="costItemSearch" placeholder="搜索成本项、编码和部署模式" onkeyup="searchCostItems()" style="padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; width: 350px;">
+                            </div>
+                            <span style="font-size: 12px; color: #999;">已选择 <span id="selectedCount">0</span> 项</span>
+                        </div>
+                        <div class="cost-items-list" id="costItemsList">
+                            <!-- 成本项列表由JS动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 描述 -->
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea id="poolDescription" placeholder="请输入描述" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="savePool()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 成本池数据
+        let costPools = JSON.parse(localStorage.getItem('costPools')) || [
+            { id: 1, name: '物理机', description: '包含所有物理服务器成本', billingResource: 'CPU', totalCost: 450000, totalResources: 320, unitPrice: 1406.25, costItemCount: 8, selectedItems: [1, 8], costMonth: '2026-02' },
+            { id: 2, name: '容器', description: '包含所有容器相关成本', billingResource: '内存', totalCost: 280000, totalResources: 480, unitPrice: 583.33, costItemCount: 6, selectedItems: [2, 7, 42], costMonth: '2026-02' },
+            { id: 3, name: '虚拟机', description: '包含所有虚拟机成本', billingResource: 'CPU', totalCost: 320000, totalResources: 256, unitPrice: 1250.00, costItemCount: 5, selectedItems: [9, 10], costMonth: '2026-02' },
+            { id: 4, name: '存储', description: '包含所有存储相关成本', billingResource: 'DISK', totalCost: 150000, totalResources: 120, unitPrice: 1250.00, costItemCount: 3, selectedItems: [3, 4, 6], costMonth: '2026-02' },
+            { id: 5, name: '数据库', description: '包含所有数据库相关成本', billingResource: 'CPU', totalCost: 85000, totalResources: 80, unitPrice: 1062.50, costItemCount: 2, selectedItems: [5, 44], costMonth: '2026-02' }
+        ];
+
+        // 筛选后的成本池数据
+        let filteredPools = [...costPools];
+
+        // 从成本总览页面获取的成本项数据
+        const costItems = [
+            { id: 1, code: 'DEV-001', name: '标准通用服务器-容器', category: '设备费用', pool: '标准通用服务器-容器', purpose: '物理机', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '80000' },
+            { id: 2, code: 'DEV-002', name: '标准通用服务器-容器', category: '设备费用', pool: '标准通用服务器-容器', purpose: '容器', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '75000' },
+            { id: 3, code: 'DEV-003', name: '大数据类存储-机械多盘', category: '设备费用', pool: '大数据类存储-机械多盘', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '90000' },
+            { id: 4, code: 'DEV-004', name: '大数据类存储-机械大盘', category: '设备费用', pool: '大数据类存储-机械大盘', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '95000' },
+            { id: 5, code: 'DEV-005', name: '大数据类存储-高速IO', category: '设备费用', pool: '大数据类存储-高速IO', purpose: '数据库', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '100000' },
+            { id: 6, code: 'DEV-006', name: '大数据类超大存储', category: '设备费用', pool: '大数据类超大存储', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '110000' },
+            { id: 7, code: 'DEV-007', name: '高性能容器应用-容器', category: '设备费用', pool: '高性能容器应用-容器', purpose: '容器', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '85000' },
+            { id: 8, code: 'DEV-008', name: '小型单机应用', category: '设备费用', pool: '小型单机应用', purpose: '物理机', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '60000' },
+            { id: 9, code: 'DEV-009', name: '高速编译型应用', category: '设备费用', pool: '高速编译型应用', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '70000' },
+            { id: 10, code: 'DEV-010', name: '国产化服务器', category: '设备费用', pool: '国产化服务器', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '80000' },
+            { id: 11, code: 'DEV-011', name: 'GPU服务器-RTX3090', category: '设备费用', pool: 'GPU服务器-RTX3090', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '120000' },
+            { id: 12, code: 'DEV-012', name: 'GPU服务器-RTX4090', category: '设备费用', pool: 'GPU服务器-RTX4090', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '150000' },
+            { id: 13, code: 'DEV-013', name: 'GPU服务器-A10', category: '设备费用', pool: 'GPU服务器-A10', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '130000' },
+            { id: 14, code: 'DEV-014', name: 'GPU服务器-A40', category: '设备费用', pool: 'GPU服务器-A40', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '140000' },
+            { id: 15, code: 'DEV-015', name: 'GPU服务器-A100', category: '设备费用', pool: 'GPU服务器-A100', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '200000' },
+            { id: 16, code: 'DEV-016', name: 'GPU服务器-A800', category: '设备费用', pool: 'GPU服务器-A800', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '250000' },
+            { id: 17, code: 'DEV-017', name: 'GPU服务器-H100', category: '设备费用', pool: 'GPU服务器-H100', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '300000' },
+            { id: 18, code: 'DEV-018', name: 'GPU服务器-H800', category: '设备费用', pool: 'GPU服务器-H800', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '280000' },
+            { id: 19, code: 'DEV-019', name: '块存储SAN', category: '设备费用', pool: '块存储SAN', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', monthlyCost: '180000' },
+            { id: 20, code: 'OPS-020', name: '大数据类存储-机械多盘', category: '运营费用', pool: '大数据类存储-机械多盘', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '70000' },
+            { id: 21, code: 'DEV-021', name: 'waf', category: '设备费用', pool: '安全', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '60000' },
+            { id: 22, code: 'DEV-022', name: 'IDS', category: '设备费用', pool: '安全', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '55000' },
+            { id: 23, code: 'DEV-023', name: 'IPS', category: '设备费用', pool: '安全', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '50000' },
+            { id: 24, code: 'DEV-024', name: '防火墙', category: '设备费用', pool: '安全', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '75000' },
+            { id: 25, code: 'DEV-025', name: '堡垒机', category: '设备费用', pool: '安全', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '45000' },
+            { id: 26, code: 'DEV-026', name: '防火墙（数据中心）', category: '设备费用', pool: '网络', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '80000' },
+            { id: 27, code: 'DEV-027', name: '流量编排（数据中心）', category: '设备费用', pool: '网络', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '70000' },
+            { id: 28, code: 'DEV-028', name: '路由器（数据中心）', category: '设备费用', pool: '网络', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '65000' },
+            { id: 29, code: 'DEV-029', name: '交换机（数据中心）', category: '设备费用', pool: '网络', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '90000' },
+            { id: 30, code: 'DEV-030', name: '负载均衡（数据中心）', category: '设备费用', pool: '网络', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '85000' },
+            { id: 31, code: 'OPS-031', name: '维保费用', category: '运营费用', pool: '网络', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '30000' },
+            { id: 32, code: 'SW-032', name: '动环系统', category: '软件平台', pool: '公摊', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '85000' },
+            { id: 33, code: 'OPS-033', name: '动环维保', category: '运营费用', pool: '公摊', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '25000' },
+            { id: 34, code: 'INF-034', name: '机房环境', category: '基础设施', pool: '公摊', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '251917' },
+            { id: 35, code: 'INF-035', name: '场地成本', category: '基础设施', pool: '公摊', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '7020' },
+            { id: 36, code: 'OPS-036', name: '机房维保费用', category: '运营费用', pool: '公摊', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '350000' },
+            { id: 37, code: 'OPS-037', name: '电费-北京一期', category: '运营费用', pool: '公摊', purpose: '', region: '北京一期', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '45460' },
+            { id: 38, code: 'OPS-038', name: '电费-北京二期', category: '运营费用', pool: '公摊', purpose: '', region: '北京二期', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '210456' },
+            { id: 39, code: 'OPS-039', name: '电费-西安', category: '运营费用', pool: '公摊', purpose: '', region: '西安', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '150316' },
+            { id: 40, code: 'OPS-040', name: '电费-上海', category: '运营费用', pool: '公摊', purpose: '', region: '上海', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '79429' },
+            { id: 41, code: 'OPS-041', name: '机房人工费用', category: '运营费用', pool: '公摊', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '40000' },
+            { id: 42, code: 'SW-042', name: '容器管理平台', category: '软件平台', pool: '容器', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', monthlyCost: '48000' },
+            { id: 43, code: 'OPS-043', name: '容器人工费用', category: '运营费用', pool: '容器', purpose: '', region: '', sharePool: '容器', shareType: '非公摊成本', monthlyCost: '35000' },
+            { id: 44, code: 'OPS-044', name: '数据库人工费用', category: '运营费用', pool: '数据库', purpose: '', region: '', sharePool: '数据库', shareType: '非公摊成本', monthlyCost: '30000' },
+            { id: 45, code: 'NET-045', name: '互联网网络带宽', category: '网络带宽', pool: '网络', purpose: '', region: '', sharePool: '网络', shareType: '非公摊成本', monthlyCost: '512410' }
+        ];
+
+        // 整理成本项数据
+        const costItemsData = costItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            code: item.code,
+            cost: parseInt(item.monthlyCost) || 0,
+            sharePool: item.sharePool,
+            shareType: item.shareType,
+            purpose: item.purpose || '未设置'
+        }));
+
+        // 当前编辑的成本池ID
+        let currentEditId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPoolTable();
+            renderCostItemsList();
+            
+            // 账期变化监听
+            document.getElementById('costMonth').addEventListener('change', function() {
+                const selectedMonth = this.value;
+                const systemMonth = '2026-02';
+                const historyNotice = document.getElementById('historyNotice');
+                const monthBadge = document.getElementById('monthBadge');
+                const functionActions = document.querySelector('.table-container .function-actions');
+                const divider1 = document.getElementById('divider1');
+                
+                if (selectedMonth !== systemMonth) {
+                    historyNotice.style.display = 'inline-flex';
+                    monthBadge.textContent = '历史月';
+                    monthBadge.className = 'month-badge history';
+                    monthBadge.style.backgroundColor = '#fa8c16';
+                    // 隐藏功能操作区模块
+                    if (functionActions) {
+                        functionActions.style.display = 'none';
+                    }
+                    // 隐藏操作列
+                    document.querySelectorAll('th:nth-child(10), td:nth-child(10)').forEach(cell => {
+                        cell.style.display = 'none';
+                    });
+                } else {
+                    historyNotice.style.display = 'none';
+                    monthBadge.textContent = '当前月';
+                    monthBadge.className = 'month-badge current';
+                    monthBadge.style.backgroundColor = '#52c41a';
+                    // 显示功能操作区模块
+                    if (functionActions) {
+                        functionActions.style.display = 'flex';
+                    }
+                    // 显示操作列
+                    document.querySelectorAll('th:nth-child(10), td:nth-child(10)').forEach(cell => {
+                        cell.style.display = '';
+                    });
+                }
+                
+                // 根据账期加载数据（实际项目中应该从后端API获取）
+                loadPoolsByMonth(selectedMonth);
+            });
+        });
+
+        // 根据账期加载成本池数据
+        function loadPoolsByMonth(month) {
+            // 实际项目中应该从后端API获取指定月份的数据
+            // 这里使用localStorage模拟
+            const monthData = JSON.parse(localStorage.getItem('costPools_' + month));
+            if (monthData) {
+                costPools = monthData;
+            } else {
+                // 如果没有该月份数据，使用默认数据
+                costPools = JSON.parse(localStorage.getItem('costPools')) || [
+                    { id: 1, name: '物理机', description: '包含所有物理服务器成本', billingResource: 'CPU', totalCost: 450000, totalResources: 320, unitPrice: 1406.25, costItemCount: 8, selectedItems: [1, 8], costMonth: month },
+                    { id: 2, name: '容器', description: '包含所有容器相关成本', billingResource: '内存', totalCost: 280000, totalResources: 480, unitPrice: 583.33, costItemCount: 6, selectedItems: [2, 7, 42], costMonth: month },
+                    { id: 3, name: '虚拟机', description: '包含所有虚拟机成本', billingResource: 'CPU', totalCost: 320000, totalResources: 256, unitPrice: 1250.00, costItemCount: 5, selectedItems: [9, 10], costMonth: month },
+                    { id: 4, name: '存储', description: '包含所有存储相关成本', billingResource: 'DISK', totalCost: 150000, totalResources: 120, unitPrice: 1250.00, costItemCount: 3, selectedItems: [3, 4, 6], costMonth: month },
+                    { id: 5, name: '数据库', description: '包含所有数据库相关成本', billingResource: 'CPU', totalCost: 85000, totalResources: 80, unitPrice: 1062.50, costItemCount: 2, selectedItems: [5, 44], costMonth: month }
+                ];
+            }
+            filteredPools = [...costPools];
+            renderPoolTable();
+            
+            // 根据当前月份状态更新UI
+            const systemMonth = '2026-02';
+            const functionActions = document.querySelector('.table-container .function-actions');
+            
+            if (month !== systemMonth) {
+                // 隐藏功能操作区模块
+                if (functionActions) {
+                    functionActions.style.display = 'none';
+                }
+                // 隐藏操作列
+                document.querySelectorAll('th:nth-child(10), td:nth-child(10)').forEach(cell => {
+                    cell.style.display = 'none';
+                });
+            } else {
+                // 显示功能操作区模块
+                if (functionActions) {
+                    functionActions.style.display = 'flex';
+                }
+                // 显示操作列
+                document.querySelectorAll('th:nth-child(10), td:nth-child(10)').forEach(cell => {
+                    cell.style.display = '';
+                });
+            }
+        }
+
+        // 渲染成本池表格
+        function renderPoolTable() {
+            const tbody = document.getElementById('poolTableBody');
+            tbody.innerHTML = filteredPools.map(pool => {
+                // 获取关联的成本项名称
+                const selectedItemIds = pool.selectedItems || [];
+                const selectedItems = costItemsData.filter(item => selectedItemIds.includes(item.id));
+                const costItemNames = selectedItems.map(item => item.name).join(', ');
+                
+                // 根据计费资源类型确定单位
+                let unit = '';
+                switch (pool.billingResource) {
+                    case 'CPU':
+                        unit = 'C';
+                        break;
+                    case '内存':
+                        unit = 'GB';
+                        break;
+                    case 'DISK':
+                        unit = 'TB';
+                        break;
+                    case '流量':
+                        unit = 'GB';
+                        break;
+                    case '台':
+                        unit = '台';
+                        break;
+                    default:
+                        unit = '单位';
+                }
+                
+                return `
+                    <tr>
+                        <td><input type="checkbox" class="pool-checkbox" data-id="${pool.id}"></td>
+                        <td>${pool.name}</td>
+                        <td>${pool.description || '-'}</td>
+                        <td>${costItemNames || '-'}</td>
+                        <td>${pool.costItemCount} 项</td>
+                        <td>${pool.billingResource}</td>
+                        <td>¥${pool.totalCost.toLocaleString()}</td>
+                        <td>${pool.totalResources.toLocaleString()}</td>
+                        <td>${unit}</td>
+                        <td>${pool.costMonth || '-'}</td>
+                        <td>¥${pool.unitPrice.toFixed(2)}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn btn-primary btn-sm" onclick="editPool(${pool.id})">编辑</button>
+                                <button class="btn btn-danger btn-sm" onclick="deletePool(${pool.id})">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 渲染成本项列表
+        function renderCostItemsList(searchTerm = '') {
+            const container = document.getElementById('costItemsList');
+            
+            let html = '';
+            
+            // 收集所有已被其他成本池关联的成本项ID
+            let usedItemIds = [];
+            costPools.forEach(pool => {
+                // 编辑模式下，排除当前编辑的成本池
+                if (currentEditId && pool.id === currentEditId) return;
+                if (pool.selectedItems) {
+                    usedItemIds = [...usedItemIds, ...pool.selectedItems];
+                }
+            });
+            usedItemIds = [...new Set(usedItemIds)]; // 去重
+            
+            // 过滤成本项
+            let filteredItems = searchTerm ? 
+                costItemsData.filter(item => 
+                    (item.name.toLowerCase().includes(searchTerm) || 
+                    item.code.toLowerCase().includes(searchTerm) ||
+                    item.purpose.toLowerCase().includes(searchTerm)) &&
+                    // 排除已被其他成本池关联的成本项
+                    !usedItemIds.includes(item.id)
+                ) : 
+                costItemsData.filter(item => 
+                    // 排除已被其他成本池关联的成本项
+                    !usedItemIds.includes(item.id)
+                );
+
+            if (filteredItems.length === 0) {
+                html = '<p style="text-align: center; color: #999; padding: 40px;">未找到匹配的成本项</p>';
+            } else {
+                html = filteredItems.map(item => {
+                    return `
+                        <label class="cost-item-checkbox">
+                            <input type="checkbox" value="${item.id}" onchange="updateSelectedCount()">
+                            <div class="cost-item-info">
+                                <div style="flex: 1;">
+                                    <div class="cost-item-name">${item.name}</div>
+                                    <div class="cost-item-meta">成本编码: ${item.code}</div>
+                                </div>
+                                <div class="cost-item-details">
+                                    <span class="cost-item-tag tag-purpose">${item.purpose}</span>
+                                    <span class="cost-item-tag tag-sharePool">${item.sharePool}</span>
+                                    <span class="cost-item-tag tag-shareType">${item.shareType}</span>
+                                    <span class="cost-item-cost">¥${item.cost.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </label>
+                    `;
+                }).join('');
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // 搜索成本项
+        function searchCostItems() {
+            const searchTerm = document.getElementById('costItemSearch').value.toLowerCase();
+            renderCostItemsList(searchTerm);
+        }
+
+        // 更新已选择成本项数量
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('#costItemsList input[type="checkbox"]:checked');
+            document.getElementById('selectedCount').textContent = checkboxes.length;
+        }
+
+
+
+        // 打开添加弹窗
+        function openAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = '添加成本池';
+            document.getElementById('poolId').value = '';
+            document.getElementById('poolName').value = '';
+            document.getElementById('poolDescription').value = '';
+            document.getElementById('billingResource').value = '';
+            document.getElementById('poolUnit').value = '';
+            document.querySelectorAll('#costItemsList input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('selectedCount').textContent = '0';
+            document.getElementById('poolModal').classList.add('active');
+        }
+
+        // 编辑成本池
+        function editPool(id) {
+            const pool = costPools.find(p => p.id === id);
+            if (!pool) return;
+
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = '编辑成本池';
+            document.getElementById('poolId').value = pool.id;
+            document.getElementById('poolName').value = pool.name;
+            document.getElementById('poolDescription').value = pool.description || '';
+
+            // 设置计费资源
+            document.getElementById('billingResource').value = pool.billingResource || '';
+            
+            // 设置单位
+            document.getElementById('poolUnit').value = pool.unit || '';
+
+            // 设置已选择的成本项
+            setTimeout(() => {
+                const checkboxes = document.querySelectorAll('#costItemsList input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    const itemId = parseInt(cb.value);
+                    if (pool.selectedItems && pool.selectedItems.includes(itemId)) {
+                        cb.checked = true;
+                    } else {
+                        cb.checked = false;
+                    }
+                });
+                updateSelectedCount();
+            }, 50);
+
+            document.getElementById('poolModal').classList.add('active');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('poolModal').classList.remove('active');
+        }
+
+        // 保存成本池
+        function savePool() {
+            const name = document.getElementById('poolName').value.trim();
+            const description = document.getElementById('poolDescription').value.trim();
+            const billingResource = document.getElementById('billingResource').value;
+            const unit = document.getElementById('poolUnit').value;
+            const selectedItems = document.querySelectorAll('#costItemsList input[type="checkbox"]:checked');
+
+            if (!name) {
+                alert('请输入成本池名称');
+                return;
+            }
+
+            if (!billingResource) {
+                alert('请选择计费资源');
+                return;
+            }
+
+            if (!unit) {
+                alert('请选择单位');
+                return;
+            }
+
+            const selectedItemIds = Array.from(selectedItems).map(cb => parseInt(cb.value));
+            const selectedCostItems = costItemsData.filter(item => selectedItemIds.includes(item.id));
+            const costItemCount = selectedCostItems.length;
+            
+            // 基于选中的成本项计算总成本
+            const totalCost = selectedCostItems.reduce((sum, item) => sum + item.cost, 0);
+            
+            // 根据计费资源类型计算资源总量
+            let totalResources = 0;
+            switch (billingResource) {
+                case 'CPU':
+                    totalResources = selectedCostItems.length * 32; // 假设每台服务器32核
+                    break;
+                case '内存':
+                    totalResources = selectedCostItems.length * 64; // 假设每台服务器64G内存
+                    break;
+                case '存储':
+                    totalResources = selectedCostItems.length * 2; // 假设每台服务器2TB存储
+                    break;
+                case '流量':
+                    totalResources = selectedCostItems.length * 100; // 假设每台服务器100G流量
+                    break;
+                case '物理机':
+                    totalResources = selectedCostItems.length; // 按台数计算
+                    break;
+                default:
+                    totalResources = selectedCostItems.length;
+            }
+            
+            const unitPrice = totalResources > 0 ? totalCost / totalResources : 0;
+
+            const costMonth = document.getElementById('costMonth').value;
+            
+            if (currentEditId) {
+                // 编辑
+                const index = costPools.findIndex(p => p.id === currentEditId);
+                if (index >= 0) {
+                    costPools[index] = {
+                        ...costPools[index],
+                        name,
+                        description,
+                        billingResource,
+                        unit,
+                        totalCost,
+                        totalResources,
+                        unitPrice,
+                        costItemCount,
+                        selectedItems: selectedItemIds,
+                        costMonth
+                    };
+                }
+            } else {
+                // 添加
+                const newId = costPools.length > 0 ? Math.max(...costPools.map(p => p.id)) + 1 : 1;
+                costPools.push({
+                    id: newId,
+                    name,
+                    description,
+                    billingResource,
+                    unit,
+                    totalCost,
+                    totalResources,
+                    unitPrice,
+                    costItemCount,
+                    selectedItems: selectedItemIds,
+                    costMonth
+                });
+            }
+
+            // 保存到localStorage
+            localStorage.setItem('costPools', JSON.stringify(costPools));
+
+            searchPools();
+            closeModal();
+            alert(currentEditId ? '修改成功' : '添加成功');
+        }
+
+        // 删除成本池
+        function deletePool(id) {
+            if (!confirm('确定要删除该成本池吗？')) return;
+
+            costPools = costPools.filter(p => p.id !== id);
+            localStorage.setItem('costPools', JSON.stringify(costPools));
+            searchPools();
+            alert('删除成功');
+        }
+
+        // 查询成本池
+        function searchPools() {
+            const poolName = document.getElementById('filterPoolName').value.trim();
+            const billingResource = document.getElementById('filterBillingResource').value;
+
+            filteredPools = costPools.filter(pool => {
+                const matchName = !poolName || pool.name.toLowerCase().includes(poolName.toLowerCase());
+                const matchResource = !billingResource || pool.billingResource === billingResource;
+                return matchName && matchResource;
+            });
+
+            renderPoolTable();
+        }
+
+        // 重置筛选
+        function resetFilter() {
+            document.getElementById('filterPoolName').value = '';
+            document.getElementById('filterBillingResource').value = '';
+            filteredPools = [...costPools];
+            renderPoolTable();
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('poolModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // 导出成本池数据
+        function exportPools() {
+            // 准备CSV内容
+            let csvContent = "成本池名称,描述,成本项数量,总成本,计费资源,资源总量,单价\n";
+            
+            filteredPools.forEach(pool => {
+                const row = [
+                    pool.name,
+                    pool.description || '',
+                    pool.costItemCount,
+                    pool.totalCost.toFixed(2),
+                    pool.billingResource,
+                    pool.totalResources,
+                    pool.unitPrice.toFixed(2)
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `成本池数据_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+        
+        // 绑定全选/取消全选事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const isChecked = this.checked;
+                    document.querySelectorAll('.pool-checkbox').forEach(checkbox => {
+                        checkbox.checked = isChecked;
+                    });
+                });
+            }
+        });
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台</title>
+    <!-- 通用样式 -->
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <!-- 头部 -->
+    <div id="header-container"></div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div id="sidebar-container"></div>
+        
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 成本管理页面 -->
+            <div class="page-content active" id="cost-management">
+                <!-- 顶部全局概览区 -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">本月总成本</div>
+                        <div class="stat-value">¥1,250,000</div>
+                        <div class="stat-change negative">环比 +5.2%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">月末预测成本</div>
+                        <div class="stat-value">¥1,320,000</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-label">公摊总成本</div>
+                        <div class="stat-value">¥320,000</div>
+                    </div>
+                </div>
+
+                <!-- 查询与筛选区 -->
+                <div class="search-filter">
+                    <div class="filter-form">
+                        <div class="filter-item">
+                            <label>成本池</label>
+                            <select>
+                                <option value="">全部</option>
+                                <option value="设备费用">设备费用</option>
+                                <option value="软件平台">软件平台</option>
+                                <option value="网络成本">网络成本</option>
+                                <option value="人力成本">人力成本</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>地域</label>
+                            <select>
+                                <option value="">全部</option>
+                                <option value="北京">北京</option>
+                                <option value="上海">上海</option>
+                                <option value="西安">西安</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>公摊类型</label>
+                            <select>
+                                <option value="">全部</option>
+                                <option value="公摊">公摊</option>
+                                <option value="非公摊">非公摊</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>数据来源</label>
+                            <select>
+                                <option value="">全部</option>
+                                <option value="资产系统-B类资产">资产系统-B类资产</option>
+                                <option value="手动维护">手动维护</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>成本项名称</label>
+                            <input type="text" placeholder="请输入成本项名称">
+                        </div>
+                        <div class="filter-item">
+                            <label>账期</label>
+                            <input type="month" placeholder="请选择账期">
+                        </div>
+                        <div class="filter-item" style="align-self: flex-end;">
+                            <button class="btn btn-primary">查询</button>
+                        </div>
+                        <div class="filter-item" style="align-self: flex-end;">
+                            <button class="btn btn-default">重置</button>
+                        </div>
+                        <div class="filter-item" style="align-self: flex-end;">
+                            <button class="btn btn-default">高级筛选</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮区 -->
+                <div class="action-buttons">
+                    <button class="btn btn-default">批量导入</button>
+                    <button class="btn btn-default">自动同步</button>
+                    <button class="btn btn-default">手动添加</button>
+                    <button class="btn btn-primary">执行公摊计算 <span class="badge badge-warning">待执行</span></button>
+                </div>
+
+                <!-- 数据表格区 -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox"></th>
+                                <th>成本项</th>
+                                <th>公摊类型</th>
+                                <th>月成本</th>
+                                <th>公摊后月总成本</th>
+                                <th>成本编码</th>
+                                <th>成本池</th>
+                                <th>成本子池</th>
+                                <th>地域</th>
+                                <th>公摊维度</th>
+                                <th>描述</th>
+                                <th>单价（元）</th>
+                                <th>折旧月限</th>
+                                <th>折旧月价</th>
+                                <th>数量</th>
+                                <th>单位</th>
+                                <th>账期</th>
+                                <th>CPU总量</th>
+                                <th>内存总量</th>
+                                <th>存储总量</th>
+                                <th>流量总量</th>
+                                <th>数据来源</th>
+                                <th>创建时间</th>
+                                <th>更新时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" data-id="1" class="text-primary">服务器A</a></td>
+                                <td>非公摊</td>
+                                <td>¥50,000</td>
+                                <td>--</td>
+                                <td>COST-2026-0001</td>
+                                <td>设备费用</td>
+                                <td>服务器</td>
+                                <td>北京</td>
+                                <td>部门</td>
+                                <td>生产环境服务器</td>
+                                <td>120,000</td>
+                                <td>36</td>
+                                <td>3,333.33</td>
+                                <td>10</td>
+                                <td>台</td>
+                                <td>2026-01</td>
+                                <td>80</td>
+                                <td>320</td>
+                                <td>10</td>
+                                <td>0</td>
+                                <td>资产系统-B类资产</td>
+                                <td>2026-01-01 10:00:00</td>
+                                <td>2026-01-15 14:30:00</td>
+                                <td>
+                                    <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">详情</button>
+                                    <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">编辑</button>
+                                    <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" data-id="2" class="text-primary">服务器B</a></td>
+                                <td>非公摊</td>
+                                <td>¥45,000</td>
+                                <td>--</td>
+                                <td>COST-2026-0002</td>
+                                <td>设备费用</td>
+                                <td>服务器</td>
+                                <td>上海</td>
+                                <td>部门</td>
+                                <td>测试环境服务器</td>
+                                <td>90,000</td>
+                                <td>36</td>
+                                <td>2,500.00</td>
+                                <td>8</td>
+                                <td>台</td>
+                                <td>2026-01</td>
+                                <td>48</td>
+                                <td>192</td>
+                                <td>8</td>
+                                <td>0</td>
+                                <td>资产系统-B类资产</td>
+                                <td>2026-01-02 09:30:00</td>
+                                <td>2026-01-16 10:15:00</td>
+                                <td>
+                                    <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">详情</button>
+                                    <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">编辑</button>
+                                    <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" data-id="3" class="text-primary">网络带宽</a></td>
+                                <td>公摊</td>
+                                <td>¥100,000</td>
+                                <td>--</td>
+                                <td>COST-2026-0003</td>
+                                <td>网络成本</td>
+                                <td>带宽费用</td>
+                                <td>北京</td>
+                                <td>部门</td>
+                                <td>企业级带宽</td>
+                                <td>100,000</td>
+                                <td>1</td>
+                                <td>100,000.00</td>
+                                <td>1</td>
+                                <td>Gbps</td>
+                                <td>2026-01</td>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>1000</td>
+                                <td>手动维护</td>
+                                <td>2026-01-03 11:00:00</td>
+                                <td>2026-01-17 15:45:00</td>
+                                <td>
+                                    <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">详情</button>
+                                    <button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;">编辑</button>
+                                    <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;">删除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination">
+                    <button disabled>上一页</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>4</button>
+                    <button>5</button>
+                    <button>下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入通用JavaScript -->
+    <script src="js/common.js"></script>
+    
+    <!-- 页面初始化 -->
+    <script>
+        // 加载头部组件
+        fetch('components/header.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+            });
+
+        // 加载侧边栏组件
+        fetch('components/sidebar.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('sidebar-container').innerHTML = html;
+                // 侧边栏加载完成后初始化
+                setTimeout(() => {
+                    FinOps.initSidebar();
+                    FinOps.markActiveMenu();
+                }, 100);
+            });
+    </script>
+</body>
+</html>

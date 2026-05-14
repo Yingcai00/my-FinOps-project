@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 资产详情</title>
+    <!-- 自定义样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6e6e6;
+        }
+
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff7875;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            /* 勿用 overflow:hidden，否则会裁切资产细分下拉面板的溢出区域 */
+            overflow: visible;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 资产细分下拉：保证浮在表单之上且选项长文案可换行 */
+        #finopsSubdivideOuter {
+            position: relative;
+            z-index: 5;
+        }
+
+        #assetSubdivideDropdown.select-dropdown {
+            z-index: 2000;
+            min-width: 100%;
+            overflow: visible;
+            box-sizing: border-box;
+        }
+
+        #assetSubdivideOptions .subdivide-option-row {
+            word-break: break-word;
+            white-space: normal;
+            align-items: flex-start;
+        }
+
+        #assetSubdivideOptions .subdivide-option-row > span:first-child {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            margin-left: 8px;
+        }
+
+        .tab:hover {
+            color: #1890ff;
+        }
+
+        .tab.active {
+            border-bottom-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .tab-content {
+            padding: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .form-group input[disabled],
+        .form-group select[disabled],
+        .form-group textarea[disabled] {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .flex-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .flex-group input {
+            flex: 1;
+        }
+
+        .flex-group span {
+            white-space: nowrap;
+            color: #666;
+        }
+
+        .button-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .required {
+            color: #ff4d4f;
+            margin-right: 4px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        .sub-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sub-menu-item {
+            display: block;
+            padding: 10px 20px 10px 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sub-menu-item:hover, .sub-menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
+                菜单导航
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="asset-ledger-management.html" class="menu-item active">
+                        <span>资产管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="cost-overview.html" class="menu-item">
+                        <span>成本管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
+                        </li>
+                        <li>
+                            <a href="cost-pool-management.html" class="sub-menu-item">成本池管理</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="pricing-rule-management.html" class="menu-item">
+                        <span>定价管理</span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a href="pricing-rule-management.html" class="sub-menu-item">定价规则管理</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="price-table-management.html" class="menu-item">
+                        <span>价格表管理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="system-management.html" class="menu-item">
+                        <span>系统管理</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 右侧内容 -->
+        <div class="content">
+            <!-- 操作按钮区 -->
+            <div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
+                <button class="btn btn-default" id="back-btn" onclick="goBack()">返回</button>
+            </div>
+
+            <!-- 资产详情容器 -->
+            <div class="tab-container">
+                <div style="padding: 16px 24px; border-bottom: 1px solid #f0f0f0; background-color: #fafafa;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 16px; font-weight: 600;" id="asset-name">资产详情</div>
+                        <button class="btn btn-primary" id="edit-btn" onclick="enterEditMode()">编辑</button>
+                    </div>
+                </div>
+
+                <!-- 基础信息模块 -->
+                <div class="tab-content">
+                    <h3 class="card-title">基础信息</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>资产名称</label>
+                            <input type="text" id="assetName" placeholder="请输入资产名称" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>资产编码</label>
+                            <input type="text" id="assetCode" placeholder="请输入资产编码" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>设备序列号</label>
+                            <input type="text" id="serialNumber" placeholder="请输入设备序列号" disabled>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>设备分类</label>
+                            <select id="categoryName" disabled>
+                                <option value="服务器">服务器</option>
+                                <option value="存储设备">存储设备</option>
+                                <option value="网络设备">网络设备</option>
+                                <option value="安全设备">安全设备</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>资产型号</label>
+                            <input type="text" id="assetModel" placeholder="请输入资产型号" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>单位</label>
+                            <select id="assetUnit" disabled>
+                                <option value="台">台</option>
+                                <option value="套">套</option>
+                                <option value="个">个</option>
+                                <option value="件">件</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>资产归属公司</label>
+                            <input type="text" id="owner" placeholder="请输入资产归属公司" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>采购价格</label>
+                            <div class="flex-group">
+                                <input type="number" id="purchasePrice" placeholder="请输入采购价格" step="0.01" disabled>
+                                <span>元</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>使用月限</label>
+                            <div class="flex-group">
+                                <input type="number" id="usageMonths" placeholder="请输入使用月限" step="1" disabled>
+                                <span>月</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>采购日期</label>
+                            <input type="date" id="purchaseDate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>磁盘大小</label>
+                            <div class="flex-group">
+                                <input type="number" id="diskSize" placeholder="请输入磁盘大小" step="0.01" disabled>
+                                <span>TB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 3;">
+                            <label>资产配置</label>
+                            <textarea id="assetConfig" placeholder="请输入资产配置" disabled></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 计费信息模块 -->
+                <div class="tab-content" style="border-top: 1px solid #f0f0f0; margin-top: 20px;">
+                    <h3 class="card-title">计费信息</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><span class="required">*</span> 资产细分</label>
+                            <div id="finopsSubdivideOuter">
+                                <div class="custom-select" id="finopsSubdivideTrigger" style="width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; padding: 4px 12px; min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; cursor: pointer; background-color: #f5f5f5;">
+                                    <div id="assetSubdivideTags" style="display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0;"></div>
+                                    <input type="text" id="assetSubdivideSearch" placeholder="请选择资产细分" style="border: none; outline: none; flex: 1; min-width: 120px; font-size: 14px; padding: 4px 0;">
+                                    <span class="select-arrow" style="margin-left: 4px; color: #999; flex-shrink: 0;">▼</span>
+                                </div>
+                                <div id="assetSubdivideDropdown" class="select-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; border: 1px solid #d9d9d9; border-radius: 4px; background-color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); display: none;">
+                                    <div style="padding: 8px; border-bottom: 1px solid #f0f0f0;">
+                                        <input type="text" id="assetSubdivideDropdownSearch" placeholder="搜索资产细分" style="width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                                    </div>
+                                    <div id="assetSubdivideOptions" style="padding: 4px 0;"></div>
+                                </div>
+                                <input type="hidden" id="filterAssetSubdivide" value="">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><span class="required">*</span> 部署模式</label>
+                            <select id="finopsPurpose" disabled>
+                                <option value="物理机">物理机</option>
+                                <option value="虚拟机集群">虚拟机集群</option>
+                                <option value="容器集群">容器集群</option>
+                                <option value="数据库">数据库</option>
+                                <option value="存储">存储</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><span class="required">*</span> 设备状态</label>
+                            <select id="assetStatus" disabled>
+                                <option value="在用">在用</option>
+                                <option value="在库">在库</option>
+                                <option value="报废">报废</option>
+                                <option value="维修中">维修中</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 保存取消按钮区（默认隐藏，位于容器底部右侧） -->
+                <div class="action-buttons" id="save-cancel-buttons" style="display: none; padding: 20px; border-top: 1px solid #f0f0f0; justify-content: flex-end; gap: 12px; background-color: #fafafa;">
+                    <button class="btn btn-primary" id="save-btn" onclick="saveAsset()">保存</button>
+                    <button class="btn btn-default" id="cancel-btn" onclick="cancelEdit()">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="asset_subdivide_data.js"></script>
+    <script>
+        // 从URL获取资产ID
+        function getAssetIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return parseInt(urlParams.get('id'));
+        }
+        
+        // 从URL获取模式
+        function getModeFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('mode');
+        }
+        
+        // 加载资产数据
+        function loadAssetData() {
+            const mode = getModeFromUrl();
+            if (mode === 'add') {
+                // 添加模式：显示空表单
+                document.getElementById('asset-name').textContent = '添加资产';
+                // 启用所有字段
+                document.getElementById('assetName').disabled = false;
+                document.getElementById('assetCode').disabled = false;
+                document.getElementById('serialNumber').disabled = false;
+                document.getElementById('categoryName').disabled = false;
+                document.getElementById('assetModel').disabled = false;
+                document.getElementById('assetConfig').disabled = false;
+                document.getElementById('owner').disabled = false;
+                document.getElementById('assetUnit').disabled = false;
+                document.getElementById('purchasePrice').disabled = false;
+                document.getElementById('usageMonths').disabled = false;
+                document.getElementById('purchaseDate').disabled = false;
+                document.getElementById('diskSize').disabled = false;
+                document.getElementById('finopsPurpose').disabled = false;
+                document.getElementById('assetStatus').disabled = false;
+                // 显示保存取消按钮
+                document.getElementById('save-cancel-buttons').style.display = 'flex';
+                // 隐藏编辑按钮
+                document.getElementById('edit-btn').style.display = 'none';
+                return;
+            }
+            
+            // 编辑模式：加载现有资产数据
+            const assetId = getAssetIdFromUrl();
+            if (!assetId) {
+                alert('未找到资产ID');
+                return;
+            }
+            
+            // 从localStorage获取资产数据
+            const assetDataJson = localStorage.getItem('assetData');
+            if (!assetDataJson) {
+                alert('未找到资产数据');
+                return;
+            }
+            
+            const assetData = JSON.parse(assetDataJson);
+            const asset = assetData.find(a => a.id === assetId);
+            
+            if (!asset) {
+                alert('未找到资产数据');
+                return;
+            }
+            
+            // 填充表单数据
+            document.getElementById('asset-name').textContent = asset.name;
+            document.getElementById('assetName').value = asset.name;
+            document.getElementById('assetCode').value = asset.code;
+            document.getElementById('serialNumber').value = asset.serialNumber;
+            document.getElementById('categoryName').value = asset.categoryName;
+            document.getElementById('assetModel').value = asset.model;
+            document.getElementById('assetConfig').value = asset.config;
+            document.getElementById('owner').value = asset.owner;
+            document.getElementById('assetUnit').value = asset.unit;
+            document.getElementById('purchasePrice').value = asset.purchasePrice;
+            document.getElementById('usageMonths').value = asset.usageMonths;
+            document.getElementById('purchaseDate').value = asset.purchaseDate;
+            document.getElementById('diskSize').value = asset.diskSize || '';
+            const filterSub = document.getElementById('filterAssetSubdivide');
+            if (filterSub) {
+                filterSub.value = asset.finopsCategory || '';
+            }
+            document.getElementById('finopsPurpose').value = asset.finopsPurpose;
+            document.getElementById('assetStatus').value = asset.status;
+        }
+        
+        // 保存资产数据
+        function saveAsset() {
+            const mode = getModeFromUrl();
+            const assetId = getAssetIdFromUrl();
+            const name = document.getElementById('assetName').value;
+            const code = document.getElementById('assetCode').value;
+            const serialNumber = document.getElementById('serialNumber').value;
+            const categoryName = document.getElementById('categoryName').value;
+            const model = document.getElementById('assetModel').value;
+            const config = document.getElementById('assetConfig').value;
+            const owner = document.getElementById('owner').value;
+            const unit = document.getElementById('assetUnit').value;
+            const purchasePrice = document.getElementById('purchasePrice').value;
+            const usageMonths = document.getElementById('usageMonths').value;
+            const purchaseDate = document.getElementById('purchaseDate').value;
+            const diskSize = document.getElementById('diskSize').value;
+            const filterEl = document.getElementById('filterAssetSubdivide');
+            const finopsCategory = filterEl ? filterEl.value : '';
+            const finopsPurpose = document.getElementById('finopsPurpose').value;
+            const status = document.getElementById('assetStatus').value;
+            
+            if (!name || !code || !status) {
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 从localStorage获取资产数据
+            let assetDataJson = localStorage.getItem('assetData');
+            let assetData = [];
+            
+            if (assetDataJson) {
+                assetData = JSON.parse(assetDataJson);
+            }
+            
+            if (mode === 'add') {
+                // 添加新资产
+                const newAsset = {
+                    id: assetData.length > 0 ? Math.max(...assetData.map(a => a.id)) + 1 : 1,
+                    name,
+                    code,
+                    serialNumber,
+                    categoryName,
+                    model,
+                    config,
+                    owner,
+                    unit,
+                    purchasePrice: parseFloat(purchasePrice) || 0,
+                    usageMonths: parseInt(usageMonths) || 0,
+                    purchaseDate,
+                    diskSize: parseFloat(diskSize) || 0,
+                    finopsCategory,
+                    finopsPurpose,
+                    status
+                };
+                
+                assetData.push(newAsset);
+                alert('添加成功');
+            } else {
+                // 更新现有资产
+                const index = assetData.findIndex(a => a.id === assetId);
+                
+                if (index >= 0) {
+                    // 更新资产数据
+                    assetData[index] = {
+                        ...assetData[index],
+                        name,
+                        code,
+                        serialNumber,
+                        categoryName,
+                        model,
+                        config,
+                        owner,
+                        unit,
+                        purchasePrice: parseFloat(purchasePrice) || 0,
+                        usageMonths: parseInt(usageMonths) || 0,
+                        purchaseDate,
+                        diskSize: parseFloat(diskSize) || 0,
+                        finopsCategory,
+                        finopsPurpose,
+                        status
+                    };
+                    
+                    alert('编辑成功');
+                } else {
+                    alert('未找到资产数据');
+                    return;
+                }
+            }
+            
+            // 保存回localStorage
+            localStorage.setItem('assetData', JSON.stringify(assetData));
+            goBack();
+        }
+        
+        // 返回按钮功能
+        function goBack() {
+            window.location.href = 'asset-ledger-management.html';
+        }
+        
+        // 进入编辑模式
+        function enterEditMode() {
+            // 隐藏编辑按钮
+            document.getElementById('edit-btn').style.display = 'none';
+            // 显示保存取消按钮
+            document.getElementById('save-cancel-buttons').style.display = 'flex';
+
+            // 启用计费信息字段编辑
+            document.getElementById('finopsPurpose').disabled = false;
+            document.getElementById('assetStatus').disabled = false;
+        }
+        
+        // 取消编辑
+        function cancelEdit() {
+            const mode = getModeFromUrl();
+            if (mode === 'add') {
+                // 添加模式：直接返回资产列表
+                goBack();
+            } else {
+                // 编辑模式：恢复字段状态
+                // 显示编辑按钮
+                document.getElementById('edit-btn').style.display = 'block';
+                // 隐藏保存取消按钮
+                document.getElementById('save-cancel-buttons').style.display = 'none';
+
+                // 禁用计费信息字段编辑
+                document.getElementById('finopsPurpose').disabled = true;
+                document.getElementById('assetStatus').disabled = true;
+            }
+        }
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            loadAssetData();
+            initFinopsCategoryDropdown();
+
+            const mode = getModeFromUrl();
+            if (mode === 'add') {
+                enableFinopsCategoryDropdown();
+            } else {
+                disableFinopsCategoryDropdown();
+            }
+        };
+        
+        // 与资产台账「资产列表」查询区一致的多选资产细分控件（选项来自 asset_subdivide_data.js 的 subdivideData）
+        function initFinopsCategoryDropdown() {
+            const prefix = 'assetSubdivide';
+            const selectContainer = document.getElementById(`${prefix}Search`).parentElement;
+            const dropdown = document.getElementById(`${prefix}Dropdown`);
+            const optionsContainer = document.getElementById(`${prefix}Options`);
+            const searchInput = document.getElementById(`${prefix}Search`);
+            const dropdownSearch = document.getElementById(`${prefix}DropdownSearch`);
+            const hiddenInput = document.getElementById('filterAssetSubdivide');
+            const tagsContainer = document.getElementById(`${prefix}Tags`);
+
+            function getOptionNames() {
+                return typeof subdivideData !== 'undefined'
+                    ? subdivideData.map(item => item.name)
+                    : [];
+            }
+
+            function renderOptions(filter) {
+                const f = (filter || '').toLowerCase();
+                optionsContainer.innerHTML = '';
+
+                const optionsContent = document.createElement('div');
+                optionsContent.style.maxHeight = 'min(320px, 50vh)';
+                optionsContent.style.overflowY = 'auto';
+                optionsContent.style.overflowX = 'hidden';
+
+                getOptionNames().forEach(option => {
+                    if (!option.toLowerCase().includes(f)) return;
+                    const isSelected = getSelectedValues().includes(option);
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'subdivide-option-row';
+                    optionElement.style.padding = '8px 16px';
+                    optionElement.style.cursor = 'pointer';
+                    optionElement.style.display = 'flex';
+                    optionElement.style.flexWrap = 'wrap';
+                    optionElement.style.gap = '8px';
+                    optionElement.style.alignItems = 'flex-start';
+                    optionElement.style.justifyContent = 'space-between';
+                    optionElement.style.fontSize = '14px';
+                    optionElement.style.color = isSelected ? '#1890ff' : '#333';
+                    optionElement.style.backgroundColor = 'white';
+                    optionElement.onmouseenter = () => { optionElement.style.backgroundColor = '#f5f5f5'; };
+                    optionElement.onmouseleave = () => { optionElement.style.backgroundColor = 'white'; };
+                    optionElement.innerHTML = `
+                        <span>${option}</span>
+                        ${isSelected ? '<span style="color: #1890ff;">✓</span>' : ''}
+                    `;
+                    optionElement.onclick = () => {
+                        if (getSelectedValues().includes(option)) {
+                            removeTag(option);
+                        } else {
+                            addTag(option);
+                        }
+                        renderOptions(dropdownSearch.value);
+                    };
+                    optionsContent.appendChild(optionElement);
+                });
+
+                optionsContainer.appendChild(optionsContent);
+
+                const actionContainer = document.createElement('div');
+                actionContainer.style.padding = '8px 16px';
+                actionContainer.style.borderTop = '1px solid #f0f0f0';
+                actionContainer.style.display = 'flex';
+                actionContainer.style.gap = '8px';
+                actionContainer.style.justifyContent = 'flex-end';
+                actionContainer.style.position = 'sticky';
+                actionContainer.style.bottom = '0';
+                actionContainer.style.backgroundColor = 'white';
+
+                const addButton = document.createElement('button');
+                addButton.textContent = '添加';
+                addButton.type = 'button';
+                addButton.style.padding = '6px 12px';
+                addButton.style.backgroundColor = '#1890ff';
+                addButton.style.color = 'white';
+                addButton.style.border = 'none';
+                addButton.style.borderRadius = '4px';
+                addButton.style.cursor = 'pointer';
+                addButton.style.fontSize = '14px';
+                addButton.onclick = () => {
+                    window.open('asset-ledger-management.html', '_blank');
+                };
+
+                const updateButton = document.createElement('button');
+                updateButton.textContent = '更新';
+                updateButton.type = 'button';
+                updateButton.style.padding = '6px 12px';
+                updateButton.style.backgroundColor = '#52c41a';
+                updateButton.style.color = 'white';
+                updateButton.style.border = 'none';
+                updateButton.style.borderRadius = '4px';
+                updateButton.style.cursor = 'pointer';
+                updateButton.style.fontSize = '14px';
+                updateButton.onclick = () => {
+                    renderOptions(dropdownSearch.value);
+                };
+
+                actionContainer.appendChild(addButton);
+                actionContainer.appendChild(updateButton);
+                optionsContainer.appendChild(actionContainer);
+            }
+
+            function getSelectedValues() {
+                const value = hiddenInput.value;
+                return value ? value.split(',').filter(Boolean) : [];
+            }
+
+            function addTag(option) {
+                const selected = getSelectedValues();
+                if (!selected.includes(option)) {
+                    selected.push(option);
+                    hiddenInput.value = selected.join(',');
+                    updateTags();
+                }
+            }
+
+            function removeTag(option) {
+                const selected = getSelectedValues();
+                const index = selected.indexOf(option);
+                if (index > -1) {
+                    selected.splice(index, 1);
+                    hiddenInput.value = selected.join(',');
+                    updateTags();
+                }
+            }
+
+            function updateTags() {
+                tagsContainer.innerHTML = '';
+                getSelectedValues().forEach(option => {
+                    const tag = document.createElement('span');
+                    tag.style.display = 'inline-flex';
+                    tag.style.alignItems = 'center';
+                    tag.style.padding = '4px 12px';
+                    tag.style.backgroundColor = '#e6f7ff';
+                    tag.style.color = '#1890ff';
+                    tag.style.borderRadius = '12px';
+                    tag.style.fontSize = '12px';
+                    tag.style.gap = '4px';
+                    tag.innerHTML = `
+                        ${option}
+                        <span style="cursor: pointer; font-size: 14px;">×</span>
+                    `;
+                    tag.querySelector('span:last-child').onclick = (e) => {
+                        e.stopPropagation();
+                        removeTag(option);
+                    };
+                    tagsContainer.appendChild(tag);
+                });
+
+                if (getSelectedValues().length > 0) {
+                    searchInput.style.display = 'none';
+                } else {
+                    searchInput.style.display = 'block';
+                }
+            }
+
+            selectContainer.onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.select-dropdown').forEach(drop => {
+                    if (drop.id !== dropdown.id) {
+                        drop.style.display = 'none';
+                    }
+                });
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                if (dropdown.style.display === 'block') {
+                    renderOptions(dropdownSearch.value);
+                }
+            };
+
+            document.addEventListener('click', function finopsSubdivideDocClick(e) {
+                if (!selectContainer.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            dropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            dropdownSearch.oninput = (e) => {
+                renderOptions(e.target.value);
+            };
+
+            searchInput.onclick = (e) => {
+                e.stopPropagation();
+            };
+
+            updateTags();
+        }
+        
+        // 编辑模式下启用资产细分控件（与台账查询区交互一致）
+        function enableFinopsCategoryDropdown() {
+            const trigger = document.getElementById('finopsSubdivideTrigger');
+            if (!trigger) return;
+            trigger.style.backgroundColor = 'white';
+            trigger.style.cursor = 'pointer';
+            trigger.style.pointerEvents = '';
+        }
+
+        // 只读模式下禁用资产细分控件
+        function disableFinopsCategoryDropdown() {
+            const trigger = document.getElementById('finopsSubdivideTrigger');
+            if (!trigger) return;
+            trigger.style.backgroundColor = '#f5f5f5';
+            trigger.style.cursor = 'not-allowed';
+            trigger.style.pointerEvents = 'none';
+            const dd = document.getElementById('assetSubdivideDropdown');
+            if (dd) dd.style.display = 'none';
+        }
+        
+        // 重写enterEditMode函数，添加启用下拉框的逻辑
+        const originalEnterEditMode = enterEditMode;
+        enterEditMode = function() {
+            originalEnterEditMode();
+            enableFinopsCategoryDropdown();
+        };
+        
+        // 重写cancelEdit函数，添加禁用下拉框的逻辑
+        const originalCancelEdit = cancelEdit;
+        cancelEdit = function() {
+            originalCancelEdit();
+            disableFinopsCategoryDropdown();
+        };
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+</body>
+</html>

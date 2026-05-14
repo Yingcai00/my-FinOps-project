@@ -1,0 +1,151 @@
+<!-- 左侧菜单 -->
+<div class="sidebar" style="width: 220px; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09); overflow: hidden; position: sticky; top: 20px; height: calc(100vh - 40px);">
+    <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+        <span>菜单导航</span>
+        <button id="collapse-btn" style="background: none; border: none; color: white; font-size: 14px; cursor: pointer;">
+            ▼
+        </button>
+    </div>
+    <ul style="list-style: none; padding: 0; margin: 0; overflow-y: auto; height: calc(100% - 60px);">
+        <li class="menu-item-container">
+            <a href="cost-overview.html" class="menu-item" data-page="cost-management" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; border-left: 3px solid transparent; transition: all 0.3s; font-size: 14px; font-weight: 500;">
+                <span>成本管理</span>
+                <span class="menu-arrow">▼</span>
+            </a>
+            <ul class="sub-menu" style="list-style: none; padding: 0; margin: 0; background-color: #f9f9f9; display: block;">
+                <li>
+                    <a href="cost-overview.html" class="sub-menu-item" data-subpage="cost-overview" style="display: block; padding: 10px 20px 10px 40px; color: #666; text-decoration: none; transition: all 0.3s; font-size: 13px; border-left: 3px solid transparent;">
+                        成本总览
+                    </a>
+                </li>
+                <li>
+                    <a href="cost-analysis.html" class="sub-menu-item" data-subpage="cost-analysis" style="display: block; padding: 10px 20px 10px 40px; color: #666; text-decoration: none; transition: all 0.3s; font-size: 13px; border-left: 3px solid transparent;">
+                        成本分析
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<script>
+    // 菜单折叠/展开功能
+    const collapseBtn = document.getElementById('collapse-btn');
+    const sidebar = document.querySelector('.sidebar');
+    let isCollapsed = false;
+    
+    collapseBtn.addEventListener('click', function() {
+        isCollapsed = !isCollapsed;
+        if (isCollapsed) {
+            sidebar.style.width = '60px';
+            sidebar.querySelector('span').style.display = 'none';
+            sidebar.querySelector('.menu-item span:first-child').style.display = 'none';
+            sidebar.querySelector('.sub-menu').style.display = 'none';
+            collapseBtn.textContent = '▶';
+        } else {
+            sidebar.style.width = '220px';
+            sidebar.querySelector('span').style.display = 'inline';
+            sidebar.querySelector('.menu-item span:first-child').style.display = 'inline';
+            sidebar.querySelector('.sub-menu').style.display = 'block';
+            collapseBtn.textContent = '▼';
+        }
+    });
+
+    // 左侧菜单点击事件
+    document.querySelectorAll('.menu-item').forEach(menu => {
+        // 悬停效果
+        menu.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('active')) {
+                this.style.backgroundColor = '#f0f7ff';
+                this.style.color = '#1890ff';
+            }
+        });
+        
+        menu.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('active')) {
+                this.style.backgroundColor = 'transparent';
+                this.style.color = '#333';
+            }
+        });
+        
+        // 点击事件
+        menu.addEventListener('click', function(e) {
+            // 移除所有左侧菜单的active类
+            document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                item.classList.remove('active');
+                item.style.backgroundColor = 'transparent';
+                item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                item.style.borderLeftColor = 'transparent';
+            });
+            
+            // 添加当前菜单的active类
+            this.classList.add('active');
+            this.style.backgroundColor = '#e6f7ff';
+            this.style.color = '#1890ff';
+            this.style.borderLeftColor = '#1890ff';
+        });
+    });
+
+    // 左侧二级菜单点击事件
+    document.querySelectorAll('.sub-menu-item').forEach(subMenu => {
+        // 悬停效果
+        subMenu.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('active')) {
+                this.style.backgroundColor = '#f0f7ff';
+                this.style.color = '#1890ff';
+            }
+        });
+        
+        subMenu.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('active')) {
+                this.style.backgroundColor = 'transparent';
+                this.style.color = '#666';
+            }
+        });
+        
+        // 点击事件
+        subMenu.addEventListener('click', function(e) {
+            // 移除所有左侧菜单的active类
+            document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                item.classList.remove('active');
+                item.style.backgroundColor = 'transparent';
+                item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                item.style.borderLeftColor = 'transparent';
+            });
+            
+            // 添加当前二级菜单的active类
+            this.classList.add('active');
+            this.style.backgroundColor = '#e6f7ff';
+            this.style.color = '#1890ff';
+            this.style.borderLeftColor = '#1890ff';
+            
+            // 添加父级菜单的active类
+            const parentMenu = this.closest('li').parentElement.previousElementSibling;
+            parentMenu.classList.add('active');
+            parentMenu.style.backgroundColor = '#e6f7ff';
+            parentMenu.style.color = '#1890ff';
+            parentMenu.style.borderLeftColor = '#1890ff';
+        });
+    });
+
+    // 标记当前页面的菜单项为active
+    const currentUrl = window.location.href;
+    const menuItems = document.querySelectorAll('.menu-item, .sub-menu-item');
+    menuItems.forEach(item => {
+        if (currentUrl.includes(item.getAttribute('href'))) {
+            item.classList.add('active');
+            item.style.backgroundColor = '#e6f7ff';
+            item.style.color = '#1890ff';
+            item.style.borderLeftColor = '#1890ff';
+            
+            // 如果是二级菜单，也标记父级菜单为active
+            if (item.classList.contains('sub-menu-item')) {
+                const parentMenu = item.closest('li').parentElement.previousElementSibling;
+                parentMenu.classList.add('active');
+                parentMenu.style.backgroundColor = '#e6f7ff';
+                parentMenu.style.color = '#1890ff';
+                parentMenu.style.borderLeftColor = '#1890ff';
+            }
+        }
+    });
+</script>
