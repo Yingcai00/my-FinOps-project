@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>FinOps财务运营管理平台 - 资源明细详情</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.85);
+            background: #f0f2f5;
+        }
+        .header {
+            background: linear-gradient(90deg, #006eff 0%, #1890ff 100%);
+            color: #fff;
+            padding: 14px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,.12);
+        }
+        .header-content {
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+        .container {
+            display: flex;
+            gap: 16px;
+            padding: 16px 20px 32px;
+            min-height: calc(100vh - 56px);
+        }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+            flex-shrink: 0;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 32px);
+            overflow: auto;
+        }
+        .sidebar-head {
+            background: #1890ff;
+            color: #fff;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+        .sub-menu { list-style: none; background: #f9f9f9; margin: 0; padding: 0; }
+        .sub-menu-item {
+            display: block;
+            padding: 10px 16px 10px 28px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+        .sub-menu-item:hover { background: #f0f0f0; color: #1890ff; }
+        .sub-menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+            font-weight: 500;
+        }
+        .content { flex: 1; min-width: 0; }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+        }
+        .toolbar-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .btn {
+            padding: 6px 16px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            color: rgba(0,0,0,.85);
+            display: inline-block;
+        }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        .btn-default:hover { border-color: #1890ff; color: #1890ff; }
+        .muted { color: #999; font-size: 13px; margin-bottom: 16px; }
+        .detail-zone { margin-bottom: 20px; }
+        .detail-zone h4 {
+            font-size: 13px;
+            color: #1890ff;
+            border-left: 3px solid #1890ff;
+            padding-left: 8px;
+            margin-bottom: 10px;
+        }
+        .dl-grid { display: grid; grid-template-columns: 160px 1fr; gap: 6px 12px; font-size: 13px; }
+        .dl-grid dt { color: #888; }
+        .dl-grid dd { color: #333; word-break: break-all; white-space: normal; }
+        .link { color: #1890ff; cursor: pointer; text-decoration: none; border: none; background: none; font: inherit; padding: 0; }
+        .link:hover { text-decoration: underline; }
+        .empty-hint { padding: 24px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+            <span class="header-sub">账单 · 资源明细详情</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-head">菜单导航</div>
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div class="card">
+                <div class="toolbar-row">
+                    <a class="btn btn-primary" href="bill-management.html#resource">← 返回资源明细</a>
+                </div>
+                <p class="muted" style="margin-top:12px;">
+                    正式账单规则（示意）：确认用量后，每月 10 日 00:00 出具并发送上月账单，发送后不可修改（修正须走用量异议或运营流程）。在当前自然月 10 日之前仅可查看至 N−2 月账单；10 日（含）起可查看 N−1 月。
+                </p>
+                <div id="detailMount"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+(function () {
+    'use strict';
+    var RES_DETAIL_KEY = 'finops_resource_bill_detail';
+
+    function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function zone(title, pairs) {
+        var body = pairs.map(function (p) {
+            return '<dt>' + escapeHtml(p[0]) + '</dt><dd>' + p[1] + '</dd>';
+        }).join('');
+        return '<div class="detail-zone"><h4>' + escapeHtml(title) + '</h4><dl class="dl-grid">' + body + '</dl></div>';
+    }
+
+    /** 一级/二级部门：优先行内字段，否则从部门路径解析（兼容旧会话缓存） */
+    function deptLevel12FromRow(row) {
+        var has = (row.deptLevel1 != null && String(row.deptLevel1).trim() !== '') ||
+            (row.deptLevel2 != null && String(row.deptLevel2).trim() !== '');
+        if (has) {
+            return [
+                row.deptLevel1 != null && String(row.deptLevel1).trim() !== '' ? String(row.deptLevel1) : '—',
+                row.deptLevel2 != null && String(row.deptLevel2).trim() !== '' ? String(row.deptLevel2) : '—'
+            ];
+        }
+        var a = String(row.deptPath || '').split('/').map(function (s) { return s.trim(); }).filter(Boolean);
+        return [a[0] || '—', a[1] || '—'];
+    }
+
+    function renderDetail(row) {
+        var html = '';
+        var bc = row._billContext;
+        var dept12 = deptLevel12FromRow(row);
+        var envDisp =
+            row.env != null && String(row.env).trim() !== ''
+                ? escapeHtml(String(row.env))
+                : '—';
+        var billMonthDisp =
+            row.billMonth != null && String(row.billMonth).trim() !== ''
+                ? escapeHtml(String(row.billMonth))
+                : bc && bc.billMonth != null && String(bc.billMonth).trim() !== ''
+                  ? escapeHtml(String(bc.billMonth))
+                  : '—';
+        html += zone('基本信息', [
+            ['实例 ID', escapeHtml(row.instanceId)],
+            ['实例名称', escapeHtml(row.instanceName)],
+            ['账期', billMonthDisp],
+            ['规格簇', escapeHtml(row.specCluster)],
+            ['规格', escapeHtml(row.spec)],
+            ['配置属性', escapeHtml(row.configAttr)],
+            ['环境', envDisp],
+            ['开始使用时间', escapeHtml(row.startTime)],
+            ['结束使用时间', escapeHtml(row.endTime)]
+        ]);
+        html += zone('归属信息', [
+            ['费用归属人', escapeHtml(row.payer)],
+            ['使用人', escapeHtml(row.consumer)],
+            ['管理员', escapeHtml(row.admin)],
+            ['一级部门', escapeHtml(dept12[0])],
+            ['二级部门', escapeHtml(dept12[1])],
+            ['备案产品', escapeHtml(row.projectName)]
+        ]);
+        var priceVal = row.originPrice != null ? String(row.originPrice) : row.priceYuan != null ? String(row.priceYuan) : '—';
+        html += zone('价格信息', [
+            ['单价', escapeHtml(row.unitPrice)],
+            ['单价单位', escapeHtml(row.priceUnit)],
+            ['用量', escapeHtml(row.usage) + '（实际结算 = 原始用量 − 抵扣用量，含资源包）'],
+            ['用量单位', escapeHtml(row.usageUnit)],
+            ['使用时长', escapeHtml(row.duration) + '（= 原始时长 − 抵扣时长，含资源包）'],
+            ['时长单位', escapeHtml(row.durationUnit)],
+            ['价格', escapeHtml(priceVal) + '（单价×用量×使用时长）'],
+            ['账单结算时间', escapeHtml(row.settleTime)]
+        ]);
+        html += zone('其他信息', [
+            ['申购单 ID', escapeHtml(row.orderId)],
+            ['关联单据 ID', escapeHtml(row.relatedDocId)],
+            ['关联实例 ID/IP', escapeHtml(row.relatedInst)],
+            ['备注属性', escapeHtml(row.remark)]
+        ]);
+        document.getElementById('detailMount').innerHTML = html;
+    }
+
+    function loadRow() {
+        var params = new URLSearchParams(location.search);
+        var id = params.get('id') || '';
+        var row = null;
+        try {
+            var raw = sessionStorage.getItem(RES_DETAIL_KEY);
+            if (raw) {
+                var o = JSON.parse(raw);
+                if (o && o.id && (!id || o.id === id)) row = o;
+            }
+        } catch (e) {}
+        if (!row) {
+            document.getElementById('detailMount').innerHTML =
+                '<div class="empty-hint">未找到实例详情数据。请从 <a class="link" href="bill-management.html#resource">资源明细</a> 列表点击「详情」进入。</div>';
+            return;
+        }
+        renderDetail(row);
+    }
+
+    loadRow();
+})();
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
+</body>
+</html>

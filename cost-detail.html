@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinOps财务运营管理平台 - 成本详情</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
+    <!-- 自定义样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            background-color: #e6e6e6;
+        }
+
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff7875;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            margin-left: 8px;
+        }
+
+        .tab:hover {
+            color: #1890ff;
+        }
+
+        .tab.active {
+            border-bottom-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .tab-content {
+            padding: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* 成本详情-基本信息：除成本项名称、描述外，每行固定三列 */
+        #cost-form > .form-row:not(.form-row-full) {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #cost-form > .form-row:not(.form-row-full) > .form-group {
+            min-width: 0;
+            flex: unset;
+        }
+
+        #cost-form > .form-row-full {
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        #cost-form > .form-row-full > .form-group {
+            width: 100%;
+        }
+
+        /* 系统信息：每行三列 */
+        #system-info-card .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #system-info-card .form-group {
+            min-width: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .form-group input[disabled],
+        .form-group select[disabled],
+        .form-group textarea[disabled] {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-warning {
+            color: #fa8c16;
+        }
+
+        .text-success {
+            color: #52c41a;
+        }
+
+        .text-danger {
+            color: #ff4d4f;
+        }
+
+        .text-primary {
+            color: #1890ff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 4px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-warning {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .badge-success {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+
+        .badge-danger {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+        }
+
+        .badge-primary {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .badge-primary:hover {
+            background-color: #bae7ff;
+            border-color: #69c0ff;
+        }
+
+        .cost-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .cost-item {
+            background-color: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .cost-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .cost-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .cost-value.highlight {
+            color: #1890ff;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #1890ff;
+            border-radius: 4px;
+        }
+
+        .progress-fill.warning {
+            background-color: #fa8c16;
+        }
+
+        .progress-fill.danger {
+            background-color: #ff4d4f;
+        }
+
+        .resource-usage {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .resource-name {
+            font-weight: 500;
+        }
+
+        .resource-percentage {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+
+        .sub-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sub-menu-item {
+            display: block;
+            padding: 10px 20px 10px 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sub-menu-item:hover, .sub-menu-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
+                菜单导航
+            </div>
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 右侧内容 -->
+        <div class="content">
+            <!-- 操作按钮区 -->
+        <div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
+            <button class="btn btn-default" id="back-btn">返回</button>
+        </div>
+
+            <!-- 标签页容器 -->
+            <div class="tab-container">
+                <div style="padding: 16px 24px; border-bottom: 1px solid #f0f0f0; background-color: #fafafa;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div style="font-size: 16px; font-weight: 600;" id="container-name">服务器A</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <div style="display: flex;">
+                            <div class="tab active" data-tab="detail">成本详情</div>
+                            <div class="tab" data-tab="resource">资源详情</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 成本详情标签页 -->
+                <div class="tab-content" id="detail-tab">
+                    <!-- 基本信息模块 -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 class="card-title">基本信息</h3>
+                            <button class="btn btn-primary" id="edit-btn">编辑</button>
+                        </div>
+                        <form id="cost-form">
+                            <div class="form-row form-row-full">
+                                <div class="form-group">
+                                    <label>成本项名称 *</label>
+                                    <input type="text" id="cost-item" value="服务器A" placeholder="请输入成本项名称" disabled>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>成本一级分类 *</label>
+                                    <select id="primary-category" disabled>
+                                        <option value="资产成本">资产成本</option>
+                                        <option value="运营成本">运营成本</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>成本二级分类 *</label>
+                                    <select id="cost-category" disabled>
+                                        <option value="设备费用">设备费用</option>
+                                        <option value="软件平台">软件平台</option>
+                                        <option value="网络带宽">网络带宽</option>
+                                        <option value="运营费用">运营费用</option>
+                                        <option value="基础设施" selected>基础设施</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>成本三级分类 *</label>
+                                    <select id="purpose" disabled>
+                                        <option value="">请选择</option>
+                                        <option value="物理机">物理机</option>
+                                        <option value="容器">容器</option>
+                                        <option value="虚拟机">虚拟机</option>
+                                        <option value="存储">存储</option>
+                                        <option value="数据库">数据库</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>成本池</label>
+                                    <select id="cost-pool" disabled style="width: 100%;">
+                                        <option value="">请选择</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>地区</label>
+                                    <select id="region" disabled>
+                                        <option value="北京" selected>北京</option>
+                                        <option value="上海">上海</option>
+                                        <option value="西安">西安</option>
+                                        <option value="总部">总部</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>公摊类型 *</label>
+                                    <select id="share-type" disabled>
+                                        <option value="公摊成本">公摊成本</option>
+                                        <option value="局部公摊">局部公摊</option>
+                                        <option value="非公摊成本" selected>非公摊成本</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>数据来源</label>
+                                    <input type="text" id="data-source" value="资产系统-B类资产" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>单价（元） *</label>
+                                    <input type="number" id="unit-price" value="500000" step="0.01" min="0" placeholder="请输入单价" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>折旧月限 *</label>
+                                    <input type="number" id="depreciation-months" value="60" step="1" min="1" placeholder="请输入折旧月限" disabled>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>折旧月价 *</label>
+                                    <input type="number" id="depreciation-monthly" value="8333" step="0.01" min="0" placeholder="请输入折旧月价" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>数量 *</label>
+                                    <input type="number" id="quantity" value="1" step="1" min="1" placeholder="请输入数量" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>单位 *</label>
+                                    <select id="unit" disabled>
+                                        <option value="台" selected>台</option>
+                                        <option value="套">套</option>
+                                        <option value="Gbps">Gbps</option>
+                                        <option value="TB">TB</option>
+                                        <option value="月">月</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>账期 *</label>
+                                    <input type="text" id="cost-month" value="2026-02" placeholder="YYYY-MM" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                                </div>
+                                <div class="form-group">
+                                    <label>月成本（元） *</label>
+                                    <input type="number" id="monthly-cost" value="50000" step="0.01" min="0" placeholder="请输入月成本" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>公摊比例 *</label>
+                                    <input type="number" id="allocation-rate" value="0" step="0.01" min="0" max="100" placeholder="请输入公摊比例" disabled>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>公摊后月总成本 *</label>
+                                    <input type="number" id="allocated-monthly-cost" value="50000" step="0.01" min="0" placeholder="请输入公摊后月总成本" disabled>
+                                </div>
+                            </div>
+                            <div class="form-row form-row-full">
+                                <div class="form-group">
+                                    <label>描述</label>
+                                    <textarea id="description" placeholder="请输入描述" rows="3" disabled>高性能服务器，用于生产环境核心业务</textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- 系统信息模块 -->
+                    <div class="card" id="system-info-card">
+                        <h3 class="card-title">系统信息</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>成本编码</label>
+                                <input type="text" value="COST-2026-0001" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>数据来源</label>
+                                <input type="text" id="data-source-system-display" value="" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>创建人</label>
+                                <input type="text" value="admin" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>创建时间</label>
+                                <input type="datetime-local" value="2026-01-01T10:00:00" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>更新人</label>
+                                <input type="text" value="admin" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>更新时间</label>
+                                <input type="datetime-local" value="2026-01-15T14:30:00" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 资源详情标签页 -->
+                <div class="tab-content" id="resource-tab" style="display: none;">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>资源类型</th>
+                                    <th>总量</th>
+                                    <th>单位</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CPU</td>
+                                    <td>20</td>
+                                    <td>核</td>
+                                </tr>
+                                <tr>
+                                    <td>内存</td>
+                                    <td>40</td>
+                                    <td>GB</td>
+                                </tr>
+                                <tr>
+                                    <td>存储</td>
+                                    <td>500</td>
+                                    <td>GB</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 保存取消按钮区（默认隐藏，位于tab容器底部右侧） -->
+                <div class="action-buttons" id="save-cancel-buttons" style="display: none; padding: 20px; border-top: 1px solid #f0f0f0; justify-content: flex-end; gap: 12px; background-color: #fafafa;">
+                    <button class="btn btn-primary" id="save-btn">保存</button>
+                    <button class="btn btn-default" id="cancel-btn">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 单价计算公式编辑弹窗 -->
+    <div class="modal" id="formula-editor-modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑单价计算公式</h3>
+                <button class="modal-close" onclick="closeFormulaEditorModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 上半部分：变量列表和公式列表 -->
+                <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+                    <!-- 左侧变量列表 -->
+                    <div style="flex: 1;">
+                        <h4 style="margin-bottom: 12px;">变量</h4>
+                        <div style="background-color: #f9f9f9; padding: 16px; border-radius: 4px; max-height: 250px; overflow-y: auto;">
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addVariable('单价')">单价</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addVariable('月成本')">月成本</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addVariable('公摊后月总成本')">公摊后月总成本</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addVariable('CPU总量')">CPU总量</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addVariable('内存总量')">内存总量</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addVariable('存储总量')">存储总量</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addVariable('流量总量')">流量总量</div></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧公式列表 -->
+                    <div style="flex: 1;">
+                        <h4 style="margin-bottom: 12px;">公式函数</h4>
+                        <div style="background-color: #f9f9f9; padding: 16px; border-radius: 4px; max-height: 250px; overflow-y: auto;">
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addFunction('SUM()')">SUM()</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addFunction('AVERAGE()')">AVERAGE()</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addFunction('MAX()')">MAX()</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addFunction('MIN()')">MIN()</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addFunction('IF()')">IF()</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addFunction('ROUND()')">ROUND()</div></div>
+                            <div style="display: block; margin: 4px 0;"><div class="badge badge-primary" onclick="addFunction('ABS()')">ABS()</div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 下方规则定义 -->
+                <div style="margin-bottom: 24px;">
+                    <h4 style="margin-bottom: 12px;">规则定义</h4>
+                    <textarea id="formula-editor" style="width: 100%; height: 120px; padding: 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-family: monospace; font-size: 14px;"></textarea>
+                    <div style="margin-top: 12px; display: flex; gap: 12px;">
+                        <button class="btn btn-default" onclick="clearFormula()">清空</button>
+                        <button class="btn btn-default" onclick="testFormula()">测试</button>
+                    </div>
+                </div>
+                
+                <!-- 使用说明 -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 12px;">使用说明</h4>
+                    <div style="background-color: #f0f7ff; padding: 16px; border-radius: 4px; font-size: 14px; line-height: 1.5;">
+                        <p style="margin-bottom: 12px; font-weight: 500;">变量来源：成本项数据</p>
+                        <ol style="margin-left: 20px;">
+                            <li>点击左侧变量列表中的变量，将其添加到规则定义中</li>
+                            <li>点击右侧公式函数列表中的函数，将其添加到规则定义中</li>
+                            <li>在规则定义文本框中编辑完整的计算公式</li>
+                            <li>点击"测试"按钮验证公式的正确性</li>
+                            <li>点击"清空"按钮清空当前编辑的公式</li>
+                            <li>点击"保存"按钮保存编辑好的公式</li>
+                        </ol>
+                        <p style="margin-top: 12px; font-weight: 500;">示例公式：</p>
+                        <p>月成本 / CPU总量</p>
+                        <p>ROUND(公摊后月总成本 / (内存总量 + 存储总量), 2)</p>
+                        <p>SUM(单价, 月成本) / CPU总量</p>
+                        <p>公摊后月总成本 / (CPU总量 + 内存总量)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeFormulaEditorModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveFormula()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /** 成本池下拉选项（与成本总览 mock 池名称一致） */
+        const COST_POOL_OPTION_VALUES = Array.from(new Set([
+            'GPU服务器-A10', 'GPU服务器-A100', 'GPU服务器-A40', 'GPU服务器-A800', 'GPU服务器-H100', 'GPU服务器-H800',
+            'GPU服务器-RTX3090', 'GPU服务器-RTX4090',
+            '块存储SAN',
+            '大数据类存储-高速IO', '大数据类存储-机械大盘', '大数据类存储-机械多盘', '大数据类超大存储',
+            '高性能容器应用-容器', '高速编译型应用', '国产化服务器',
+            '容器', '数据库', '公摊', '安全', '标准通用服务器-容器', '小型单机应用', '网络'
+        ])).sort();
+
+        function fillCostPoolSelectOptions(sel, selectedPool) {
+            if (!sel) return;
+            const v = selectedPool != null ? selectedPool : sel.value;
+            sel.innerHTML = '<option value="">请选择</option>';
+            COST_POOL_OPTION_VALUES.forEach(function(p) {
+                const o = document.createElement('option');
+                o.value = p;
+                o.textContent = p;
+                sel.appendChild(o);
+            });
+            if (v && COST_POOL_OPTION_VALUES.indexOf(v) === -1) {
+                const o = document.createElement('option');
+                o.value = v;
+                o.textContent = v;
+                sel.appendChild(o);
+            }
+            sel.value = v || '';
+        }
+
+        // 页面加载完成后执行所有初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            fillCostPoolSelectOptions(document.getElementById('cost-pool'), '');
+            // 菜单折叠/展开功能
+            const collapseBtn = document.getElementById('collapse-btn');
+            const sidebar = document.querySelector('.sidebar');
+            let isCollapsed = false;
+            
+            if (collapseBtn && sidebar) {
+                collapseBtn.addEventListener('click', function() {
+                    isCollapsed = !isCollapsed;
+                    if (isCollapsed) {
+                        sidebar.style.width = '60px';
+                        const span = sidebar.querySelector('span');
+                        if (span) span.style.display = 'none';
+                        const menuItemSpan = sidebar.querySelector('.menu-item span:first-child');
+                        if (menuItemSpan) menuItemSpan.style.display = 'none';
+                        const subMenu = sidebar.querySelector('.sub-menu');
+                        if (subMenu) subMenu.style.display = 'none';
+                        collapseBtn.textContent = '▶';
+                    } else {
+                        sidebar.style.width = '220px';
+                        const span = sidebar.querySelector('span');
+                        if (span) span.style.display = 'inline';
+                        const menuItemSpan = sidebar.querySelector('.menu-item span:first-child');
+                        if (menuItemSpan) menuItemSpan.style.display = 'inline';
+                        const subMenu = sidebar.querySelector('.sub-menu');
+                        if (subMenu) subMenu.style.display = 'block';
+                        collapseBtn.textContent = '▼';
+                    }
+                });
+            }
+
+            // 左侧菜单点击事件
+            document.querySelectorAll('.menu-item').forEach(menu => {
+                // 悬停效果
+                menu.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.backgroundColor = '#f0f7ff';
+                        this.style.color = '#1890ff';
+                    }
+                });
+                
+                menu.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.backgroundColor = 'transparent';
+                        this.style.color = '#333';
+                    }
+                });
+                
+                // 点击事件
+                menu.addEventListener('click', function(e) {
+                    // 移除所有左侧菜单的active类
+                    document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                        item.classList.remove('active');
+                        item.style.backgroundColor = 'transparent';
+                        item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                        item.style.borderLeftColor = 'transparent';
+                    });
+                    
+                    // 添加当前菜单的active类
+                    this.classList.add('active');
+                    this.style.backgroundColor = '#e6f7ff';
+                    this.style.color = '#1890ff';
+                    this.style.borderLeftColor = '#1890ff';
+                });
+            });
+
+            // 左侧二级菜单点击事件
+            document.querySelectorAll('.sub-menu-item').forEach(subMenu => {
+                // 悬停效果
+                subMenu.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.backgroundColor = '#f0f7ff';
+                        this.style.color = '#1890ff';
+                    }
+                });
+                
+                subMenu.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.backgroundColor = 'transparent';
+                        this.style.color = '#666';
+                    }
+                });
+                
+                // 点击事件
+                subMenu.addEventListener('click', function(e) {
+                    // 移除所有左侧菜单的active类
+                    document.querySelectorAll('.menu-item, .sub-menu-item').forEach(item => {
+                        item.classList.remove('active');
+                        item.style.backgroundColor = 'transparent';
+                        item.style.color = item.classList.contains('menu-item') ? '#333' : '#666';
+                        item.style.borderLeftColor = 'transparent';
+                    });
+                    
+                    // 添加当前二级菜单的active类
+                    this.classList.add('active');
+                    this.style.backgroundColor = '#e6f7ff';
+                    this.style.color = '#1890ff';
+                    this.style.borderLeftColor = '#1890ff';
+                    
+                    // 添加父级菜单的active类
+                    const parentMenu = this.closest('li').parentElement.previousElementSibling;
+                    if (parentMenu) {
+                        parentMenu.classList.add('active');
+                        parentMenu.style.backgroundColor = '#e6f7ff';
+                        parentMenu.style.color = '#1890ff';
+                        parentMenu.style.borderLeftColor = '#1890ff';
+                    }
+                });
+            });
+
+            // 标记当前页面的菜单项为active
+            const currentUrl = window.location.href;
+            const menuItems = document.querySelectorAll('.menu-item, .sub-menu-item');
+            menuItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href && currentUrl.includes(href)) {
+                    item.classList.add('active');
+                    item.style.backgroundColor = '#e6f7ff';
+                    item.style.color = '#1890ff';
+                    item.style.borderLeftColor = '#1890ff';
+                    
+                    // 如果是二级菜单，也标记父级菜单为active
+                    if (item.classList.contains('sub-menu-item')) {
+                        const parentMenu = item.closest('li').parentElement.previousElementSibling;
+                        if (parentMenu) {
+                            parentMenu.classList.add('active');
+                            parentMenu.style.backgroundColor = '#e6f7ff';
+                            parentMenu.style.color = '#1890ff';
+                            parentMenu.style.borderLeftColor = '#1890ff';
+                        }
+                    }
+                }
+            });
+
+            // 标签页切换功能
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 移除所有标签页的active类
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // 隐藏所有标签内容
+                    tabContents.forEach(content => content.style.display = 'none');
+                    
+                    // 添加当前标签页的active类
+                    this.classList.add('active');
+                    // 显示当前标签内容
+                    const tabContent = document.getElementById(tabId + '-tab');
+                    if (tabContent) tabContent.style.display = 'block';
+                    
+                    // 只有在成本详情标签页时，才可能显示保存取消按钮
+                    if (tabId !== 'detail') {
+                        const saveCancelBtns = document.getElementById('save-cancel-buttons');
+                        if (saveCancelBtns) saveCancelBtns.style.display = 'none';
+                    }
+                });
+            });
+
+            // 编辑按钮
+            const editBtn = document.getElementById('edit-btn');
+            if (editBtn) {
+                editBtn.addEventListener('click', function() {
+                    // 隐藏编辑按钮
+                    document.getElementById('edit-btn').style.display = 'none';
+                    // 显示保存取消按钮
+                    document.getElementById('save-cancel-buttons').style.display = 'flex';
+
+                    // 获取数据来源
+                    const dataSource = document.getElementById('data-source').value;
+
+                    // 根据数据来源设置可编辑字段
+                    if (dataSource === '资产系统-B类资产') {
+                        // 资产系统-B类资产：可编辑成本项名称、描述、成本一二三级分类（成本池来自资产系统，不可编辑）
+                        const editableFields = ['cost-item', 'description', 'primary-category', 'cost-category', 'purpose'];
+                        editableFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.disabled = false;
+                                field.style.backgroundColor = '#fff';
+                                field.style.cursor = 'text';
+                            }
+                        });
+                        const poolField = document.getElementById('cost-pool');
+                        if (poolField) {
+                            poolField.disabled = true;
+                            poolField.style.backgroundColor = '#f5f5f5';
+                            poolField.style.cursor = 'not-allowed';
+                        }
+                    } else {
+                        // 手动维护：可编辑成本分类、成本项、成本池、成本三级分类、地区、公摊类型、单价、折旧月限、数量、单位、描述
+                        const editableFields = [
+                            'cost-category', 'purpose', 'cost-item', 'cost-pool', 'region',
+                            'share-type', 'unit-price', 'depreciation-months',
+                            'quantity', 'unit', 'description'
+                        ];
+                        editableFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.disabled = false;
+                                field.style.backgroundColor = '#fff';
+                                field.style.cursor = 'text';
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 保存按钮
+            const saveBtn = document.getElementById('save-btn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    // 获取当前编辑的数据
+                    const costItemId = getUrlParameter('id') || Date.now().toString();
+                    const dataSource = document.getElementById('data-source').value;
+                    const updatedData = {
+                        id: costItemId,
+                        primaryCategory: dataSource.includes('资产系统') ? '资产成本' : '运营成本',
+                        category: document.getElementById('cost-category').value,
+                        name: document.getElementById('cost-item').value,
+                        pool: document.getElementById('cost-pool') ? document.getElementById('cost-pool').value : '',
+                        purpose: document.getElementById('purpose').value,
+                        region: document.getElementById('region').value,
+                        shareType: document.getElementById('share-type').value,
+                        unitPrice: document.getElementById('unit-price').value,
+                        depreciationMonths: document.getElementById('depreciation-months').value,
+                        quantity: document.getElementById('quantity').value,
+                        unit: document.getElementById('unit').value,
+                        costMonth: document.getElementById('cost-month').value,
+                        monthlyCost: document.getElementById('monthly-cost').value,
+                        description: document.getElementById('description').value
+                    };
+                    
+                    // 保存到 localStorage，用于同步更新列表页
+                    const savedItems = JSON.parse(localStorage.getItem('costItems') || '[]');
+                    const existingIndex = savedItems.findIndex(item => item.id == costItemId);
+                    if (existingIndex >= 0) {
+                        savedItems[existingIndex] = updatedData;
+                    } else {
+                        savedItems.push(updatedData);
+                    }
+                    localStorage.setItem('costItems', JSON.stringify(savedItems));
+                    localStorage.setItem('lastUpdatedCostItem', JSON.stringify(updatedData));
+                    
+                    alert('保存成功');
+                    
+                    // 返回列表页
+                    window.location.href = 'cost-overview.html';
+                });
+            }
+
+            // 取消按钮
+            const cancelBtn = document.getElementById('cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    alert('已取消修改');
+                    // 显示编辑按钮
+                    document.getElementById('edit-btn').style.display = 'inline-block';
+                    // 隐藏保存取消按钮
+                    document.getElementById('save-cancel-buttons').style.display = 'none';
+                    // 禁用所有表单字段（除了系统字段和账期）
+                    const allFields = [
+                        'cost-category', 'purpose', 'cost-item', 'cost-pool', 'region',
+                        'share-type', 'unit-price', 'depreciation-months',
+                        'depreciation-monthly', 'quantity', 'unit',
+                        'monthly-cost', 'allocation-rate', 'allocated-monthly-cost', 'description'
+                    ];
+                    allFields.forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field) {
+                            field.disabled = true;
+                        }
+                    });
+                });
+            }
+
+            // 返回按钮
+            const backBtn = document.getElementById('back-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    window.location.href = 'cost-overview.html';
+                });
+            }
+
+            // 根据ID加载不同的成本项数据
+            const costId = getUrlParameter('id');
+            let currentDataSource = '手动维护'; // 默认数据来源
+            if (costId) {
+                // 根据ID查找对应的category
+                const idNum = parseInt(costId);
+                const dataItem = mockData.find(item => item.id === idNum);
+                if (dataItem) {
+                    currentDataSource = getDataSourceByCategory(dataItem.category);
+                    console.log('加载成本项ID:', costId, '分类:', dataItem.category, '数据来源:', currentDataSource);
+                    
+                    // 填充表单数据
+                    // 成本一级分类：资产系统来源为资产成本，非资产系统来源为运营成本
+                    const primaryCategory = document.getElementById('primary-category');
+                    if (primaryCategory) {
+                        primaryCategory.value = currentDataSource.includes('资产系统') ? '资产成本' : '运营成本';
+                    }
+                    const costCategory = document.getElementById('cost-category');
+                    if (costCategory) costCategory.value = dataItem.category || '设备费用';
+                    const costItem = document.getElementById('cost-item');
+                    if (costItem) costItem.value = dataItem.name || '';
+                    fillCostPoolSelectOptions(document.getElementById('cost-pool'), dataItem.pool || '');
+                    
+                    // 更新标签页容器名称
+                    const containerName = document.getElementById('container-name');
+                    if (containerName) containerName.textContent = dataItem.name || '成本项详情';
+                    const purpose = document.getElementById('purpose');
+                    if (purpose) purpose.value = dataItem.purpose || '';
+                    const region = document.getElementById('region');
+                    if (region) region.value = dataItem.region || '';
+                    const sharePool = document.getElementById('share-pool');
+                    if (sharePool) sharePool.value = dataItem.sharePool || '基础资源';
+                    const shareType = document.getElementById('share-type');
+                    if (shareType) shareType.value = dataItem.shareType || '非公摊成本';
+                    const unitPrice = document.getElementById('unit-price');
+                    if (unitPrice) unitPrice.value = dataItem.unitPrice || '';
+                    const depreciationMonths = document.getElementById('depreciation-months');
+                    if (depreciationMonths) depreciationMonths.value = dataItem.depreciationMonths || '';
+                    const quantity = document.getElementById('quantity');
+                    if (quantity) quantity.value = dataItem.quantity || '';
+                    const unit = document.getElementById('unit');
+                    if (unit) unit.value = dataItem.unit || '';
+                    const costMonth = document.getElementById('cost-month');
+                    if (costMonth) costMonth.value = dataItem.costMonth || '';
+                    const description = document.getElementById('description');
+                    if (description) description.value = dataItem.description || '';
+                } else {
+                    console.log('加载成本项ID:', costId, '未找到对应数据');
+                }
+                
+                // 设置数据来源字段的值
+                const dataSourceSelect = document.getElementById('data-source');
+                if (dataSourceSelect) {
+                    dataSourceSelect.value = currentDataSource;
+                }
+                const dataSourceSystemDisplay = document.getElementById('data-source-system-display');
+                if (dataSourceSystemDisplay) {
+                    dataSourceSystemDisplay.value = currentDataSource;
+                }
+                
+                // 检查数据来源，如果为资产系统则隐藏编辑按钮
+                if (currentDataSource.includes('资产系统')) {
+                    const editBtn = document.getElementById('edit-btn');
+                    if (editBtn) editBtn.style.display = 'none';
+                }
+                
+                // 检查数据来源，如果为手动维护则清空资源详情
+                if (currentDataSource === '手动维护') {
+                    const resourceTab = document.getElementById('resource-tab');
+                    if (resourceTab) {
+                        const resourceTableBody = resourceTab.querySelector('tbody');
+                        if (resourceTableBody) {
+                            resourceTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">暂无资源详情</td></tr>';
+                        }
+                    }
+                }
+            }
+
+            // 根据mode参数设置页面模式
+            const mode = getUrlParameter('mode');
+            if (mode === 'add') {
+                // 新增模式：自动进入编辑状态
+                const editBtn = document.getElementById('edit-btn');
+                if (editBtn) editBtn.style.display = 'none';
+                const saveCancelBtns = document.getElementById('save-cancel-buttons');
+                if (saveCancelBtns) saveCancelBtns.style.display = 'flex';
+                
+                // 更新页面标题
+                const pageTitle = document.querySelector('.page-title');
+                if (pageTitle) pageTitle.textContent = '新增成本项';
+                
+                // 启用所有表单字段（账期为系统字段，始终不可编辑）
+                const editableFields = [
+                    'cost-category', 'cost-item', 'cost-pool', 'purpose', 'region', 
+                    'share-pool', 'share-type', 'unit-price', 'depreciation-months',
+                    'depreciation-monthly', 'quantity', 'unit',
+                    'monthly-cost', 'allocation-rate', 'allocated-monthly-cost', 'description'
+                ];
+                editableFields.forEach(function(fieldId) {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.disabled = false;
+                    }
+                });
+                
+                // 清空表单数据（使用默认值）
+                const costCategory = document.getElementById('cost-category');
+                if (costCategory) costCategory.value = '设备费用';
+                const purpose = document.getElementById('purpose');
+                if (purpose) purpose.value = '';
+                const costItem = document.getElementById('cost-item');
+                if (costItem) costItem.value = '';
+                const region = document.getElementById('region');
+                if (region) region.value = '北京';
+                const sharePool = document.getElementById('share-pool');
+                if (sharePool) sharePool.value = '基础资源';
+                const shareType = document.getElementById('share-type');
+                if (shareType) shareType.value = '非公摊成本';
+                const costMonth = document.getElementById('cost-month');
+                if (costMonth) costMonth.value = new Date().toISOString().slice(0, 7);
+                const unitPrice = document.getElementById('unit-price');
+                if (unitPrice) unitPrice.value = '';
+                const depreciationMonths = document.getElementById('depreciation-months');
+                if (depreciationMonths) depreciationMonths.value = '36';
+                const depreciationMonthly = document.getElementById('depreciation-monthly');
+                if (depreciationMonthly) depreciationMonthly.value = '';
+                const quantity = document.getElementById('quantity');
+                if (quantity) quantity.value = '1';
+                const unit = document.getElementById('unit');
+                if (unit) unit.value = '台';
+                const description = document.getElementById('description');
+                if (description) description.value = '';
+                const costPoolAdd = document.getElementById('cost-pool');
+                if (costPoolAdd) costPoolAdd.value = '';
+                
+                console.log('进入新增模式');
+            } else if (mode === 'view') {
+                // 查看模式（历史月）：根据数据来源决定是否显示编辑按钮
+                const dataSource = document.getElementById('data-source').value;
+                const editBtn = document.getElementById('edit-btn');
+                const saveCancelBtns = document.getElementById('save-cancel-buttons');
+                
+                if (dataSource === '资产系统-B类资产') {
+                    // 资产系统-B类资产：显示编辑按钮
+                    if (editBtn) editBtn.style.display = 'inline-block';
+                } else {
+                    // 其他数据来源：隐藏编辑按钮
+                    if (editBtn) editBtn.style.display = 'none';
+                }
+                
+                if (saveCancelBtns) saveCancelBtns.style.display = 'none';
+                
+                // 更新页面标题
+                const pageTitle = document.querySelector('.page-title');
+                if (pageTitle) pageTitle.textContent = '成本项详情';
+                
+                console.log('进入查看模式');
+            }
+            
+            // 确保账期字段始终不可编辑
+            const costMonthField = document.getElementById('cost-month');
+            if (costMonthField) {
+                costMonthField.disabled = true;
+                costMonthField.style.backgroundColor = '#f5f5f5';
+                costMonthField.style.cursor = 'not-allowed';
+                console.log('账期字段已禁用:', costMonthField.disabled);
+            }
+        });
+
+        // 打开公式编辑器
+        function openFormulaEditor() {
+            const modal = document.getElementById('formula-editor-modal');
+            if (modal) modal.classList.add('active');
+        }
+
+        // 关闭公式编辑器弹窗
+        function closeFormulaEditorModal() {
+            const modal = document.getElementById('formula-editor-modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        // 保存公式
+        function saveFormula() {
+            // 这里可以添加表单验证和保存逻辑
+            alert('保存成功');
+            const modal = document.getElementById('formula-editor-modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        // 添加变量到公式编辑器
+        function addVariable(variable) {
+            const editor = document.getElementById('formula-editor');
+            if (editor) editor.value += variable;
+        }
+
+        // 添加函数到公式编辑器
+        function addFunction(func) {
+            const editor = document.getElementById('formula-editor');
+            if (editor) editor.value += func;
+        }
+
+        // 清空公式
+        function clearFormula() {
+            const editor = document.getElementById('formula-editor');
+            if (editor) editor.value = '';
+        }
+
+        // 测试公式
+        function testFormula() {
+            alert('测试公式功能');
+        }
+
+        // 获取URL参数
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // 根据成本分类获取数据来源
+        function getDataSourceByCategory(category) {
+            // 设备费用和基础设施默认使用资产系统
+            if (category === '设备费用' || category === '基础设施') {
+                return '资产系统-B类资产';
+            }
+            return '手动维护';
+        }
+
+        // 模拟数据（与cost-overview.html保持一致）
+        const mockData = [
+            { id: 1, code: 'DEV-001', category: '设备费用', pool: '标准通用服务器-容器', name: '标准通用服务器-容器', purpose: '物理机', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 2, code: 'DEV-002', category: '设备费用', pool: '标准通用服务器-容器', name: '标准通用服务器-容器', purpose: '容器', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 3, code: 'DEV-003', category: '设备费用', pool: '大数据类存储-机械多盘', name: '大数据类存储-机械多盘', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 4, code: 'DEV-004', category: '设备费用', pool: '大数据类存储-机械大盘', name: '大数据类存储-机械大盘', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 5, code: 'DEV-005', category: '设备费用', pool: '大数据类存储-高速IO', name: '大数据类存储-高速IO', purpose: '数据库', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 6, code: 'DEV-006', category: '设备费用', pool: '大数据类超大存储', name: '大数据类超大存储', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 7, code: 'DEV-007', category: '设备费用', pool: '高性能容器应用-容器', name: '高性能容器应用-容器', purpose: '容器', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 8, code: 'DEV-008', category: '设备费用', pool: '小型单机应用', name: '小型单机应用', purpose: '物理机', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 9, code: 'DEV-009', category: '设备费用', pool: '高速编译型应用', name: '高速编译型应用', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 10, code: 'DEV-010', category: '设备费用', pool: '国产化服务器', name: '国产化服务器', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 11, code: 'DEV-011', category: '设备费用', pool: 'GPU服务器-RTX3090', name: 'GPU服务器-RTX3090', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 12, code: 'DEV-012', category: '设备费用', pool: 'GPU服务器-RTX4090', name: 'GPU服务器-RTX4090', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 13, code: 'DEV-013', category: '设备费用', pool: 'GPU服务器-A10', name: 'GPU服务器-A10', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 14, code: 'DEV-014', category: '设备费用', pool: 'GPU服务器-A40', name: 'GPU服务器-A40', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 15, code: 'DEV-015', category: '设备费用', pool: 'GPU服务器-A100', name: 'GPU服务器-A100', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 16, code: 'DEV-016', category: '设备费用', pool: 'GPU服务器-A800', name: 'GPU服务器-A800', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 17, code: 'DEV-017', category: '设备费用', pool: 'GPU服务器-H100', name: 'GPU服务器-H100', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 18, code: 'DEV-018', category: '设备费用', pool: 'GPU服务器-H800', name: 'GPU服务器-H800', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 19, code: 'DEV-019', category: '设备费用', pool: '块存储SAN', name: '块存储SAN', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '60', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 20, code: 'OPS-020', category: '运营费用', pool: '大数据类存储-机械多盘', name: '大数据类存储-机械多盘', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '70000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 21, code: 'DEV-021', category: '设备费用', pool: '安全', name: 'waf', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 22, code: 'DEV-022', category: '设备费用', pool: '安全', name: 'IDS', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 23, code: 'DEV-023', category: '设备费用', pool: '安全', name: 'IPS', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 24, code: 'DEV-024', category: '设备费用', pool: '安全', name: '防火墙', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 25, code: 'DEV-025', category: '设备费用', pool: '安全', name: '堡垒机', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 26, code: 'DEV-026', category: '设备费用', pool: '网络', name: '防火墙（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '14', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 27, code: 'DEV-027', category: '设备费用', pool: '网络', name: '流量编排（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '12', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 28, code: 'DEV-028', category: '设备费用', pool: '网络', name: '路由器（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '10', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 29, code: 'DEV-029', category: '设备费用', pool: '网络', name: '交换机（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '700', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 30, code: 'DEV-030', category: '设备费用', pool: '网络', name: '负载均衡（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '14', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 31, code: 'OPS-031', category: '运营费用', pool: '网络', name: '维保费用', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 32, code: 'SW-032', category: '软件平台', pool: '公摊', name: '动环系统', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '85000', depreciationMonths: '60', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 33, code: 'OPS-033', category: '运营费用', pool: '公摊', name: '动环维保', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '25000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 34, code: 'INF-034', category: '基础设施', pool: '公摊', name: '机房环境', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '（UPS、主机、配电柜、蓄电池、行级空调、精密空调、空间配电柜、机柜、耗材、装修、弱电、地板、防静电地板）', unitPrice: '30230000', depreciationMonths: '120', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 35, code: 'INF-035', category: '基础设施', pool: '公摊', name: '场地成本', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '4.5', depreciationMonths: '240', depreciationMonthly: '', quantity: '1560', unit: '平', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 36, code: 'OPS-036', category: '运营费用', pool: '公摊', name: '机房维保费用', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '350000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 37, code: 'OPS-037', category: '运营费用', pool: '公摊', name: '电费-北京一期', purpose: '', region: '北京一期', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.89', depreciationMonths: '1', depreciationMonthly: '', quantity: '51252', unit: '度', costMonth: '2026-02', monthlyCost: '45460', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 38, code: 'OPS-038', category: '运营费用', pool: '公摊', name: '电费-北京二期', purpose: '', region: '北京二期', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.85', depreciationMonths: '1', depreciationMonthly: '', quantity: '251742', unit: '度', costMonth: '2026-02', monthlyCost: '210456', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 39, code: 'OPS-039', category: '运营费用', pool: '公摊', name: '电费-西安', purpose: '', region: '西安', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.69', depreciationMonths: '1', depreciationMonthly: '', quantity: '217699', unit: '度', costMonth: '2026-02', monthlyCost: '150316', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 40, code: 'OPS-040', category: '运营费用', pool: '公摊', name: '电费-上海', purpose: '', region: '上海', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.89', depreciationMonths: '1', depreciationMonthly: '', quantity: '87285', unit: '度', costMonth: '2026-02', monthlyCost: '79429', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 41, code: 'OPS-041', category: '运营费用', pool: '公摊', name: '机房人工费用', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '机房、服务器人工费', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 42, code: 'SW-042', category: '软件平台', pool: '容器', name: '容器管理平台', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '容器管理平台', unitPrice: '2880000', depreciationMonths: '60', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 43, code: 'OPS-043', category: '运营费用', pool: '容器', name: '容器人工费用', purpose: '', region: '', sharePool: '容器', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 44, code: 'OPS-044', category: '运营费用', pool: '数据库', name: '数据库人工费用', purpose: '', region: '', sharePool: '数据库', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 45, code: 'NET-045', category: '网络带宽', pool: '网络', name: '互联网网络带宽', purpose: '', region: '', sharePool: '网络', shareType: '非公摊成本', description: '', unitPrice: '512410', depreciationMonths: '12', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' }
+        ];
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
+</body>
+</html>

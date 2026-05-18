@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>FinOps - 演示 · 手动推送（策略名称/摘要标识意图）</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.85);
+            background: #f0f2f5;
+        }
+        .header {
+            background: linear-gradient(90deg, #006eff 0%, #1890ff 100%);
+            color: #fff;
+            padding: 14px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,.12);
+        }
+        .header-content {
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+        .container { max-width: 920px; margin: 0 auto; padding: 16px 20px 40px; }
+        .demo-badge {
+            display: inline-block;
+            background: #fa8c16;
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .notice-bar {
+            padding: 12px 14px;
+            background: #e6f4ff;
+            border: 1px solid #91caff;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #0958d9;
+            margin-bottom: 16px;
+            line-height: 1.55;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+        }
+        .page-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .page-desc { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.55; }
+        .step-label { font-size: 12px; color: #1890ff; font-weight: 600; margin-bottom: 6px; }
+        .field { margin-bottom: 14px; }
+        .field label, .field .label-text {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .field input[type="text"],
+        .field input[type="month"],
+        .field textarea,
+        .field select {
+            width: 100%;
+            max-width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .field textarea { min-height: 64px; resize: vertical; }
+        .hint { font-size: 12px; color: #888; margin-top: 6px; line-height: 1.45; }
+        /* 用量 / 账单策略卡片统一紧凑尺寸（与账单侧视觉一致） */
+        .strategy-list { display: flex; flex-direction: column; gap: 8px; }
+        .strategy-option {
+            display: block;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: border-color .15s, box-shadow .15s;
+            background: #fafafa;
+        }
+        .strategy-option:hover { border-color: #69b1ff; }
+        .strategy-option input { position: absolute; opacity: 0; pointer-events: none; }
+        .strategy-option.selected {
+            border-color: #1890ff;
+            background: #e6f7ff;
+            box-shadow: 0 0 0 1px #1890ff inset;
+        }
+        .strategy-name { font-weight: 600; font-size: 13px; color: #000; margin-bottom: 4px; }
+        .strategy-summary {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.45;
+        }
+        .strategy-tag {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: #f0f0f0;
+            color: #595959;
+        }
+        .scope-row { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 8px; }
+        .scope-row label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: #333; }
+        .scope-row input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            margin: 0;
+            flex-shrink: 0;
+            accent-color: #1890ff;
+        }
+        .preview-box {
+            border: 1px dashed #91caff;
+            background: #f6ffed;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 13px;
+        }
+        .preview-box dt { color: #888; font-size: 12px; margin-top: 10px; }
+        .preview-box dt:first-child { margin-top: 0; }
+        .preview-box dd { color: #262626; font-weight: 500; margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
+        .btn {
+            padding: 6px 18px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; }
+        .btn-default:hover { border-color: #1890ff; color: #1890ff; }
+        .muted { color: #999; font-size: 12px; }
+        .tabs { display: flex; gap: 0; border-bottom: 1px solid #f0f0f0; margin-bottom: 16px; }
+        .tab {
+            padding: 10px 18px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-bottom: -1px;
+            border-radius: 6px 6px 0 0;
+            color: #666;
+            background: #fafafa;
+        }
+        .tab.active { background: #fff; color: #1890ff; border-color: #d9d9d9; border-bottom-color: #fff; font-weight: 600; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(0,0,0,.78);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            opacity: 0;
+            transition: transform .25s, opacity .25s;
+            z-index: 300;
+            max-width: 90vw;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台<span class="demo-badge">演示页</span></h1>
+            <span class="header-sub">手动推送 · 策略名称/摘要标识意图（原型）</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="notice-bar" role="status">
+            <strong>设计说明：</strong>本页演示<strong>不单独提供「动作类型」枚举控件</strong>。运维的推送意图由<strong>所选推送策略</strong>的<strong>策略名称</strong>与<strong>摘要说明</strong>共同表达（策略在「消息推送」模块由运维维护）；可选<strong>备注</strong>用于工单号、变更单、内部说明等，一并写入批次展示与审计。正式环境菜单与列表仍以主工程为准，本页仅供评审。
+            <span class="muted" style="display:block;margin-top:8px;">相关正式页示例（不修改）：<a href="usage-management.html">用量明细</a> · <a href="bill-monthly-overview.html">月度账单总览</a> · <a href="usage-push-strategy-management.html">消息推送</a></span>
+        </div>
+
+        <div class="card">
+            <h2 class="page-title">发起推送（演示）</h2>
+            <p class="page-desc">切换「用量 / 账单」查看不同策略候选；策略列表中的摘要已按业务语义撰写，用于替代显式动作类型选择。</p>
+
+            <div class="tabs" role="tablist">
+                <button type="button" class="tab active" data-tab="usage" role="tab" aria-selected="true">用量推送</button>
+                <button type="button" class="tab" data-tab="bill" role="tab" aria-selected="false">账单推送</button>
+            </div>
+
+            <div id="panel-usage">
+                <div class="step-label">步骤 1 · 账期</div>
+                <div class="field">
+                    <label for="billPeriodUsage">账期</label>
+                    <input type="month" id="billPeriodUsage" value="2026-04">
+                </div>
+
+                <div class="step-label">步骤 2 · 推送策略（名称 + 摘要 = 动作语义）</div>
+                <p class="hint" style="margin-bottom:10px;">请根据摘要选择与本批操作一致的策略；后端以 <code>strategy_id</code> 快照为准。</p>
+                <div class="strategy-list" id="strategyListUsage" role="radiogroup" aria-label="用量推送策略">
+                    <label class="strategy-option selected" data-strategy-id="usage_full_first">
+                        <input type="radio" name="strategyPickUsage" value="usage_full_first" checked>
+                        <div class="strategy-name">用量-账期首次全量触达（企微）</div>
+                        <div class="strategy-summary">对本账期、所选范围内尚未成功触达的接收人发送首次用量确认；提交前请核对范围与幂等规则。</div>
+                        <span class="strategy-tag">首次 / 全量</span>
+                    </label>
+                    <label class="strategy-option" data-strategy-id="usage_retry_failed">
+                        <input type="radio" name="strategyPickUsage" value="usage_retry_failed">
+                        <div class="strategy-name">用量-仅重推渠道失败子集</div>
+                        <div class="strategy-summary">仅对上一批次失败或超时子项重试，不重发已成功对象；正式环境由列表带入批次号。</div>
+                        <span class="strategy-tag">仅重推失败</span>
+                    </label>
+                    <label class="strategy-option" data-strategy-id="usage_nudge">
+                        <input type="radio" name="strategyPickUsage" value="usage_nudge">
+                        <div class="strategy-name">用量-截止前催办（温和提醒）</div>
+                        <div class="strategy-summary">对仍有待办且未超截止的接收人发送催办模板；与首次推送分流，频控按产品策略。</div>
+                        <span class="strategy-tag">催办</span>
+                    </label>
+                </div>
+
+                <div class="step-label">步骤 3 · 推送范围（示意）</div>
+                <div class="field">
+                    <span class="label-text">云账号 / 范围</span>
+                    <div class="scope-row">
+                        <label><input type="checkbox" name="scopeUsage" value="acc1" checked> 生产主账号 A</label>
+                        <label><input type="checkbox" name="scopeUsage" value="acc2"> 测试账号 B</label>
+                        <label><input type="checkbox" name="scopeUsage" value="acc3"> 金融专区 C</label>
+                    </div>
+                </div>
+
+                <div class="step-label">步骤 4 · 备注（可选，参与标识与审计）</div>
+                <div class="field">
+                    <label for="remarkUsage">备注</label>
+                    <textarea id="remarkUsage" placeholder="例如：CHG-20260514-01；CMDB 归属批量调整后补发；与财务口头确认可发。"></textarea>
+                    <p class="hint">可与策略摘要并列展示在批次详情顶栏，便于排障与对口业务查询。</p>
+                </div>
+
+                <div class="step-label">提交前预览 · 本次动作标识</div>
+                <dl class="preview-box" id="previewUsage" aria-live="polite"></dl>
+
+                <div class="toolbar">
+                    <button type="button" class="btn btn-primary" id="btnSubmitUsage">创建批次（演示）</button>
+                    <button type="button" class="btn btn-default" id="btnResetUsage">重置表单</button>
+                    <span class="muted">本按钮不调用后端，仅在控制台输出 JSON。</span>
+                </div>
+            </div>
+
+            <div id="panel-bill" hidden>
+                <div class="step-label">步骤 1 · 账期</div>
+                <div class="field">
+                    <label for="billPeriodBill">账期</label>
+                    <input type="month" id="billPeriodBill" value="2026-04">
+                </div>
+
+                <div class="step-label">步骤 2 · 推送策略（名称 + 摘要）</div>
+                <div class="strategy-list" id="strategyListBill" role="radiogroup" aria-label="账单推送策略">
+                    <label class="strategy-option selected" data-strategy-id="bill_dept_first">
+                        <input type="radio" name="strategyPickBill" value="bill_dept_first" checked>
+                        <div class="strategy-name">账单-部门首次送达（企微+邮件）</div>
+                        <div class="strategy-summary">向所选部门负责人送达本账期部门账单待办；首次送达模板含确认链接与截止说明。</div>
+                        <span class="strategy-tag">首次送达</span>
+                    </label>
+                    <label class="strategy-option" data-strategy-id="bill_dept_retry_failed">
+                        <input type="radio" name="strategyPickBill" value="bill_dept_retry_failed">
+                        <div class="strategy-name">账单-仅重推失败部门</div>
+                        <div class="strategy-summary">仅对上一批次送达失败的部门子项重试；成功部门不再投递。</div>
+                        <span class="strategy-tag">失败子集</span>
+                    </label>
+                </div>
+
+                <div class="step-label">步骤 3 · 部门范围（示意）</div>
+                <div class="field">
+                    <span class="label-text">目标部门</span>
+                    <div class="scope-row">
+                        <label><input type="checkbox" name="scopeBill" value="d1" checked> 研发中心</label>
+                        <label><input type="checkbox" name="scopeBill" value="d2"> 云计算事业部</label>
+                        <label><input type="checkbox" name="scopeBill" value="d3"> 财务部</label>
+                    </div>
+                </div>
+
+                <div class="step-label">步骤 4 · 备注（可选）</div>
+                <div class="field">
+                    <label for="remarkBill">备注</label>
+                    <textarea id="remarkBill" placeholder="例如：出账更正后补发；仅对研发线。"></textarea>
+                </div>
+
+                <dl class="preview-box" id="previewBill" aria-live="polite"></dl>
+
+                <div class="toolbar">
+                    <button type="button" class="btn btn-primary" id="btnSubmitBill">创建批次（演示）</button>
+                    <span class="muted">同上，仅演示输出。</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+(function () {
+    'use strict';
+
+    function $(id) { return document.getElementById(id); }
+
+    function selectedStrategyLabel(listEl, nameAttr) {
+        var inp = listEl.querySelector('input[name="' + nameAttr + '"]:checked');
+        if (!inp) return null;
+        var lab = inp.closest('.strategy-option');
+        if (!lab) return null;
+        var title = lab.querySelector('.strategy-name');
+        var sum = lab.querySelector('.strategy-summary');
+        return {
+            strategyId: lab.getAttribute('data-strategy-id'),
+            strategyName: title ? title.textContent.trim() : '',
+            summary: sum ? sum.textContent.trim() : ''
+        };
+    }
+
+    function selectedScope(checkName) {
+        var boxes = document.querySelectorAll('input[name="' + checkName + '"]:checked');
+        return Array.prototype.map.call(boxes, function (b) { return b.value; });
+    }
+
+    function renderPreviewUsage() {
+        var s = selectedStrategyLabel($('strategyListUsage'), 'strategyPickUsage');
+        var period = $('billPeriodUsage').value || '—';
+        var scope = selectedScope('scopeUsage');
+        var remark = ($('remarkUsage').value || '').trim();
+        var actionDisplay = s ? (s.strategyName + '\n' + s.summary) : '—';
+        var remarkDisplay = remark || '（未填）';
+        $('previewUsage').innerHTML =
+            '<dt>账期</dt><dd>' + period + '</dd>' +
+            '<dt>策略标识（strategy_id）</dt><dd>' + (s ? s.strategyId : '—') + '</dd>' +
+            '<dt>动作展示（名称 + 摘要，替代显式动作类型）</dt><dd>' + actionDisplay.replace(/\n/g, '<br>') + '</dd>' +
+            '<dt>范围快照</dt><dd>' + (scope.length ? scope.join('、') : '（未选）') + '</dd>' +
+            '<dt>备注</dt><dd>' + remarkDisplay.replace(/\n/g, '<br>') + '</dd>';
+    }
+
+    function renderPreviewBill() {
+        var s = selectedStrategyLabel($('strategyListBill'), 'strategyPickBill');
+        var period = $('billPeriodBill').value || '—';
+        var scope = selectedScope('scopeBill');
+        var remark = ($('remarkBill').value || '').trim();
+        var actionDisplay = s ? (s.strategyName + '\n' + s.summary) : '—';
+        $('previewBill').innerHTML =
+            '<dt>账期</dt><dd>' + period + '</dd>' +
+            '<dt>策略标识</dt><dd>' + (s ? s.strategyId : '—') + '</dd>' +
+            '<dt>动作展示</dt><dd>' + actionDisplay.replace(/\n/g, '<br>') + '</dd>' +
+            '<dt>部门范围</dt><dd>' + (scope.length ? scope.join('、') : '（未选）') + '</dd>' +
+            '<dt>备注</dt><dd>' + (remark || '（未填）').replace(/\n/g, '<br>') + '</dd>';
+    }
+
+    function bindStrategyCards(listEl, nameAttr, onChange) {
+        listEl.querySelectorAll('.strategy-option').forEach(function (lab) {
+            lab.addEventListener('click', function () {
+                listEl.querySelectorAll('.strategy-option').forEach(function (x) { x.classList.remove('selected'); });
+                lab.classList.add('selected');
+                var inp = lab.querySelector('input[type="radio"]');
+                if (inp) inp.checked = true;
+                onChange();
+            });
+        });
+        listEl.querySelectorAll('input[type="radio"]').forEach(function (inp) {
+            inp.addEventListener('change', onChange);
+        });
+    }
+
+    function showToast(msg) {
+        var t = $('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(function () { t.classList.remove('show'); }, 3200);
+    }
+
+    function buildPayload(kind) {
+        if (kind === 'usage') {
+            var s = selectedStrategyLabel($('strategyListUsage'), 'strategyPickUsage');
+            return {
+                kind: 'usage_push',
+                bill_period: $('billPeriodUsage').value,
+                strategy_id: s && s.strategyId,
+                action_display: s ? { name: s.strategyName, summary: s.summary } : null,
+                operator_remark: ($('remarkUsage').value || '').trim() || null,
+                scope: selectedScope('scopeUsage')
+            };
+        }
+        var sb = selectedStrategyLabel($('strategyListBill'), 'strategyPickBill');
+        return {
+            kind: 'bill_delivery',
+            bill_period: $('billPeriodBill').value,
+            strategy_id: sb && sb.strategyId,
+            action_display: sb ? { name: sb.strategyName, summary: sb.summary } : null,
+            operator_remark: ($('remarkBill').value || '').trim() || null,
+            scope: selectedScope('scopeBill')
+        };
+    }
+
+    document.querySelectorAll('.tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            var id = tab.getAttribute('data-tab');
+            document.querySelectorAll('.tab').forEach(function (t) {
+                t.classList.toggle('active', t === tab);
+                t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+            });
+            $('panel-usage').hidden = id !== 'usage';
+            $('panel-bill').hidden = id !== 'bill';
+            if (id === 'usage') renderPreviewUsage();
+            else renderPreviewBill();
+        });
+    });
+
+    bindStrategyCards($('strategyListUsage'), 'strategyPickUsage', renderPreviewUsage);
+    bindStrategyCards($('strategyListBill'), 'strategyPickBill', renderPreviewBill);
+
+    ['billPeriodUsage', 'remarkUsage'].forEach(function (id) {
+        var el = $(id);
+        if (el) el.addEventListener('input', renderPreviewUsage);
+    });
+    document.querySelectorAll('input[name="scopeUsage"]').forEach(function (el) {
+        el.addEventListener('change', renderPreviewUsage);
+    });
+
+    ['billPeriodBill', 'remarkBill'].forEach(function (id) {
+        var el = $(id);
+        if (el) el.addEventListener('input', renderPreviewBill);
+    });
+    document.querySelectorAll('input[name="scopeBill"]').forEach(function (el) {
+        el.addEventListener('change', renderPreviewBill);
+    });
+
+    $('btnSubmitUsage').addEventListener('click', function () {
+        var payload = buildPayload('usage');
+        console.log('[push-manual-demo] usage batch payload', payload);
+        showToast('已在控制台输出 JSON（用量）');
+    });
+    $('btnSubmitBill').addEventListener('click', function () {
+        var payload = buildPayload('bill');
+        console.log('[push-manual-demo] bill batch payload', payload);
+        showToast('已在控制台输出 JSON（账单）');
+    });
+
+    $('btnResetUsage').addEventListener('click', function () {
+        $('billPeriodUsage').value = '2026-04';
+        $('remarkUsage').value = '';
+        document.querySelectorAll('#strategyListUsage input[type="radio"]').forEach(function (r, i) { r.checked = i === 0; });
+        document.querySelectorAll('#strategyListUsage .strategy-option').forEach(function (x, i) { x.classList.toggle('selected', i === 0); });
+        document.querySelectorAll('input[name="scopeUsage"]').forEach(function (c, i) { c.checked = i === 0; });
+        renderPreviewUsage();
+    });
+
+    renderPreviewUsage();
+    renderPreviewBill();
+})();
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+</body>
+</html>

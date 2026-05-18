@@ -1,0 +1,4441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>FinOps财务运营管理平台 - 用量管理</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-x: hidden; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        /* ── Header ── */
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            margin-bottom: 20px;
+        }
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+
+        /* ── Layout ── */
+        .container {
+            width: 100%;
+            padding: 0 20px 20px;
+            display: flex;
+            gap: 16px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+            flex-shrink: 0;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 32px);
+            overflow: auto;
+        }
+        .sidebar-head {
+            background: #1890ff;
+            color: #fff;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+        .sub-menu { list-style: none; background: #f9f9f9; margin: 0; padding: 0; }
+        .sub-menu-item {
+            display: block;
+            padding: 10px 16px 10px 28px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        .sub-menu-item:hover { background: #f0f0f0; color: #1890ff; }
+        .sub-menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+            font-weight: 500;
+        }
+
+        /* ── Content ── */
+        .content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+
+        /* ── Notice Bar ── */
+        .notice-bar {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            padding: 7px 12px;
+            font-size: 12px;
+            color: rgba(0,0,0,.75);
+        }
+        .notice-bar strong { color: #0050b3; }
+        .notice-bar.warn {
+            background: #fff7e6;
+            border-color: #ffd591;
+        }
+        .notice-bar.warn strong { color: #d46b08; }
+
+        /* ── Global Card (账期选择器) ── */
+        .bill-global-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+        }
+        .bill-global-card-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px 16px;
+        }
+        .bill-global-bar {
+            flex: 1 1 260px;
+            min-width: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 14px 20px;
+        }
+        .bill-global-push-corner {
+            flex: 0 0 auto;
+            margin-left: auto;
+            align-self: flex-start;
+            padding-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            max-width: 220px;
+        }
+        .bill-global-push-corner .btn {
+            white-space: nowrap;
+        }
+        .bill-global-push-hint {
+            font-size: 12px;
+            line-height: 1.45;
+            text-align: right;
+        }
+        .muted { color: #8c8c8c; font-size: 12px; }
+
+        /* ── Card ── */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        .card-title-sm {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1890ff;
+            border-left: 3px solid #1890ff;
+            padding-left: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* ── Stats Grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .stat-box {
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+        }
+        .stat-box .label { color: #666; font-size: 13px; }
+        .stat-box .value { font-size: 22px; font-weight: 600; margin-top: 6px; color: #333; }
+        .stat-box .value.blue   { color: #1890ff; }
+        .stat-box .value.orange { color: #fa8c16; }
+        .stat-box .value.red    { color: #cf1322; }
+        .stat-box .value.green  { color: #389e0d; }
+        .stat-box .sub { font-size: 12px; color: #999; margin-top: 4px; }
+        .stat-box .sub .up   { color: #cf1322; }
+        .stat-box .sub .down { color: #52c41a; }
+
+        /* ── Tabs ── */
+        .bill-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            border-bottom: 1px solid #e8e8e8;
+            margin: 0 0 16px;
+        }
+        .bill-tab {
+            padding: 12px 18px;
+            cursor: pointer;
+            color: #666;
+            border: none;
+            background: none;
+            font-size: 14px;
+            margin-bottom: -1px;
+            border-bottom: 2px solid transparent;
+            border-radius: 4px 4px 0 0;
+        }
+        .bill-tab:hover { color: #1890ff; background: #fafafa; }
+        .bill-tab.active { color: #1890ff; font-weight: 600; border-bottom-color: #1890ff; }
+        .tab-count {
+            display: inline-block;
+            background: #ff4d4f;
+            color: #fff;
+            border-radius: 8px;
+            padding: 0 6px;
+            font-size: 11px;
+            margin-left: 4px;
+            line-height: 18px;
+            font-weight: 400;
+        }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── Toolbar / Filters ── */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+        .field { min-width: 140px; }
+        .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .field input, .field select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            background: #fff;
+            color: #333;
+            outline: none;
+            min-height: 32px;
+        }
+        .field input:focus, .field select:focus {
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24,144,255,.2);
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 6px 16px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all .2s;
+        }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        .btn-default:hover { border-color: #1890ff; color: #1890ff; }
+        .btn-success { background: #52c41a; color: #fff; border-color: #52c41a; }
+        .btn-success:hover { background: #73d13d; border-color: #73d13d; }
+        .btn-warning { background: #fa8c16; color: #fff; border-color: #fa8c16; }
+        .btn-warning:hover { background: #ffa940; border-color: #ffa940; }
+        .btn-danger  { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
+        .btn-danger:hover  { background: #ff7875; border-color: #ff7875; }
+        .btn-sm { padding: 4px 12px; font-size: 13px; }
+        .btn-link {
+            border: none;
+            background: none;
+            color: #1890ff;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0;
+        }
+        .btn-link:hover { text-decoration: underline; }
+        .btn.hidden { display: none; }
+
+        /* ── Table ── */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+        th { background: #fafafa; font-weight: 600; color: #262626; }
+        tr:hover td { background: #fafafa; }
+        .action-btns { display: flex; gap: 8px; }
+
+        .admin-dispute-panel {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e8e8e8;
+        }
+        .admin-dispute-panel-hd {
+            font-size: 14px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+        #corrPanelTypeHint {
+            margin: 12px 0 0;
+            padding: 10px 12px;
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #595959;
+            line-height: 1.6;
+        }
+
+        /* ── Tags ── */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            line-height: 18px;
+        }
+        .tag-blue   { background: #e6f7ff; color: #1890ff; border: 1px solid #bae7ff; }
+        .tag-green  { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+        .tag-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+        .tag-red    { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffa39e; }
+        .tag-gray   { background: #f5f5f5; color: #8c8c8c; border: 1px solid #d9d9d9; }
+        .tag-purple { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
+
+        /* ── DL Grid ── */
+        .dl-grid { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; font-size: 13px; }
+        .dl-grid dt { color: #888; }
+        .dl-grid dd { color: #333; word-break: break-all; white-space: normal; }
+        .dispute-diff-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; align-items: start; }
+        .dispute-diff-col { border: 1px solid #f0f0f0; border-radius: 8px; padding: 12px; background: #fafafa; min-width: 0; }
+        .dispute-diff-col h4 { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #1890ff; }
+        .dispute-diff-col.after h4 { color: #52c41a; }
+        @media (max-width: 900px) {
+            .dispute-diff-wrap { grid-template-columns: 1fr; }
+        }
+
+        /* ── Modals ── */
+        .modal {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal.active { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 8px;
+            max-width: 680px; width: 100%;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 8px 24px rgba(0,0,0,.15);
+        }
+        .modal-box.narrow { max-width: 420px; }
+        .modal-box.medium { max-width: 520px; }
+        .modal-box.wide   { max-width: 780px; }
+        .modal-head {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+        .modal-head h3 { font-size: 16px; font-weight: 600; }
+        .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+        .modal-foot {
+            padding: 12px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex; justify-content: flex-end; gap: 8px;
+            flex-shrink: 0;
+        }
+        .modal-close { border: none; background: none; font-size: 22px; cursor: pointer; color: #999; line-height: 1; }
+        .modal-close:hover { color: #333; }
+
+        /* ── Form ── */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-item { display: flex; flex-direction: column; gap: 4px; }
+        .form-item label { font-size: 12px; color: #666; }
+        .form-item input, .form-item select, .form-item textarea {
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+        .form-item textarea { resize: vertical; min-height: 80px; }
+        .form-item input:focus, .form-item select:focus, .form-item textarea:focus {
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24,144,255,.2);
+        }
+        .form-item input.field-locked:disabled,
+        .form-item select.field-locked:disabled {
+            background: #f5f5f5 !important;
+            color: #595959 !important;
+            border-color: #e8e8e8;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+        .corr-date-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .add-inst-spec-section { margin-top: 4px; }
+        .add-inst-owner-section {
+            margin-top: 2px;
+            margin-bottom: 6px;
+        }
+        .add-inst-spec-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0 10px;
+            color: #333;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .add-inst-spec-divider::before,
+        .add-inst-spec-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e8e8e8;
+        }
+        .add-inst-spec-hint {
+            font-size: 12px;
+            color: #d46b08;
+            margin-bottom: 12px;
+            line-height: 1.55;
+        }
+        .form-item input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+        .form-item input[type="number"]::-webkit-outer-spin-button,
+        .form-item input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: inner-spin-button;
+            opacity: 1;
+            height: 2em;
+        }
+
+        /* ── Pagination ── */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0 0;
+            font-size: 13px; color: #666;
+        }
+        .page-btns { display: flex; gap: 4px; }
+        .page-btn {
+            min-width: 30px; height: 30px; padding: 0 6px;
+            border-radius: 4px; border: 1px solid #d9d9d9;
+            background: #fff; cursor: pointer;
+            font-size: 13px;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .page-btn:hover { border-color: #1890ff; color: #1890ff; }
+        .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+
+        /* ── Log List ── */
+        .log-list { list-style: none; position: relative; padding-left: 20px; }
+        .log-list::before {
+            content: ''; position: absolute;
+            left: 6px; top: 0; bottom: 0;
+            width: 2px; background: #f0f0f0;
+        }
+        .log-item {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 14px;
+        }
+        .log-item::before {
+            content: ''; position: absolute;
+            left: -14px; top: 5px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #fff; border: 2px solid #1890ff;
+        }
+        .log-item.warn::before  { border-color: #fa8c16; }
+        .log-item.error::before { border-color: #ff4d4f; }
+        .log-time    { font-size: 12px; color: #999; }
+        .log-content { font-size: 13px; color: #333; margin-top: 2px; }
+        .log-user    { color: #1890ff; }
+
+        /* ── Main Content Card ── */
+        .card.bill-content-card {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .card.bill-content-card > .panel.active {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ════ 服务分类侧边导航（与账单管理资源明细一致）════ */
+        .res-bill-split {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin: 0 -4px;
+        }
+        .res-service-category-sidebar {
+            width: 200px;
+            min-width: 200px;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px 0 0 8px;
+            padding: 12px 0 16px;
+            overflow-y: auto;
+            min-height: 0;
+            flex-shrink: 0;
+            transition: width 0.22s ease, min-width 0.22s ease, padding 0.22s ease, border-color 0.22s ease;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, .04);
+        }
+        .res-service-category-sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            border-color: transparent;
+            overflow: hidden;
+        }
+        .res-service-category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            padding: 0 14px 10px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .res-service-tree-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 13px;
+        }
+        .res-service-tree-item:hover { background: #f0f8ff; }
+        .res-service-tree-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-right: 3px solid #1890ff;
+        }
+        .res-service-tree-expand-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 6px;
+            font-size: 11px;
+            color: #999;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .res-service-tree-expand-icon.expanded { transform: rotate(90deg); }
+        .res-service-tree-expand-icon.hidden { visibility: hidden; pointer-events: none; }
+        .res-service-tree-label { flex: 1; }
+        .res-service-tree-children {
+            margin-left: 18px;
+            display: none;
+        }
+        .res-service-tree-children.expanded { display: block; }
+        .res-service-tree-children .res-service-tree-children { margin-left: 12px; }
+        
+        .res-bill-right-col {
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+            position: relative;
+            padding-left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .res-stack-mod {
+            flex-shrink: 0;
+            padding: 10px 12px;
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+        }
+        .res-stack-mod.res-stack-mod--filter-stat {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .res-stack-mod .res-search-module { margin-bottom: 0; flex-shrink: 0; }
+        .res-search-row-primary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .res-search-combo {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: #fff;
+            min-height: 38px;
+        }
+        .res-search-combo-inner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            min-height: 34px;
+        }
+        .res-query-tags-inline { display: contents; }
+        .res-query-tags-inline > .res-query-tag { margin: 2px 0; }
+        .res-main-search-inner {
+            flex: 1 1 160px;
+            min-width: 120px;
+            border: none;
+            outline: none;
+            padding: 4px 6px;
+            font-size: 14px;
+            background: transparent;
+        }
+        .res-main-search-inner::placeholder { color: #bfbfbf; }
+        .res-query-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 4px 4px 10px;
+            background: #f0f8ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            font-size: 13px;
+            color: rgba(0, 0, 0, .85);
+            max-width: 100%;
+        }
+        .res-query-tag--adv {
+            background: #f6ffed;
+            border-color: #b7eb8f;
+        }
+        .res-query-tag-key { color: #666; flex-shrink: 0; }
+        .res-query-tag-val {
+            color: #1890ff;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        .res-query-tag-remove {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            border-radius: 2px;
+        }
+        .res-query-tag-remove:hover { color: #ff4d4f; background: rgba(0, 0, 0, .04); }
+        .res-drawer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            z-index: 1100;
+        }
+        .res-drawer-overlay.on { display: block; }
+        .res-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(400px, 94vw);
+            height: 100%;
+            background: #fff;
+            z-index: 1101;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, .12);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.22s ease;
+        }
+        .res-drawer.on { transform: translateX(0); }
+        .res-drawer-head {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .res-drawer-head h3 { font-size: 16px; font-weight: 600; }
+        .res-drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+        .res-adv-field-stack .field { margin-bottom: 14px; width: 100%; min-width: 0; }
+        .res-adv-field-stack .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .res-adv-field-stack .field input,
+        .res-adv-field-stack .field select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .res-drawer-foot {
+            padding: 12px 16px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+        .res-stat-segment {
+            display: inline-flex;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        .res-stat-segment .res-stat-btn {
+            padding: 4px 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            color: rgba(0, 0, 0, .65);
+            border-right: 1px solid #d9d9d9;
+            white-space: nowrap;
+        }
+        .res-stat-segment .res-stat-btn:last-child { border-right: none; }
+        .res-stat-btn:hover { color: #1890ff; }
+        .res-stat-btn.active { background: #1890ff; color: #fff; font-weight: 500; }
+        .res-stat-btn.active:hover { color: #fff; }
+        .res-stat-toolbar-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .res-stat-inline-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            white-space: nowrap;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+        .res-stat-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .res-table-panel {
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .res-stack-mod--filter-stat > .res-table-panel {
+            margin-top: 10px;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .res-table-wrap-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+        }
+        .res-sidebar-toggle-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) translateX(-100%);
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: 2px;
+            padding: 12px 6px;
+            background: #1890ff;
+            color: #fff;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 5;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, .12);
+        }
+        .res-sidebar-toggle-btn:hover { background: #40a9ff; }
+
+        /* ── 视图切换 ── */
+        .view-switch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+        }
+        .view-switch-label {
+            font-size: 13px;
+            color: #666;
+            white-space: nowrap;
+        }
+        .view-toggle-btn {
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+        }
+        .view-toggle-btn.active {
+            background: #1890ff;
+            color: #fff;
+            border-color: #1890ff;
+        }
+        .admin-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #722ed1;
+            color: #fff;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-left: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; padding: 0 12px 20px; }
+            .sidebar { width: 100%; position: static; max-height: none; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .res-service-category-sidebar { width: 160px; min-width: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ Header ═══ -->
+<div class="header">
+    <div class="header-content">
+        <h1>FinOps财务运营管理平台</h1>
+        <span class="header-sub">用量管理 · 用量明细</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ═══ Sidebar ═══ -->
+    <aside class="sidebar">
+        <div class="sidebar-head">菜单导航</div>
+                                            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
+                    </ul>
+                </li>
+            </ul>
+    </aside>
+
+    <!-- ═══ Content ═══ -->
+    <main class="content">
+
+        <!-- 全局账期选择器 -->
+        <div class="bill-global-card">
+            <div class="bill-global-card-head">
+                <div class="bill-global-bar">
+                    <div class="field" style="margin-bottom:0;">
+                        <label for="globalBillMonth">账期（全局）</label>
+                        <input type="month" id="globalBillMonth" value="2026-04" autocomplete="off">
+                    </div>
+                    <!-- 用户/管理员视图切换 -->
+                    <div class="view-switch" id="viewSwitchArea">
+                        <span class="view-switch-label">查看视角：</span>
+                        <button type="button" class="view-toggle-btn active" id="viewUser" onclick="switchView('user')">费用归属人</button>
+                        <button type="button" class="view-toggle-btn" id="viewAdmin" onclick="switchView('admin')">运维管理员</button>
+                    </div>
+                </div>
+                <div class="bill-global-push-corner">
+                    <button type="button" class="btn btn-default btn-sm" id="btnPushUsage" onclick="openPushUsageModal()" title="一期：按所选范围向费用归属人邮件推送用量确认消息，附系统用量确认地址（对接后端后生效）" style="display:none;" aria-describedby="billMonthPushHint">推送用量</button>
+                    <span class="muted bill-global-push-hint" id="billMonthPushHint" style="display:none;">一期：账期与推送范围（全量/部门/人员）写死策略，邮件至费用归属人并附用量确认地址。</span>
+                </div>
+            </div>
+            <!-- 通知栏：置于账期模块内（直接跟随账期选择器） -->
+            <div class="notice-bar" id="noticeBar" style="margin-top:10px;">
+                <span id="noticeText">系统于<span style="color:#1890ff;font-weight:600;">每月1日 10:00</span>发送确认通知，当前账期 <strong>2026年4月</strong> 处于「<strong>用量确认阶段</strong>」（次月初 ~ 7个工作日后 24:00），共 <strong id="pendingCount">8</strong> 条用量待确认，截止：<strong>2026-05-12 24:00</strong>（超时自动确认）。</span>
+            </div>
+        </div>
+
+        <!-- Tabs + 内容 -->
+        <div class="card bill-content-card" style="padding-top:0;overflow:hidden;">
+            <div class="bill-tabs" style="padding:0 20px;margin-bottom:0;">
+                <button class="bill-tab active" id="tab-detail" onclick="switchTab('detail')">用量明细<span class="tab-count" id="tabDetailCount">8</span></button>
+                <button class="bill-tab" id="tab-dispute" onclick="switchTab('dispute')">异议管理<span class="tab-count" id="disputeCount">3</span></button>
+            </div>
+
+            <!-- ════ 用量明细（合并确认功能 + 服务分类侧边导航） ════ -->
+            <div class="panel active" id="panel-detail" style="padding:20px;">
+
+                <!-- 服务分类侧边导航 + 表格（与账单管理资源明细一致） -->
+                <div class="res-bill-split">
+                    
+                    <!-- 服务分类侧边栏 -->
+                    <aside class="res-service-category-sidebar" id="resServiceCategorySidebar" aria-label="服务分类筛选">
+                        <div class="res-service-category-title">服务分类</div>
+                        <div id="resServiceCategoryTree"></div>
+                    </aside>
+
+                    <!-- 右侧内容区 -->
+                    <div class="res-bill-right-col">
+                        <button type="button" class="res-sidebar-toggle-btn" id="resServiceSidebarToggle" title="展开/收起服务分类">服务目录</button>
+                        
+                        <section class="res-stack-mod res-stack-mod--filter-stat" aria-label="筛选与用量明细列表">
+                            
+                            <!-- 搜索栏（与账单管理资源明细：组合搜索 + 高级筛选抽屉） -->
+                            <div class="res-search-module">
+                                <div class="res-search-row-primary">
+                                    <div class="res-search-combo" role="search">
+                                        <div class="res-search-combo-inner" id="usageSearchComboInner">
+                                            <span id="usageQueryTags" class="res-query-tags-inline" aria-label="当前查询条件"></span>
+                                            <input type="text" id="usageMainSearch" class="res-main-search-inner" placeholder="输入实例ID或实例名称关键字" autocomplete="off" aria-label="关键字">
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="btnUsageSearch">搜索</button>
+                                    <button type="button" class="btn btn-default" id="btnUsageReset">重置</button>
+                                    <button type="button" class="btn btn-default" id="btnUsageAdvToggle" aria-expanded="false" aria-controls="usageAdvDrawer">高级筛选</button>
+                                </div>
+                            </div>
+
+                            <!-- 工具栏 -->
+                            <div class="res-stat-toolbar-row">
+                                <span class="res-stat-inline-label">统计周期</span>
+                                <div class="res-stat-segment" role="group" aria-label="按账期或按天统计">
+                                    <button type="button" class="res-stat-btn active" onclick="setStatPeriod('month',this)">按账期</button>
+                                    <button type="button" class="res-stat-btn" onclick="setStatPeriod('day',this)">按天</button>
+                                </div>
+                                <div class="res-stat-actions" id="tableActions">
+                                    <button class="btn btn-sm btn-success" id="btnBatchConfirm" onclick="batchConfirm()">确认</button>
+                                    <button class="btn btn-sm btn-warning" id="btnUsageDispute" onclick="openDisputeModal()">异议</button>
+                                    <button class="btn btn-sm btn-primary" id="btnAddInstance" onclick="openAddInstanceModal()" style="display:none;">+ 新增实例</button>
+                                    <button class="btn btn-sm btn-default" onclick="openExportModal()">导出</button>
+                                </div>
+                            </div>
+
+                            <!-- 表格 -->
+                            <div class="res-table-panel">
+                                <div class="table-container res-table-wrap-scroll">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width:36px;"><input type="checkbox" id="checkAll" onclick="toggleAll()"></th>
+                                                <th>账期</th>
+                                                <th>实例ID</th>
+                                                <th>实例名称</th>
+                                                <th>服务分类</th>
+                                                <th>部门</th>
+                                                <th>规格簇</th>
+                                                <th>规格</th>
+                                                <th>配置</th>
+                                                <th>备案产品</th>
+                                                <th>费用归属人</th>
+                                                <th>管理员</th>
+                                                <th>使用人</th>
+                                                <th>环境</th>
+                                                <th>开始使用时间</th>
+                                                <th>结束使用时间</th>
+                                                <th>确认状态</th>
+                                                <th>实例状态</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="detailTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 分页 -->
+                            <div class="pagination">
+                                <span>共 <strong id="pageTotal">54</strong> 条，每页 10 条</span>
+                                <div class="page-btns">
+                                    <button class="page-btn">‹</button>
+                                    <button class="page-btn active">1</button>
+                                    <button class="page-btn">2</button>
+                                    <button class="page-btn">3</button>
+                                    <button class="page-btn">›</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div><!-- /.res-bill-right-col -->
+                </div><!-- /.res-bill-split -->
+            </div><!-- /panel-detail -->
+
+            <!-- ════ 异议管理 ════ -->
+            <div class="panel" id="panel-dispute" style="padding:20px;">
+                
+                <div class="notice-bar" id="adminDisputeNotice" style="margin-bottom:16px;display:none;">
+                    <strong>管理员视图：</strong>您可以处理异议申请，通过后修正用量明细中的实例与规格等信息。
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <span class="card-title" style="margin-bottom:0;">异议申请列表</span>
+                    <button class="btn btn-warning" id="btnNewDispute" onclick="openDisputeModal()">新建异议申请</button>
+                </div>
+
+                <div class="res-search-module" style="margin-bottom:12px;">
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+                        <div class="field" style="min-width:140px;">
+                            <label>申请单号</label>
+                            <input type="text" id="filterDisputeId" placeholder="如 DIS-2026-">
+                        </div>
+                        <div class="field" style="min-width:160px;">
+                            <label>实例ID/实例名称</label>
+                            <input type="text" id="filterDisputeKw" placeholder="关键词">
+                        </div>
+                        <div class="field" style="min-width:200px;">
+                            <label>异议类型</label>
+                            <select id="filterDisputeType">
+                                <option value="">全部</option>
+                                <option value="__unset__">待运维认定</option>
+                                <option>多算实例</option>
+                                <option>少算实例</option>
+                                <option>实例信息错误（归属、配置、使用时长）</option>
+                                <option>其他</option>
+                            </select>
+                        </div>
+                        <div class="field" style="min-width:120px;">
+                            <label>处理状态</label>
+                            <select id="filterDisputeStatus">
+                                <option value="">全部</option>
+                                <option value="processing">待处理</option>
+                                <option value="pending_confirm">待确认</option>
+                                <option value="closed">已完结</option>
+                                <option value="withdrawn">已撤回</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="doDisputeFilter()">查询</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="resetDisputeFilter()">重置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>申请单号</th>
+                                <th>实例ID</th>
+                                <th>实例名称</th>
+                                <th>异议类型</th>
+                                <th>申请部门</th>
+                                <th>申请人</th>
+                                <th>申请时间</th>
+                                <th>处理状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="disputeTableBody"></tbody>
+                    </table>
+                </div>
+            </div><!-- /panel-dispute -->
+
+        </div><!-- /.card (tabs wrapper) -->
+    </main>
+</div><!-- /.container -->
+
+<div class="res-drawer-overlay" id="usageAdvOverlay" aria-hidden="true"></div>
+<div class="res-drawer" id="usageAdvDrawer" role="dialog" aria-modal="true" aria-labelledby="usageAdvDrawerTitle" aria-hidden="true">
+    <div class="res-drawer-head">
+        <h3 id="usageAdvDrawerTitle">高级筛选</h3>
+        <button type="button" class="modal-close" id="usageAdvDrawerClose" aria-label="关闭">&times;</button>
+    </div>
+    <div class="res-drawer-body">
+        <div class="res-adv-field-stack" id="usageAdvDrawerBody"></div>
+    </div>
+    <div class="res-drawer-foot">
+        <button type="button" class="btn btn-default" id="usageAdvDrawerReset">清空条件</button>
+        <button type="button" class="btn btn-primary" id="usageAdvDrawerApply">应用</button>
+    </div>
+</div>
+
+
+<!-- ═══ Modal: 用量详情 ═══ -->
+<div class="modal" id="usageDetailModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>用量明细详情</h3>
+            <button class="modal-close" onclick="closeModal('usageDetailModal')">×</button>
+        </div>
+        <div class="modal-body" id="usageDetailContent"></div>
+        <div class="modal-foot" id="usageDetailFoot"></div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 新建异议 ═══ -->
+<div class="modal" id="disputeModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>新建用量异议申请</h3>
+            <button class="modal-close" onclick="closeModal('disputeModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="notice-bar warn" style="margin-bottom:16px;">
+                <strong>提示：</strong>用户发起时不选择异议类型；请从当前账期用量明细中<strong>选择涉及实例</strong>（若无对应实例则仅在说明中描述）。异议类型由运维管理员在处理具体实例时认定。
+            </div>
+            <div class="card-title-sm" style="margin-bottom:12px;">异议申请</div>
+            <div class="card-title-sm" style="margin:16px 0 4px;">基本信息区</div>
+            <p class="muted" style="font-size:12px;margin-bottom:12px;">以下由系统根据<strong>当前登录用户</strong>与页面顶部<strong>账期（全局）</strong>自动带出，不可修改。</p>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>申请部门</label>
+                    <select id="disputeDept"><option>研发中心</option><option>运营部</option><option>产品部</option><option>基础架构组</option><option>财务部</option></select>
+                </div>
+                <div class="form-item">
+                    <label>申请人</label>
+                    <input type="text" id="disputeApplicant" value="张明" autocomplete="off">
+                </div>
+            </div>
+            <div class="form-row full">
+                <div class="form-item">
+                    <label>账期</label>
+                    <input type="month" value="2026-04" id="disputePeriod" autocomplete="off">
+                </div>
+            </div>
+            <div id="disputeInstanceBlock">
+                <div class="card-title-sm" style="margin:16px 0 8px;">异议实例</div>
+                <p class="muted" style="font-size:13px;margin-bottom:10px;">从当前用量明细中选择本次异议针对的实例，可多选（也可在用量明细行点击「异议」自动带入该实例）。<strong>实例与异议说明至少填写一项</strong>；选择多个实例时将分别生成异议单。</p>
+                <div class="form-row full">
+                    <div class="form-item">
+                        <label>选择实例（可多选）</label>
+                        <div id="disputeResMsContainer" class="finops-ms-wrap">
+                            <div class="finops-ms-trigger" id="disputeResMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="选择异议实例，点击展开多选">
+                                <div class="finops-ms-tags" id="disputeResMsTags" aria-label="已选实例"></div>
+                                <input type="text" class="finops-ms-input" id="disputeResMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
+                                <span class="finops-ms-arrow">▼</span>
+                            </div>
+                            <div class="finops-ms-dd" id="disputeResMsDd">
+                                <div class="finops-ms-dd-search">
+                                    <input type="text" id="disputeResMsDdSearch" placeholder="搜索实例" autocomplete="off">
+                                </div>
+                                <div id="disputeResMsOptions"></div>
+                            </div>
+                            <input type="hidden" id="disputeResMsHidden" value="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-title-sm" style="margin:16px 0 12px;">异议说明</div>
+            <div class="form-row full">
+                <div class="form-item">
+                    <label>异议说明</label>
+                    <textarea id="disputeRemark" placeholder="请详细描述异议原因及依据（如涉及归属、配置、使用时长或拟补录资源，请分别说明实际情况与系统记录差异）。"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn btn-warning" onclick="submitDispute()">提交异议申请</button>
+            <button class="btn btn-default" onclick="closeModal('disputeModal')">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 实例用量修正（运维处理异议） ═══ -->
+<div class="modal" id="usageCorrectionModal">
+    <div class="modal-box wide">
+        <div class="modal-head">
+            <h3 id="usageCorrectionTitle">实例用量修正</h3>
+            <button class="modal-close" onclick="closeModal('usageCorrectionModal')">×</button>
+        </div>
+        <div class="modal-body" id="usageCorrectionBody"></div>
+        <div class="modal-foot" id="usageCorrectionFoot"></div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 异议详情（管理员可修改用量） ═══ -->
+<div class="modal" id="disputeDetailModal">
+    <div class="modal-box wide">
+        <div class="modal-head">
+            <h3 id="disputeDetailTitle">异议申请详情</h3>
+            <button class="modal-close" onclick="closeModal('disputeDetailModal')">×</button>
+        </div>
+        <div class="modal-body" id="disputeDetailContent"></div>
+        <div class="modal-foot" id="disputeDetailFoot"></div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 编辑实例（管理员用） ═══ -->
+<div class="modal" id="editInstanceModal">
+    <div class="modal-box wide">
+        <div class="modal-head">
+            <h3 id="editInstanceTitle">编辑实例用量</h3>
+            <button class="modal-close" onclick="closeModal('editInstanceModal')">×</button>
+        </div>
+        <div class="modal-body" id="editInstanceContent"></div>
+        <div class="modal-foot" id="editInstanceFoot"></div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 新增实例（管理员用） ═══ -->
+<div class="modal" id="addInstanceModal">
+    <div class="modal-box wide">
+        <div class="modal-head">
+            <h3 id="addInstanceTitle">新增实例记录</h3>
+            <button class="modal-close" onclick="closeModal('addInstanceModal')">×</button>
+        </div>
+        <div class="modal-body" id="addInstanceContent"></div>
+        <div class="modal-foot" id="addInstanceFoot">
+            <button type="button" class="btn btn-primary" onclick="submitNewInstance()">确认新增</button>
+            <button type="button" class="btn btn-default" onclick="closeModal('addInstanceModal')">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 确认用量（工具栏「确认」） ═══ -->
+<div class="modal" id="batchConfirmModal">
+    <div class="modal-box narrow">
+        <div class="modal-head">
+            <h3>确认用量</h3>
+            <button class="modal-close" onclick="closeModal('batchConfirmModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <p style="line-height:1.7;color:#333;margin:0;">点击确认将确认本月无异议的所有用量信息，如对用量有异议请先提交异议申请。</p>
+            <p class="muted" style="font-size:13px;margin:12px 0 0;">当前可见范围内待确认 <strong id="batchConfirmPendingCount">0</strong> 条。</p>
+        </div>
+        <div class="modal-foot">
+            <button class="btn btn-success" onclick="executeBatchConfirm()">确认</button>
+            <button class="btn btn-warning" onclick="closeModal('batchConfirmModal');openDisputeModal()">提交异议</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 删除确认 ═══ -->
+<div class="modal" id="confirmDeleteModal">
+    <div class="modal-box narrow">
+        <div class="modal-head">
+            <h3>确认删除</h3>
+            <button class="modal-close" onclick="closeModal('confirmDeleteModal')">×</button>
+        </div>
+        <div class="modal-body" id="confirmDeleteContent">
+            <p style="color:#d32f2f;margin-bottom:8px;">⚠️ 删除后无法恢复，请确认是否继续。</p>
+            <p id="confirmDeleteMsg" style="color:#333;"></p>
+        </div>
+        <div class="modal-foot">
+            <button class="btn btn-danger" id="confirmDeleteBtn" onclick="doDeleteInstance()">确认删除</button>
+            <button class="btn btn-default" onclick="closeModal('confirmDeleteModal')">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 导出 ═══ -->
+<div class="modal" id="exportModal">
+    <div class="modal-box narrow">
+        <div class="modal-head">
+            <h3>导出用量报表</h3>
+            <button class="modal-close" onclick="closeModal('exportModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row full">
+                <div class="form-item">
+                    <label>导出账期</label>
+                    <input type="month" value="2026-04">
+                </div>
+            </div>
+            <div class="form-row full">
+                <div class="form-item">
+                    <label>导出范围</label>
+                    <select><option>全部用量</option><option>已确认</option><option>待确认</option><option>异议中</option></select>
+                </div>
+            </div>
+            <div class="form-row full">
+                <div class="form-item">
+                    <label>文件格式</label>
+                    <select><option>Excel (.xlsx)</option><option>CSV (.csv)</option><option>PDF (.pdf)</option></select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn btn-primary" onclick="alert('导出任务已提交，请在下载中心获取文件'); closeModal('exportModal')">开始导出</button>
+            <button class="btn btn-default" onclick="closeModal('exportModal')">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Modal: 推送用量（一期：策略固定，邮件→费用归属人 + 用量确认地址；排版与账单推送弹窗一致） ═══ -->
+<div class="modal" id="pushUsageModal" role="dialog" aria-modal="true" aria-labelledby="pushUsageTitle">
+    <div class="modal-box medium">
+        <div class="modal-head">
+            <h3 id="pushUsageTitle">推送用量</h3>
+            <button type="button" class="modal-close" onclick="closeModal('pushUsageModal')" aria-label="关闭">&times;</button>
+        </div>
+        <div class="modal-body finops-modal-push">
+            <div class="field">
+                <span class="label-text">账期</span>
+                <div id="pushUsageMonthDisplay" class="finops-push-period-display">—</div>
+            </div>
+            <div class="field">
+                <div class="field-inline finops-modal-push-scope">
+                    <span class="label-text" style="width:100%;margin-bottom:0;">推送范围</span>
+                    <label><input type="radio" name="pushUsageScope" value="full" checked onchange="syncPushUsageScopePickers()"> 全量推送</label>
+                    <label><input type="radio" name="pushUsageScope" value="dept" onchange="syncPushUsageScopePickers()"> 指定部门推送</label>
+                    <label><input type="radio" name="pushUsageScope" value="user" onchange="syncPushUsageScopePickers()"> 指定人员</label>
+                </div>
+                <div id="pushUsageDeptPick" style="display:none;">
+                    <div class="field" style="margin-bottom:0;">
+                        <label class="label-text">指定部门（多选）</label>
+                        <div id="pushUsageDeptMsContainer" class="finops-ms-wrap">
+                            <div class="finops-ms-trigger" id="pushUsageDeptMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="指定部门，点击展开多选">
+                                <div class="finops-ms-tags" id="pushUsageDeptMsTags" aria-label="已选部门"></div>
+                                <input type="text" class="finops-ms-input" id="pushUsageDeptMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
+                                <span class="finops-ms-arrow">▼</span>
+                            </div>
+                            <div class="finops-ms-dd" id="pushUsageDeptMsDd">
+                                <div class="finops-ms-dd-search">
+                                    <input type="text" id="pushUsageDeptMsDdSearch" placeholder="搜索" autocomplete="off">
+                                </div>
+                                <div id="pushUsageDeptMsOptions">
+                                    <div class="finops-ms-row" data-value="研发中心" data-label="研发中心"><span>研发中心</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="产品部" data-label="产品部"><span>产品部</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="运营部" data-label="运营部"><span>运营部</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="职能中心" data-label="职能中心"><span>职能中心</span><span class="finops-ms-check">✓</span></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="pushUsageDeptMsHidden" value="">
+                        </div>
+                    </div>
+                </div>
+                <div id="pushUsagePersonPick" style="display:none;">
+                    <div class="field" style="margin-bottom:0;">
+                        <label class="label-text">指定人员（多选）</label>
+                        <div id="pushUsageUserMsContainer" class="finops-ms-wrap">
+                            <div class="finops-ms-trigger" id="pushUsageUserMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="指定人员，点击展开多选">
+                                <div class="finops-ms-tags" id="pushUsageUserMsTags" aria-label="已选人员"></div>
+                                <input type="text" class="finops-ms-input" id="pushUsageUserMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
+                                <span class="finops-ms-arrow">▼</span>
+                            </div>
+                            <div class="finops-ms-dd" id="pushUsageUserMsDd">
+                                <div class="finops-ms-dd-search">
+                                    <input type="text" id="pushUsageUserMsDdSearch" placeholder="搜索" autocomplete="off">
+                                </div>
+                                <div id="pushUsageUserMsOptions">
+                                    <div class="finops-ms-row" data-value="张明" data-label="张明"><span>张明</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="王磊" data-label="王磊"><span>王磊</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="李晓芸" data-label="李晓芸"><span>李晓芸</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="孙静" data-label="孙静"><span>孙静</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="陈思远" data-label="陈思远"><span>陈思远</span><span class="finops-ms-check">✓</span></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="pushUsageUserMsHidden" value="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="muted" style="font-size:12px;margin:0;line-height:1.55;">一期<strong>不配置推送策略</strong>（规则写死）：向所选范围内实例的<strong>费用归属人</strong>（资源归属口径）发送<strong>邮件</strong>，正文附<strong>系统用量确认地址</strong>。</p>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-default" onclick="closeModal('pushUsageModal')">取消</button>
+            <button type="button" class="btn btn-primary" onclick="submitPushUsage()">立即推送</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="../js/finops-multiselect.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// 全局状态
+// ══════════════════════════════════════════════
+let currentView = 'user';  // 'user' | 'admin'
+/** 当前登录用户（原型）：新建异议时基本信息自动带出且不可编辑 */
+const sessionUser = { dept: '研发中心', name: '张明' };
+
+/** 费用归属人视角：仅本人为归属人或本部门（行内部门）的用量/异议；管理员看全量 */
+function detailRowVisibleForCurrentUserScope(r) {
+    if (currentView === 'admin') return true;
+    const u = String(sessionUser.name || '');
+    const dept = String(sessionUser.dept || '');
+    return String(r.owner || '') === u || String(r.dept || '') === dept;
+}
+function disputeRowVisibleForCurrentUserScope(d) {
+    if (currentView === 'admin') return true;
+    const u = String(sessionUser.name || '');
+    const dept = String(sessionUser.dept || '');
+    return String(d.user || '') === u || String(d.dept || '') === dept;
+}
+function getDetailRowsForUserScope() {
+    return detailData.filter(detailRowVisibleForCurrentUserScope);
+}
+function getDisputeRowsForUserScope() {
+    return disputeData.filter(disputeRowVisibleForCurrentUserScope);
+}
+
+/** 关联实例上是否存在「待确认」异议单（用户异议确认入口） */
+function findPendingConfirmDisputeForResid(resid) {
+    if (!resid || resid === '—') return null;
+    for (var i = 0; i < disputeData.length; i++) {
+        var d = disputeData[i];
+        if (d.resid === resid && d.status === 'pending_confirm') return d;
+    }
+    return null;
+}
+
+/** 费用归属人完成异议确认：异议已完结；非作废用量行变为已确认 */
+function userConfirmDispute(disputeId) {
+    var d = disputeData.find(function (x) {
+        return x.id === disputeId;
+    });
+    if (!d || d.status !== 'pending_confirm') {
+        showToast('当前无需进行异议确认');
+        return;
+    }
+    if (currentView === 'user' && !disputeRowVisibleForCurrentUserScope(d)) {
+        showToast('无权操作该异议单');
+        return;
+    }
+    appendDisputeProcessLog(
+        d,
+        '用户 ' + String(sessionUser.name || '') + ' 已完成异议确认，异议单已完结。',
+        false
+    );
+    d.status = 'closed';
+    var r = d.resid && d.resid !== '—' ? detailData.find(function (x) { return x.id === d.resid; }) : null;
+    if (r) {
+        if (r.status !== 'voided') {
+            r.status = 'confirmed';
+            r.instState = r.instState || '正常';
+        }
+    }
+    closeModal('disputeDetailModal');
+    closeModal('usageDetailModal');
+    renderDetailTable();
+    renderDisputeTable();
+    updateStats();
+    showToast('异议已完结，用量已确认');
+}
+
+/** 用户退回运维处理结论：异议单回到「待处理」，由运维继续处理 */
+function userReturnDispute(disputeId) {
+    var d = disputeData.find(function (x) {
+        return x.id === disputeId;
+    });
+    if (!d || d.status !== 'pending_confirm') {
+        showToast('当前无需退回');
+        return;
+    }
+    if (currentView === 'user' && !disputeRowVisibleForCurrentUserScope(d)) {
+        showToast('无权操作该异议单');
+        return;
+    }
+    appendDisputeProcessLog(
+        d,
+        '用户 ' + String(sessionUser.name || '') + ' 退回处理结论，异议单状态变更为「待处理」。',
+        true
+    );
+    d.status = 'processing';
+    var r = d.resid && d.resid !== '—' ? detailData.find(function (x) { return x.id === d.resid; }) : null;
+    if (r && r.status !== 'voided') {
+        r.status = 'dispute';
+    }
+    closeModal('disputeDetailModal');
+    closeModal('usageDetailModal');
+    renderDetailTable();
+    renderDisputeTable();
+    updateStats();
+    showToast('已退回，异议状态已更新为待处理');
+}
+
+let detailData = [
+    { id:'i-0a1b2c3d', name:'prod-api-01', svc:'虚机化/虚拟机', svcCatL1:'虚机化', svcCatL2:'虚拟机', dept:'研发中心', status:'confirmed', instState:'正常', owner:'张明', createdAt:'2025-08-10 09:00', quota:'4 vCPU / 8 GB', usageDuration:'', instanceStateInfo:'', specCluster:'通用型 g6', spec:'ecs.g6.2xlarge', config:'8 vCPU / 16 GB / ESSD 200G', product:'订单中心 API 服务', admin:'运维-周洋', consumer:'张晓', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'i-0b2c3d4e', name:'prod-web-01', svc:'虚机化/虚拟机', svcCatL1:'虚机化', svcCatL2:'虚拟机', dept:'研发中心', status:'confirmed', instState:'正常', owner:'王磊', createdAt:'2025-09-02 14:20', quota:'4 vCPU / 8 GB', usageDuration:'', instanceStateInfo:'', specCluster:'通用型 g6', spec:'ecs.g6.xlarge', config:'4 vCPU / 8 GB / ESSD 100G', product:'门户 Web 前端', admin:'运维-周洋', consumer:'李强', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'i-09f3ab22', name:'prod-web-02', svc:'虚机化/虚拟机', svcCatL1:'虚机化', svcCatL2:'虚拟机', dept:'研发中心', status:'dispute', instState:'正常', owner:'李晓芸', createdAt:'2026-01-18 11:30', quota:'2 vCPU / 4 GB', usageDuration:'2026-04-01 ~ 2026-04-30（全账期）', instanceStateInfo:'运行中；异议：停机期间未核减', specCluster:'突发性能 t6', spec:'ecs.t6.large', config:'2 vCPU / 4 GB / ESSD 40G', product:'活动营销页', admin:'运维-周洋', consumer:'王磊', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'vol-001aaa', name:'data-disk-01', svc:'存储/块存储', svcCatL1:'存储', svcCatL2:'块存储', dept:'研发中心', status:'pending', instState:'正常', owner:'张明', createdAt:'2025-11-05 08:15', quota:'500 GB', usageDuration:'', instanceStateInfo:'', specCluster:'高性能云盘', spec:'ESSD PL1', config:'500 GB / 单盘挂载', product:'订单库数据卷', admin:'运维-马超', consumer:'张明', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'db-mysql-07', name:'order-db-prod', svc:'数据库/MySQL', svcCatL1:'数据库', svcCatL2:'MySQL', dept:'产品部', status:'auto_confirmed', instState:'正常', owner:'陈思远', createdAt:'2024-06-20 16:00', quota:'2 vCPU / 16 GB / 500 GB', usageDuration:'', instanceStateInfo:'', specCluster:'高可用版', spec:'mysql.2c16g', config:'主备 / 500GB 存储', product:'订单主库（备案）', admin:'运维-马超', consumer:'陈思远', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'mq-kafka-02', name:'event-bus', svc:'中间件/Kafka', svcCatL1:'中间件', svcCatL2:'Kafka', dept:'基础架构组', status:'pending', instState:'正常', owner:'赵强', createdAt:'2025-03-01 10:00', quota:'3 节点 / 100 GB', usageDuration:'', instanceStateInfo:'', specCluster:'Kafka 标准版', spec:'ckafka.3x.small', config:'3 节点 / 100GB 磁盘', product:'事件总线（备案）', admin:'运维-马超', consumer:'赵强', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'vpc-net-001', name:'prod-vpc', svc:'网络/流量', svcCatL1:'网络', svcCatL2:'流量', dept:'基础架构组', status:'confirmed', instState:'正常', owner:'赵强', createdAt:'2024-12-01 09:30', quota:'5000 GB', usageDuration:'', instanceStateInfo:'', specCluster:'专有网络', spec:'vpc-10.0/16', config:'2 子网 / NAT×1', product:'生产 VPC', admin:'运维-周洋', consumer:'赵强', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'lb-001b2c', name:'slb-prod', svc:'网络/负载均衡', svcCatL1:'网络', svcCatL2:'负载均衡', dept:'运营部', status:'pending', instState:'正常', owner:'孙静', createdAt:'2026-02-28 17:45', quota:'100 LCU', usageDuration:'', instanceStateInfo:'', specCluster:'应用型 SLB', spec:'slb.s3.medium', config:'公网 / 100 LCU', product:'运营活动入口', admin:'运维-周洋', consumer:'孙静', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'vol-0a8f2b11', name:'backup-vol-001', svc:'存储/对象存储', svcCatL1:'存储', svcCatL2:'对象存储', dept:'运营部', status:'dispute', instState:'正常', owner:'孙静', createdAt:'2025-07-22 13:00', quota:'2048 GB', usageDuration:'2026-04-01 ~ 2026-04-30', instanceStateInfo:'已挂载；异议：扩容后容量口径', specCluster:'标准存储', spec:'oss.standard', config:'2048 GB 桶容量', product:'备份归档桶', admin:'运维-马超', consumer:'孙静', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'i-cc4d5e6f', name:'uat-server-01', svc:'虚机化/虚拟机', svcCatL1:'虚机化', svcCatL2:'虚拟机', dept:'产品部', status:'pending', instState:'正常', owner:'陈思远', createdAt:'2026-03-10 09:00', quota:'2 vCPU / 4 GB', usageDuration:'', instanceStateInfo:'', specCluster:'通用型 g6', spec:'ecs.g6.large', config:'2 vCPU / 4 GB / ESSD 40G', product:'UAT 联调环境', admin:'运维-周洋', consumer:'陈思远', env:'UAT', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+    { id:'i-new-app-01', name:'new-app-server', svc:'虚机化/虚拟机', svcCatL1:'虚机化', svcCatL2:'虚拟机', dept:'研发中心', status:'dispute', instState:'正常', owner:'张明', createdAt:'2026-04-15 09:00', quota:'2 vCPU / 4 GB', usageDuration:'', instanceStateInfo:'少算异议：待补录实例信息', specCluster:'通用型 g6', spec:'ecs.g6.large', config:'2 vCPU / 4 GB / ESSD 40G', product:'新应用试点', admin:'运维-周洋', consumer:'张明', env:'生产', startTime:'2026-04-15 09:00', endTime:'2026-04-30 23:59' },
+    { id:'pm-legacy-01', name:'legacy-bare-01', svc:'物理机/通算服务器', svcCatL1:'物理机', svcCatL2:'通算服务器', dept:'基础架构组', status:'pending', instState:'正常', owner:'赵强', createdAt:'2023-05-01 08:00', quota:'Dell R740 · 2×Gold 6230 / 256GB', usageDuration:'', instanceStateInfo:'', specCluster:'裸金属', spec:'pm.r740.g6230', config:'2×Gold 6230 / 256GB / 4×1.2T SAS', product:'遗留账务批处理', admin:'运维-马超', consumer:'赵强', env:'生产', startTime:'2026-04-01 00:00', endTime:'2026-04-30 23:59' },
+];
+
+/** 用量高级筛选：按字段特性自动选择控件（与账单资源明细高级筛选一致；datalist 选项随 detailData 更新） */
+function getUsageAdvDistinctRowValues(rowField) {
+    var seen = {};
+    detailData.forEach(function (r) {
+        var v = r[rowField];
+        if (v == null) return;
+        var s = String(v).trim();
+        if (!s || s === '—') return;
+        seen[s] = 1;
+    });
+    return Object.keys(seen).sort();
+}
+
+var USAGE_ADV_FIELD_DEFS = [
+    {
+        advKey: 'dept',
+        elId: 'filterDept',
+        label: '部门',
+        control: 'datalist',
+        rowField: 'dept',
+        placeholder: '选择或输入，留空为全部',
+    },
+    {
+        advKey: 'status',
+        elId: 'filterStatus',
+        label: '确认状态',
+        control: 'select',
+        options: [
+            { v: '', t: '全部' },
+            { v: '待确认', t: '待确认' },
+            { v: '已确认', t: '已确认' },
+            { v: '异议中', t: '异议中' },
+        ],
+    },
+    {
+        advKey: 'instState',
+        elId: 'filterInstState',
+        label: '实例状态',
+        control: 'select',
+        options: [
+            { v: '', t: '全部' },
+            { v: '正常', t: '正常' },
+            { v: '作废', t: '作废' },
+        ],
+    },
+    {
+        advKey: 'owner',
+        elId: 'filterOwner',
+        label: '费用归属人',
+        control: 'datalist',
+        rowField: 'owner',
+        placeholder: '模糊匹配，留空忽略',
+    },
+    { advKey: 'startUse', elId: 'filterStartUse', label: '开始使用时间', control: 'date' },
+    { advKey: 'endUse', elId: 'filterEndUse', label: '结束使用时间', control: 'date' },
+];
+
+function snapshotUsageAdvFieldValues() {
+    var ids = ['filterDept', 'filterStatus', 'filterInstState', 'filterOwner', 'filterStartUse', 'filterEndUse'];
+    var snap = {};
+    ids.forEach(function (id) {
+        var el = document.getElementById(id);
+        snap[id] = el ? String(el.value || '') : '';
+    });
+    return snap;
+}
+
+function restoreUsageAdvFieldValues(snap) {
+    if (!snap) return;
+    Object.keys(snap).forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && Object.prototype.hasOwnProperty.call(snap, id)) el.value = snap[id];
+    });
+}
+
+function buildUsageAdvDrawerFields() {
+    var snap = snapshotUsageAdvFieldValues();
+    var box = document.getElementById('usageAdvDrawerBody');
+    if (!box) return;
+    var chunks = [];
+    USAGE_ADV_FIELD_DEFS.forEach(function (def) {
+        var fid = def.elId;
+        var label = def.label;
+        if (def.control === 'select') {
+            var opts = def.options
+                .map(function (o) {
+                    return '<option value="' + escHtmlAttr(o.v) + '">' + escHtmlText(o.t) + '</option>';
+                })
+                .join('');
+            chunks.push(
+                '<div class="field"><label for="' +
+                    escHtmlAttr(fid) +
+                    '">' +
+                    escHtmlText(label) +
+                    '</label><select id="' +
+                    escHtmlAttr(fid) +
+                    '">' +
+                    opts +
+                    '</select></div>'
+            );
+        } else if (def.control === 'datalist') {
+            var listId = 'usage-adv-dl-' + def.advKey;
+            var vals = getUsageAdvDistinctRowValues(def.rowField);
+            var dlOpts = vals
+                .map(function (v) {
+                    return '<option value="' + escHtmlAttr(v) + '"></option>';
+                })
+                .join('');
+            chunks.push(
+                '<div class="field"><label for="' +
+                    escHtmlAttr(fid) +
+                    '">' +
+                    escHtmlText(label) +
+                    '</label><datalist id="' +
+                    escHtmlAttr(listId) +
+                    '">' +
+                    dlOpts +
+                    '</datalist><input id="' +
+                    escHtmlAttr(fid) +
+                    '" type="text" list="' +
+                    escHtmlAttr(listId) +
+                    '" autocomplete="off" placeholder="' +
+                    escHtmlAttr(def.placeholder || '') +
+                    '"></div>'
+            );
+        } else if (def.control === 'date') {
+            chunks.push(
+                '<div class="field"><label for="' +
+                    escHtmlAttr(fid) +
+                    '">' +
+                    escHtmlText(label) +
+                    '</label><input id="' +
+                    escHtmlAttr(fid) +
+                    '" type="date" title="按所选日期与行内时间子串匹配" autocomplete="off"></div>'
+            );
+        }
+    });
+    box.innerHTML = chunks.join('');
+    restoreUsageAdvFieldValues(snap);
+}
+
+let disputeData = [
+    { id:'DIS-2026-0042', resid:'i-09f3ab22', name:'prod-web-02', type:'', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-03 09:21', remark:'该实例于2026-04-10至04-15处于维护停机状态（共120小时），期间未承载业务，系统仍按在运计费，请核减停机期间用量。', postNoteLabel:'处理说明', postNote:'—', sysUsage:'CPU 480h', newUsage:'CPU 360h', status:'processing',
+        processLog: [
+            { time: '2026-05-03 09:21', content: '用户提交异议申请，资源状态变更为「异议中」', warn: false },
+            { time: '2026-05-04 10:00', content: '运维管理员 admin 已受理，核查中…', warn: true }
+        ] },
+    { id:'DIS-2026-0043', resid:'i-demo-missing-01', name:'demo-api-gw', type:'', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-10 09:00', remark:'网关实例已部署未出现在用量表，请补录。', postNoteLabel:'处理说明', postNote:'—', sysUsage:'无记录', newUsage:'—', status:'processing',
+        processLog: [
+            { time: '2026-05-10 09:00', content: '用户提交少算实例异议申请，等待运维管理员处理。', warn: false }
+        ] },
+    { id:'DIS-2026-0041', resid:'vol-0a8f2b11', name:'backup-vol-001', type:'实例信息错误（归属、配置、使用时长）', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-02 14:35', remark:'卷扩容操作在4月30日23:50完成，扩容前全月容量为1024GB，系统错误按整月2048GB计算（使用时长/容量口径）。', postNoteLabel:'处理说明', postNote:'实例信息错误 → 修正实例计量数据后提交', sysUsage:'存储 2048 GB', newUsage:'存储 1024 GB', status:'processing', processLog: [],
+        instanceSnapshotBefore: {
+            instanceId: 'vol-0a8f2b11',
+            instanceName: 'backup-vol-001',
+            billPeriod: '2026年4月（2026-04）',
+            svcSpec: '标准存储 · oss.standard · 2048 GB 桶容量',
+            owner: '孙静',
+            usageDuration: '2026-04-01 ~ 2026-04-30',
+            quota: '2048 GB',
+            instState: '正常',
+            instanceStateInfo: '已挂载；异议：扩容后容量口径',
+        } },
+    { id:'DIS-2026-0039', resid:'db-mysql-07', name:'order-db-prod', type:'实例信息错误（归属、配置、使用时长）', dept:'产品部', user:'王磊', period:'2026-04', time:'2026-04-29 11:08', remark:'系统记录费用归属为产品部，实际应由研发中心承担，申请调整归属。', originalDept:'产品部', postNoteLabel:'处理说明', postNote:'管理员已修正费用归属部门为「研发中心」并同步调整费用归属人，异议单已完结。', sysUsage:'—', newUsage:'—', status:'closed',
+        instanceSnapshotBefore: {
+            instanceId: 'db-mysql-07',
+            instanceName: 'order-db-prod',
+            billPeriod: '2026年4月（2026-04）',
+            svcSpec: '高可用版 · mysql.2c16g · 主备 / 500GB 存储',
+            owner: '陈思远',
+            usageDuration: '—',
+            quota: '2 vCPU / 16 GB / 500 GB',
+            instState: '正常',
+            instanceStateInfo: '—',
+        },
+        instanceSnapshotAfter: {
+            instanceId: 'db-mysql-07',
+            instanceName: 'order-db-prod',
+            billPeriod: '2026年4月（2026-04）',
+            svcSpec: '高可用版 · mysql.2c16g · 主备 / 500GB 存储',
+            owner: '张明',
+            usageDuration: '—',
+            quota: '2 vCPU / 16 GB / 500 GB',
+            instState: '正常',
+            instanceStateInfo: '费用归属部门已调整为研发中心（系统口径同步）',
+        },
+        processLog: [
+            { time: '2026-04-29 11:08', content: '用户提交异议申请，资源状态变更为「异议中」', warn: false },
+            { time: '2026-05-03 10:42', content: '运维管理员 admin 核查通过，已修正费用归属部门为「研发中心」并同步调整费用归属人为「张明」，用量行已恢复为「已确认」；异议单已完结。', warn: false }
+        ] },
+    { id:'DIS-2026-0040', resid:'vol-001aaa', name:'data-disk-01', type:'多算实例', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-05 10:00', remark:'演示：块存储按挂载点重复计量，申请合并为单盘计费。', postNoteLabel:'处理说明', postNote:'已按单盘口径核减，异议单已完结。', sysUsage:'500 GB', newUsage:'400 GB', status:'closed',
+        instanceSnapshotBefore: {
+            instanceId: 'vol-001aaa',
+            instanceName: 'data-disk-01',
+            billPeriod: '2026年4月（2026-04）',
+            svcSpec: '高性能云盘 · ESSD PL1 · 500 GB / 单盘挂载',
+            owner: '张明',
+            usageDuration: '—',
+            quota: '500 GB',
+            instState: '正常',
+            instanceStateInfo: '—',
+        },
+        instanceSnapshotAfter: {
+            instanceId: 'vol-001aaa',
+            instanceName: 'data-disk-01',
+            billPeriod: '2026年4月（2026-04）',
+            svcSpec: '高性能云盘 · ESSD PL1 · 400 GB / 单盘挂载',
+            owner: '张明',
+            usageDuration: '—',
+            quota: '400 GB',
+            instState: '正常',
+            instanceStateInfo: '—',
+        },
+        processLog: [
+            { time: '2026-05-05 10:00', content: '用户提交异议申请', warn: false },
+            { time: '2026-05-06 14:00', content: '运维已调整计量，异议单已完结。', warn: false }
+        ] },
+    { id:'DIS-2026-0037', resid:'i-new-app-01', name:'new-app-server', type:'少算实例', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-01 16:30', remark:'该实例于4月15日已创建并投入使用，但系统中无相关计费记录，属于少算实例。', postNoteLabel:'处理说明', postNote:'少算实例 → 已补录实例记录，异议单已完结。', sysUsage:'无记录', newUsage:'2 vCPU / 4 GB', status:'closed',
+        instanceSnapshotBefore: { _emptyLabel: '系统中无该实例计费记录（少算补录）' },
+        instanceSnapshotAfter: {
+            instanceId: 'i-new-app-01',
+            instanceName: 'new-app-server',
+            billPeriod: '2026年4月（2026-04）',
+            svcSpec: '通用型 g6 · ecs.g6.large · 2 vCPU / 4 GB',
+            owner: '张明',
+            usageDuration: '—',
+            quota: '2 vCPU / 4 GB',
+            instState: '正常',
+            instanceStateInfo: '—',
+        },
+        processLog: [
+            { time: '2026-05-01 16:30', content: '用户提交少算实例异议申请，等待运维管理员处理。', warn: false },
+            { time: '2026-05-08 11:20', content: '运维管理员 admin 已完成实例补录并提交；异议单已完结，对应用量行已标记为「已确认」。', warn: false },
+        ] },
+];
+
+const statusMap = {
+    confirmed:      '<span class="tag tag-green">已确认</span>',
+    auto_confirmed: '<span class="tag tag-green">已确认</span>',
+    pending:        '<span class="tag tag-orange">待确认</span>',
+    pending_confirm:'<span class="tag tag-orange">待确认</span>',
+    dispute:        '<span class="tag tag-red">异议中</span>',
+    voided:         '<span class="tag tag-gray">已作废</span>',
+};
+/** 实例状态（用量明细 / 修正弹窗下拉：正常、作废） */
+const instStateMap = {
+    正常: '<span class="tag tag-green">正常</span>',
+    作废: '<span class="tag tag-gray">作废</span>',
+};
+
+function formatInstStateHtml(r) {
+    if (r.status === 'voided') return instStateMap['作废'];
+    const s = r.instState || '正常';
+    return instStateMap[s] || `<span class="tag tag-gray">${escHtmlText(s)}</span>`;
+}
+const statusLabelMap = {
+    processing:     '<span class="tag tag-orange">待处理</span>',
+    pending_confirm: '<span class="tag tag-blue">待确认</span>',
+    closed:         '<span class="tag tag-green">已完结</span>',
+    withdrawn:      '<span class="tag tag-gray">已撤回</span>',
+};
+
+function formatDisputeLogTimestamp() {
+    const o = new Date();
+    const p = function (n) {
+        const s = String(n);
+        return s.length < 2 ? '0' + s : s;
+    };
+    return o.getFullYear() + '-' + p(o.getMonth() + 1) + '-' + p(o.getDate()) + ' ' + p(o.getHours()) + ':' + p(o.getMinutes()) + ':' + p(o.getSeconds());
+}
+
+function appendDisputeProcessLog(d, content, warn) {
+    if (!d || content == null || content === '') return;
+    if (!d.processLog) d.processLog = [];
+    d.processLog.push({ time: formatDisputeLogTimestamp(), content: String(content), warn: !!warn });
+}
+
+function renderDisputeProcessLogSection(d) {
+    var title = '<div class="card-title-sm" style="margin:16px 0 10px;">处理记录</div>';
+    if (!d.processLog || !d.processLog.length) {
+        return title + '<p class="muted" style="font-size:13px;">暂无处理记录。</p>';
+    }
+    var items = d.processLog.map(function (e) {
+        var cls = 'log-item' + (e.warn ? ' warn' : '');
+        return (
+            '<li class="' +
+            cls +
+            '"><div class="log-time">' +
+            escHtmlText(e.time) +
+            '</div><div class="log-content">' +
+            escHtmlText(e.content) +
+            '</div></li>'
+        );
+    }).join('');
+    return title + '<ul class="log-list">' + items + '</ul>';
+}
+
+const DISPUTE_TYPE_OPTIONS = [
+    '多算实例',
+    '少算实例',
+    '实例信息错误（归属、配置、使用时长）',
+    '其他',
+];
+
+function isDisputeTypeUnset(type) {
+    return !type || String(type).trim() === '' || type === '待运维认定';
+}
+
+function formatDisputeTypeDisplay(d) {
+    if (!d) return '—';
+    if (isDisputeTypeUnset(d.type)) {
+        if (d.status === 'closed') return d.type || '—';
+        return '待运维认定';
+    }
+    return d.type;
+}
+
+function buildDisputeTypeSelectHtml(selectId, selected) {
+    var sel = selected && !isDisputeTypeUnset(selected) ? selected : '';
+    var html = '<option value="">请选择异议类型</option>';
+    DISPUTE_TYPE_OPTIONS.forEach(function (t) {
+        html +=
+            '<option value="' +
+            escHtmlAttr(t) +
+            '"' +
+            (t === sel ? ' selected' : '') +
+            '>' +
+            escHtmlText(t) +
+            '</option>';
+    });
+    return html;
+}
+
+function isDisputeTypeUndercount(type) {
+    return type === '少算实例';
+}
+
+function getAdminDisputeProcessContext() {
+    var hid = document.getElementById('corrDisputeId');
+    var disputeId = hid && hid.value ? hid.value.trim() : '';
+    if (!disputeId) return null;
+    return disputeData.find(function (x) {
+        return x.id === disputeId;
+    }) || null;
+}
+
+function onAdminDisputeTypeChange() {
+    var typeEl = document.getElementById('corrDisputeType');
+    var type = typeEl ? (typeEl.value || '').trim() : '';
+    var mod = document.getElementById('corrPanelModify');
+    var add = document.getElementById('corrPanelAdd');
+    var hint = document.getElementById('corrPanelTypeHint');
+    var modHint = document.getElementById('corrPanelModifyHint');
+    if (!mod || !add) return;
+    if (!type) {
+        mod.style.display = 'none';
+        add.style.display = 'none';
+        if (hint) hint.style.display = 'block';
+        setAdminDisputeProcessFooter('choose');
+        return;
+    }
+    if (hint) hint.style.display = 'none';
+    if (isDisputeTypeUndercount(type)) {
+        mod.style.display = 'none';
+        add.style.display = 'block';
+        initAddInstanceFormUI(getAdminDisputeProcessContext());
+        setAdminDisputeProcessFooter('add');
+        return;
+    }
+    add.style.display = 'none';
+    mod.style.display = 'block';
+    if (modHint) {
+        if (type === '多算实例') {
+            modHint.innerHTML =
+                '当前为<strong>多算实例</strong>：可修正归属、使用时长与规格，或将实例状态设为「作废」后提交。';
+        } else if (type && type.indexOf('实例信息错误') === 0) {
+            modHint.innerHTML =
+                '当前为<strong>实例信息错误</strong>：请修正费用归属、使用时长、规格等字段后提交。';
+        } else {
+            modHint.innerHTML = '请修正下列实例字段后提交；字段均为选填，按实际情况填写。';
+        }
+    }
+    setAdminDisputeProcessFooter('modify');
+}
+
+function setAdminDisputeProcessFooter(mode) {
+    var foot = document.getElementById('usageCorrectionFoot');
+    if (!foot) return;
+    if (mode === 'add') {
+        foot.innerHTML =
+            '<button type="button" class="btn btn-primary" onclick="submitNewInstance()">确认新增</button>' +
+            '<button type="button" class="btn btn-default" onclick="rejectUsageCorrectionDispute()">退回</button>' +
+            '<button type="button" class="btn btn-default" onclick="closeModal(\'usageCorrectionModal\')">取消</button>';
+    } else if (mode === 'modify') {
+        foot.innerHTML =
+            '<button type="button" class="btn btn-primary" onclick="saveUsageCorrection()">提交修正</button>' +
+            '<button type="button" class="btn btn-default" onclick="rejectUsageCorrectionDispute()">退回</button>' +
+            '<button type="button" class="btn btn-default" onclick="closeModal(\'usageCorrectionModal\')">取消</button>';
+    } else {
+        foot.innerHTML =
+            '<button type="button" class="btn btn-default" onclick="rejectUsageCorrectionDispute()">退回</button>' +
+            '<button type="button" class="btn btn-default" onclick="closeModal(\'usageCorrectionModal\')">取消</button>';
+    }
+}
+
+function disputeTypeTagClass(type) {
+    if (isDisputeTypeUnset(type)) return 'tag-gray';
+    if (type === '多算实例') return 'tag-red';
+    if (type === '少算实例') return 'tag-blue';
+    if (type && type.startsWith('实例信息错误')) return 'tag-orange';
+    return 'tag-purple';
+}
+
+const disputeDetailStatusTitle = {
+    processing: '待处理',
+    pending_confirm: '待确认',
+    closed: '已完结',
+    withdrawn: '已撤回',
+};
+
+function formatBillMonthLabel(period) {
+    if (!period || period === '—') return '—';
+    const m = String(period).match(/^(\d{4})-(\d{2})/);
+    if (!m) return String(period);
+    const y = m[1];
+    const mon = parseInt(m[2], 10);
+    return `${y}年${mon}月`;
+}
+
+let pushUsageDeptMsApi = null;
+let pushUsageUserMsApi = null;
+let disputeResMsApi = null;
+
+function ensurePushUsageMsInited() {
+    if (typeof FinOpsMultiselect === 'undefined') return;
+    if (!pushUsageDeptMsApi) {
+        pushUsageDeptMsApi = FinOpsMultiselect.init({
+            tagsId: 'pushUsageDeptMsTags',
+            ddId: 'pushUsageDeptMsDd',
+            triggerId: 'pushUsageDeptMsTrigger',
+            hiddenId: 'pushUsageDeptMsHidden',
+            ddSearchId: 'pushUsageDeptMsDdSearch',
+            optionsId: 'pushUsageDeptMsOptions',
+            searchId: 'pushUsageDeptMsSearch',
+            placeholder: '请选择部门'
+        });
+    }
+    if (!pushUsageUserMsApi) {
+        pushUsageUserMsApi = FinOpsMultiselect.init({
+            tagsId: 'pushUsageUserMsTags',
+            ddId: 'pushUsageUserMsDd',
+            triggerId: 'pushUsageUserMsTrigger',
+            hiddenId: 'pushUsageUserMsHidden',
+            ddSearchId: 'pushUsageUserMsDdSearch',
+            optionsId: 'pushUsageUserMsOptions',
+            searchId: 'pushUsageUserMsSearch',
+            placeholder: '请选择人员'
+        });
+    }
+}
+
+function syncPushUsageScopePickers() {
+    var rad = document.querySelector('#pushUsageModal input[name="pushUsageScope"]:checked');
+    var v = rad ? rad.value : 'full';
+    var d = document.getElementById('pushUsageDeptPick');
+    var p = document.getElementById('pushUsagePersonPick');
+    if (d) d.style.display = v === 'dept' ? 'block' : 'none';
+    if (p) p.style.display = v === 'user' ? 'block' : 'none';
+}
+
+function getUsageConfirmPageUrl(month) {
+    try {
+        var u = new URL('usage-confirm-view-pc.html', window.location.href);
+        u.searchParams.set('bill_period', month);
+        return u.href;
+    } catch (e) {
+        return 'usage-confirm-view-pc.html?bill_period=' + encodeURIComponent(month);
+    }
+}
+
+/** 打开「推送用量」弹窗（账期、推送范围；一期不写死策略配置） */
+function openPushUsageModal() {
+    if (currentView !== 'admin') {
+        showToast('请切换为「运维管理员」视角后使用推送用量');
+        return;
+    }
+    const el = document.getElementById('globalBillMonth');
+    const month = el && el.value ? el.value : '';
+    if (!month) {
+        showToast('请先选择账期');
+        return;
+    }
+    ensurePushUsageMsInited();
+    const disp = formatBillMonthLabel(month);
+    const md = document.getElementById('pushUsageMonthDisplay');
+    if (md) md.textContent = disp + '（' + month + '）';
+    var fullRb = document.querySelector('#pushUsageModal input[name="pushUsageScope"][value="full"]');
+    if (fullRb) fullRb.checked = true;
+    if (pushUsageDeptMsApi) pushUsageDeptMsApi.setValues([]);
+    if (pushUsageUserMsApi) pushUsageUserMsApi.setValues([]);
+    syncPushUsageScopePickers();
+    openModal('pushUsageModal');
+}
+
+function submitPushUsage() {
+    if (currentView !== 'admin') {
+        showToast('请切换为「运维管理员」视角后使用推送用量');
+        return;
+    }
+    const el = document.getElementById('globalBillMonth');
+    const month = el && el.value ? el.value : '';
+    if (!month) {
+        showToast('请先选择账期');
+        return;
+    }
+    ensurePushUsageMsInited();
+    var scopeEl = document.querySelector('#pushUsageModal input[name="pushUsageScope"]:checked');
+    var scope = scopeEl ? scopeEl.value : 'full';
+    if (scope === 'dept') {
+        var ds = pushUsageDeptMsApi ? pushUsageDeptMsApi.getValues() : [];
+        if (!ds.length) {
+            showToast('请选择至少一个部门');
+            return;
+        }
+    } else if (scope === 'user') {
+        var ps = pushUsageUserMsApi ? pushUsageUserMsApi.getValues() : [];
+        if (!ps.length) {
+            showToast('请选择至少一名人员');
+            return;
+        }
+    }
+    const disp = formatBillMonthLabel(month);
+    var scopeTxt = scope === 'full' ? '全量推送' : scope === 'dept' ? '指定部门推送' : '指定人员';
+    var url = getUsageConfirmPageUrl(month);
+    showToast(
+        '【推送用量 · 原型】已向「' +
+            scopeTxt +
+            '」范围的费用归属人投递邮件：账期 ' +
+            disp +
+            '（' +
+            month +
+            '）；正文含用量确认入口 ' +
+            url +
+            '（对接邮件网关后生效）'
+    );
+    closeModal('pushUsageModal');
+}
+
+/** 与「实例用量修正」弹窗基本信息区「服务规格」一致：规格簇 · 规格 · 配置 */
+function buildCorrectionSvcSpecLine(r) {
+    if (!r) return '—';
+    var parts = [r.specCluster, r.spec, r.config].filter(function (x) {
+        return x != null && String(x).trim() !== '';
+    }).map(function (x) {
+        return String(x).trim();
+    });
+    return parts.length ? parts.join(' · ') : '—';
+}
+
+/** 与修正弹窗「账期」展示一致 */
+function buildSnapshotBillPeriodLine(disputeOpt) {
+    var p = '';
+    if (disputeOpt && disputeOpt.period) {
+        p = String(disputeOpt.period).trim();
+    }
+    if (!p) {
+        var gb = document.getElementById('globalBillMonth');
+        p = gb && gb.value ? String(gb.value).trim() : '';
+    }
+    if (!p) return '—';
+    return formatBillMonthLabel(p) + '（' + p + '）';
+}
+
+/** 旧快照或混用结构：拼出服务规格一行 */
+function combineLegacySvcSpecForSnap(snap) {
+    if (!snap || snap._emptyLabel) return '';
+    if (snap.svcSpec != null && String(snap.svcSpec).trim() !== '') {
+        return String(snap.svcSpec).trim();
+    }
+    var parts = [snap.specCluster, snap.spec, snap.config].filter(function (x) {
+        return x != null && String(x).trim() !== '';
+    }).map(function (x) {
+        return String(x).trim();
+    });
+    return parts.length ? parts.join(' · ') : '';
+}
+
+/** 用量明细行 → 异议详情快照（字段对齐「实例用量修正」页，不含用量确认/异议状态） */
+function snapshotInstanceForDisputeDisplay(r, disputeOpt) {
+    if (!r) return null;
+    return {
+        instanceId: r.id != null && String(r.id).trim() !== '' ? String(r.id).trim() : '—',
+        instanceName: r.name != null && String(r.name).trim() !== '' ? String(r.name).trim() : '—',
+        billPeriod: buildSnapshotBillPeriodLine(disputeOpt || null),
+        svcSpec: buildCorrectionSvcSpecLine(r),
+        owner: r.owner != null && String(r.owner).trim() !== '' ? String(r.owner).trim() : '—',
+        usageDuration: r.usageDuration != null && String(r.usageDuration).trim() !== '' ? String(r.usageDuration).trim() : '—',
+        quota: r.quota != null && String(r.quota).trim() !== '' ? String(r.quota).trim() : '—',
+        instState: r.instState != null && String(r.instState).trim() !== '' ? String(r.instState).trim() : '—',
+        instanceStateInfo:
+            r.instanceStateInfo != null && String(r.instanceStateInfo).trim() !== ''
+                ? String(r.instanceStateInfo).trim()
+                : '—',
+    };
+}
+
+function recordDisputeInstanceDiff(d, beforeSnap, afterSnap) {
+    if (!d) return;
+    d.instanceSnapshotBefore = beforeSnap || null;
+    d.instanceSnapshotAfter = afterSnap || null;
+}
+
+function formatInstanceSnapshotInner(snap) {
+    if (!snap) {
+        return '<p class="muted" style="margin:0;font-size:13px;">—</p>';
+    }
+    if (snap._emptyLabel) {
+        return '<p class="muted" style="margin:0;font-size:13px;">' + escHtmlText(snap._emptyLabel) + '</p>';
+    }
+    var svcSpec = combineLegacySvcSpecForSnap(snap);
+    if (!svcSpec) svcSpec = '—';
+    var bill =
+        snap.billPeriod != null && String(snap.billPeriod).trim() !== '' ? String(snap.billPeriod).trim() : '—';
+    var rows = [
+        ['实例ID', snap.instanceId != null && String(snap.instanceId).trim() !== '' ? snap.instanceId : '—'],
+        ['实例名称', snap.instanceName != null && String(snap.instanceName).trim() !== '' ? snap.instanceName : '—'],
+        ['服务规格', svcSpec],
+        ['账期', bill],
+        ['费用归属人', snap.owner != null && String(snap.owner).trim() !== '' ? snap.owner : '—'],
+        ['使用时长', snap.usageDuration != null && String(snap.usageDuration).trim() !== '' ? snap.usageDuration : '—'],
+        ['配额', snap.quota != null && String(snap.quota).trim() !== '' ? snap.quota : '—'],
+        ['实例状态', snap.instState != null && String(snap.instState).trim() !== '' ? snap.instState : '—'],
+        ['补充说明', snap.instanceStateInfo != null && String(snap.instanceStateInfo).trim() !== '' ? snap.instanceStateInfo : '—'],
+    ];
+    var parts = [];
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var v = row[1] != null ? String(row[1]) : '—';
+        parts.push('<dt>' + escHtmlText(row[0]) + '</dt><dd>' + escHtmlText(v) + '</dd>');
+    }
+    return '<dl class="dl-grid" style="margin:0;grid-template-columns:110px 1fr;font-size:12px;">' + parts.join('') + '</dl>';
+}
+
+/** 与 snapshotInstanceForDisputeDisplay 字段一致，用于差异对比 */
+var INSTANCE_SNAPSHOT_DIFF_KEYS = [
+    ['instanceId', '实例ID'],
+    ['instanceName', '实例名称'],
+    ['svcSpec', '服务规格'],
+    ['billPeriod', '账期'],
+    ['owner', '费用归属人'],
+    ['usageDuration', '使用时长'],
+    ['quota', '配额'],
+    ['instState', '实例状态'],
+    ['instanceStateInfo', '补充说明'],
+];
+
+function normSnapScalar(v) {
+    var s = v == null ? '' : String(v).trim();
+    return s === '' ? '—' : s;
+}
+
+function snapshotFieldMapForDiff(snap) {
+    if (!snap || snap._emptyLabel) return null;
+    var svcLine = combineLegacySvcSpecForSnap(snap);
+    return {
+        instanceId: normSnapScalar(snap.instanceId),
+        instanceName: normSnapScalar(snap.instanceName),
+        svcSpec: normSnapScalar(svcLine || ''),
+        billPeriod: normSnapScalar(snap.billPeriod),
+        owner: normSnapScalar(snap.owner),
+        usageDuration: normSnapScalar(snap.usageDuration),
+        quota: normSnapScalar(snap.quota),
+        instState: normSnapScalar(snap.instState),
+        instanceStateInfo: normSnapScalar(snap.instanceStateInfo),
+    };
+}
+
+/** 运维处理完成后：仅返回 before/after 值不同的字段 */
+function getChangedSnapshotFieldList(beforeSnap, afterSnap) {
+    var aMap = snapshotFieldMapForDiff(afterSnap);
+    if (!aMap) return [];
+    var beforeEmpty = !beforeSnap || (beforeSnap && beforeSnap._emptyLabel);
+    var bMap = beforeEmpty ? null : snapshotFieldMapForDiff(beforeSnap);
+    var out = [];
+    for (var i = 0; i < INSTANCE_SNAPSHOT_DIFF_KEYS.length; i++) {
+        var key = INSTANCE_SNAPSHOT_DIFF_KEYS[i][0];
+        var label = INSTANCE_SNAPSHOT_DIFF_KEYS[i][1];
+        var bv = bMap ? bMap[key] : '—';
+        var av = aMap[key];
+        if (bv !== av) {
+            out.push({ key: key, label: label, beforeVal: bv, afterVal: av });
+        }
+    }
+    return out;
+}
+
+function formatChangedSnapshotDiffHtml(changed) {
+    if (!changed || !changed.length) {
+        return '<p class="muted" style="margin:0;font-size:13px;">（无字段差异或快照一致）</p>';
+    }
+    var dlBefore = [];
+    var dlAfter = [];
+    for (var j = 0; j < changed.length; j++) {
+        var row = changed[j];
+        dlBefore.push('<dt>' + escHtmlText(row.label) + '</dt><dd>' + escHtmlText(row.beforeVal) + '</dd>');
+        dlAfter.push('<dt>' + escHtmlText(row.label) + '</dt><dd>' + escHtmlText(row.afterVal) + '</dd>');
+    }
+    return (
+        '<div class="dispute-diff-wrap">' +
+        '<div class="dispute-diff-col"><h4>修改前</h4>' +
+        '<dl class="dl-grid" style="margin:0;grid-template-columns:110px 1fr;font-size:12px;">' +
+        dlBefore.join('') +
+        '</dl></div>' +
+        '<div class="dispute-diff-col after"><h4>修改后</h4>' +
+        '<dl class="dl-grid" style="margin:0;grid-template-columns:110px 1fr;font-size:12px;">' +
+        dlAfter.join('') +
+        '</dl></div></div>'
+    );
+}
+
+function disputeInstanceDiffIsPreOps(raw) {
+    return raw && raw.status === 'processing';
+}
+
+/** 少算补录：处理前无计费行，仅「空占位」前快照 + 有后快照 */
+function disputeInstanceDiffIsAddInstanceCase(raw) {
+    if (!raw || raw.type !== '少算实例' || !raw.instanceSnapshotAfter) return false;
+    var b = raw.instanceSnapshotBefore;
+    return !b || !!b._emptyLabel;
+}
+
+/** 异议详情：运维处理完成前不展示本模块；少算新增单独「新增实例信息」；其余仅展示实例变更字段 */
+function renderDisputeInstanceDiffSection(raw) {
+    if (!raw) return '';
+    if (disputeInstanceDiffIsPreOps(raw)) {
+        return '';
+    }
+    if (disputeInstanceDiffIsAddInstanceCase(raw)) {
+        return (
+            '<div class="card-title-sm" style="margin:16px 0 10px;">新增实例信息</div>' +
+            '<p class="muted" style="font-size:12px;margin:0 0 10px;">以下为异议处理完成后写入用量明细的<strong>新增实例</strong>快照（补录前无计费记录）；处理说明见上方「异议申请」。</p>' +
+            '<div class="dispute-diff-wrap" style="grid-template-columns:1fr;">' +
+            '<div class="dispute-diff-col after">' +
+            formatInstanceSnapshotInner(raw.instanceSnapshotAfter) +
+            '</div></div>'
+        );
+    }
+    var hasBefore = !!raw.instanceSnapshotBefore;
+    var hasAfter = !!raw.instanceSnapshotAfter;
+
+    var chunks = [];
+
+    if (hasBefore && hasAfter) {
+        var changed = getChangedSnapshotFieldList(raw.instanceSnapshotBefore, raw.instanceSnapshotAfter);
+        if (changed.length) {
+            chunks.push(
+                '<div class="card-title-sm" style="margin:16px 0 10px;">实例修改信息</div>' +
+                formatChangedSnapshotDiffHtml(changed)
+            );
+        }
+    }
+
+    if (!chunks.length) {
+        return (
+            '<div class="card-title-sm" style="margin:16px 0 10px;">实例修改信息</div>' +
+            '<p class="muted" style="font-size:13px;margin:0 0 16px;">暂无实例字段级修改记录。运维完成「修正配置」「用量修正」「标记作废 / 修正数据 / 补录实例」等操作后，将在此展示变更字段对比。</p>'
+        );
+    }
+    return chunks.join('');
+}
+
+function buildDisputeDetailTitle(raw) {
+    if (!raw) return '异议申请详情';
+    const st = disputeDetailStatusTitle[raw.status] || raw.status;
+    const typeLabel = formatDisputeTypeDisplay(raw);
+    return `${raw.id} · ${typeLabel} · ${st}`;
+}
+
+function buildDisputeDetailBody(raw) {
+    if (!raw) return '<p class="muted">未找到异议记录。</p>';
+    const billMonth = formatBillMonthLabel(raw.period);
+    const origRow = raw.originalDept
+        ? `<dt>原归属</dt><dd>${escHtmlText(raw.originalDept)}</dd>`
+        : '';
+    const postRow =
+        raw.postNoteLabel && raw.postNote
+            ? `<dt>${escHtmlText(raw.postNoteLabel)}</dt><dd>${escHtmlText(raw.postNote)}</dd>`
+            : '';
+    return `
+<div class="card-title-sm" style="margin-bottom:10px;">基本信息区</div>
+<dl class="dl-grid" style="margin-bottom:16px;">
+  <dt>申请单号</dt><dd>${escHtmlText(raw.id)}</dd>
+  <dt>申请状态</dt><dd>${statusLabelMap[raw.status] || escHtmlText(raw.status)}</dd>
+  <dt>申请部门</dt><dd>${escHtmlText(raw.dept || '—')}</dd>
+  <dt>申请人</dt><dd>${escHtmlText(raw.user || '—')}</dd>
+  <dt>申请时间</dt><dd>${escHtmlText(raw.time || '—')}</dd>
+  <dt>实例ID</dt><dd>${escHtmlText(raw.resid)}</dd>
+  <dt>实例名称</dt><dd>${escHtmlText(raw.name)}</dd>
+  <dt>账期</dt><dd>${escHtmlText(billMonth)}</dd>
+</dl>
+<div class="card-title-sm" style="margin:16px 0 10px;">异议申请</div>
+<dl class="dl-grid" style="margin-bottom:16px;">
+  <dt>异议类型</dt><dd><span class="tag ${disputeTypeTagClass(raw.type)}">${escHtmlText(formatDisputeTypeDisplay(raw))}</span></dd>
+  <dt>异议说明</dt><dd>${escHtmlText(raw.remark || '—')}</dd>
+  ${origRow}
+  ${postRow}
+</dl>
+${renderDisputeInstanceDiffSection(raw)}
+${renderDisputeProcessLogSection(raw)}`;
+}
+
+// ══════════════════════════════════════════════
+// 服务分类侧栏：与账单资源明细 resServiceCategoryData 完全一致
+// ══════════════════════════════════════════════
+var usageServiceCategoryData = {
+    '物理机': {
+        '通算服务器': ['标准通用服务器', '高性能服务器', '存储型服务器'],
+        '智算服务器': ['图形渲染', 'AI推理', 'AI训练'],
+        '硬件存储服务器': ['块存储-SAN']
+    },
+    '虚机化': {
+        '虚拟机': ['通用型-虚拟机', '高性能型-虚拟机']
+    },
+    '容器': {
+        '容器': ['通算型-容器', '智算型-容器']
+    },
+    '存储': {
+        '对象存储': ['对象存储服务 HDD', '对象存储服务 SSD'],
+        '文件存储NAS': ['通用型（NFS）', '高性能型'],
+        '块存储': ['块存储 HDD', '块存储 SSD', '商业存储']
+    },
+    '中间件': {
+        'Kafka': ['经济型', '通用型'],
+        'RocketMQ': ['经济型', '通用型'],
+        'RabbitMQ': ['经济型', '通用型'],
+        'Elasticsearch': ['经济型', '通用型', '高性能型']
+    },
+    '数据库': {
+        'MySQL': ['经济型', '通用型', '高性能型'],
+        'Oracle': ['通用型', '高性能型'],
+        'PostgreSQL': ['经济型', '通用型', '高性能型'],
+        'Redis': ['经济型', '通用型', '高性能型'],
+        'MongoDB': ['经济型', '通用型', '高性能型']
+    },
+    '网络': {
+        '流量': ['互联网出口带宽', '专线接入'],
+        '二级域名': [],
+        '公网DNS': ['域名解析 A 解析', '域名解析 Cname 解析'],
+        '内网DNS': ['域名解析 A 解析', '域名解析 Cname 解析'],
+        '负载均衡': ['负载均衡 Http', '负载均衡 Https', '负载均衡 TCP'],
+        '端口映射': ['公网端口映射'],
+        '域名证书': [],
+        '防火墙策略': ['策略'],
+        '流量管控': ['策略']
+    }
+};
+
+var usageServiceCategoryFilter = { mode: 'all' };
+
+function usageRowSvcCats(r) {
+    var l1 = r.svcCatL1 != null && String(r.svcCatL1).trim() !== '' ? String(r.svcCatL1).trim() : '';
+    var l2 = r.svcCatL2 != null && String(r.svcCatL2).trim() !== '' ? String(r.svcCatL2).trim() : '';
+    if (!l1 && r.svc) {
+        var p = String(r.svc).split('/');
+        l1 = (p[0] || '').trim();
+        l2 = (p[1] || '').trim();
+    }
+    return { l1: l1, l2: l2 };
+}
+
+function rowMatchesUsageServiceCategory(r) {
+    var f = usageServiceCategoryFilter;
+    if (!f || f.mode === 'all') return true;
+    var c = usageRowSvcCats(r);
+    if (f.mode === 'l1') return c.l1 === f.l1;
+    if (f.mode === 'l2') return c.l1 === f.l1 && c.l2 === f.l2;
+    return true;
+}
+
+function getUsageDetailSourceRows() {
+    return getDetailRowsForUserScope().filter(rowMatchesUsageServiceCategory);
+}
+
+/** 根据「服务分类」展示串同步 svcCatL1 / svcCatL2（格式：一级/二级，与资源明细一致） */
+function applyUsageSvcPathToRow(row, svcStr) {
+    var s = String(svcStr != null ? svcStr : '').trim();
+    row.svc = s;
+    var p = s.split('/');
+    row.svcCatL1 = (p[0] || '').trim();
+    row.svcCatL2 = (p[1] || '').trim();
+}
+
+function renderUsageServiceCategoryTree(containerId) {
+    var treeData = usageServiceCategoryData;
+    var box = document.getElementById(containerId);
+    if (!box) return;
+    var parts = [];
+    var f = usageServiceCategoryFilter;
+    var allActive = f.mode === 'all';
+    parts.push(
+        '<div class="res-service-tree-node"><div class="res-service-tree-item' +
+            (allActive ? ' active' : '') +
+            '" data-sel="all" role="button" tabindex="0"><span class="res-service-tree-expand-icon hidden">▶</span><span class="res-service-tree-label">全部</span></div></div>'
+    );
+    var idx = 0;
+    Object.keys(treeData).forEach(function (level1) {
+        var childId = 'usageCatCh' + idx++;
+        var l1Active = f.mode === 'l1' && f.l1 === level1;
+        parts.push('<div class="res-service-tree-node">');
+        parts.push(
+            '<div class="res-service-tree-item' +
+                (l1Active ? ' active' : '') +
+                '" data-sel="l1" data-l1="' +
+                escHtmlAttr(level1) +
+                '" data-children-id="' +
+                childId +
+                '" role="button" tabindex="0">'
+        );
+        parts.push('<span class="res-service-tree-expand-icon" data-usage-cat-expand="1" role="presentation" title="展开/收起">▶</span>');
+        parts.push('<span class="res-service-tree-label">' + escHtmlText(level1) + '</span></div>');
+        parts.push('<div class="res-service-tree-children" id="' + childId + '">');
+        Object.keys(treeData[level1]).forEach(function (level2) {
+            var l2Active = f.mode === 'l2' && f.l1 === level1 && f.l2 === level2;
+            parts.push('<div class="res-service-tree-node">');
+            parts.push(
+                '<div class="res-service-tree-item' +
+                    (l2Active ? ' active' : '') +
+                    '" data-sel="l2" data-l1="' +
+                    escHtmlAttr(level1) +
+                    '" data-l2="' +
+                    escHtmlAttr(level2) +
+                    '" role="button" tabindex="0">'
+            );
+            parts.push('<span class="res-service-tree-expand-icon hidden" data-usage-cat-expand="1" role="presentation">▶</span>');
+            parts.push('<span class="res-service-tree-label">' + escHtmlText(level2) + '</span></div></div>');
+        });
+        parts.push('</div></div>');
+    });
+    box.innerHTML = parts.join('');
+}
+
+function toggleUsageCatExpandFromIcon(iconEl) {
+    var item = iconEl.closest('.res-service-tree-item');
+    if (!item) return;
+    var childId = item.getAttribute('data-children-id');
+    var ch = childId ? document.getElementById(childId) : null;
+    if (!ch) return;
+    iconEl.classList.toggle('expanded');
+    ch.classList.toggle('expanded');
+}
+
+function updateUsageServiceCategoryTreeActiveState() {
+    var f = usageServiceCategoryFilter;
+    var box = document.getElementById('resServiceCategoryTree');
+    if (!box) return;
+    box.querySelectorAll('.res-service-tree-item').forEach(function (el) {
+        el.classList.remove('active');
+        var sel = el.getAttribute('data-sel');
+        if (sel === 'all' && f.mode === 'all') el.classList.add('active');
+        if (sel === 'l1' && f.mode === 'l1' && el.getAttribute('data-l1') === f.l1) el.classList.add('active');
+        if (sel === 'l2' && f.mode === 'l2' && el.getAttribute('data-l1') === f.l1 && el.getAttribute('data-l2') === f.l2) {
+            el.classList.add('active');
+        }
+    });
+}
+
+function bindUsageServiceCategoryTree() {
+    var sb = document.getElementById('resServiceCategorySidebar');
+    if (!sb || sb.dataset.usageCatNavBound === '1') return;
+    sb.dataset.usageCatNavBound = '1';
+    sb.addEventListener('click', function (e) {
+        var tree = document.getElementById('resServiceCategoryTree');
+        if (!tree || !tree.contains(e.target)) return;
+        var icon = e.target.closest('.res-service-tree-expand-icon[data-usage-cat-expand]');
+        if (icon && !icon.classList.contains('hidden')) {
+            e.stopPropagation();
+            toggleUsageCatExpandFromIcon(icon);
+            return;
+        }
+        var item = e.target.closest('.res-service-tree-item');
+        if (!item) return;
+        var sel = item.getAttribute('data-sel');
+        if (sel === 'all') usageServiceCategoryFilter = { mode: 'all' };
+        else if (sel === 'l1') usageServiceCategoryFilter = { mode: 'l1', l1: item.getAttribute('data-l1') };
+        else if (sel === 'l2') {
+            usageServiceCategoryFilter = {
+                mode: 'l2',
+                l1: item.getAttribute('data-l1'),
+                l2: item.getAttribute('data-l2')
+            };
+        } else return;
+        updateUsageServiceCategoryTreeActiveState();
+        renderDetailTable();
+    });
+}
+
+// ══════════════════════════════════════════════
+// 渲染表格
+// ══════════════════════════════════════════════
+function updateStats() {
+    const detailScope = getDetailRowsForUserScope();
+    const disputeScope = getDisputeRowsForUserScope();
+    const pending = detailScope.filter(r => r.status === 'pending').length;
+    const disputeProcessing = disputeScope.filter(d => d.status === 'processing').length;
+
+    const pc = document.getElementById('pendingCount');
+    if (pc) pc.textContent = pending;
+    const tdc = document.getElementById('tabDetailCount');
+    if (tdc) tdc.textContent = pending;
+    const dc = document.getElementById('disputeCount');
+    if (dc) dc.textContent = disputeProcessing;
+    // pageTotal 由 renderFilteredTable 按当前表格行数设置，避免覆盖筛选/服务树结果
+
+    const batchBtn = document.getElementById('btnBatchConfirm');
+    if (batchBtn) batchBtn.style.display = (pending > 0 && currentView === 'user') ? 'inline-block' : 'none';
+    const disputeBtn = document.getElementById('btnUsageDispute');
+    if (disputeBtn) disputeBtn.style.display = currentView === 'user' ? 'inline-block' : 'none';
+}
+
+/** 用量明细 · 主搜索区关键字标签（与资源明细「实例」标签一致；每条须同时满足所有标签，匹配口径同原综合关键词） */
+var usageInstanceSearchTags = [];
+var usageInstanceSearchTagSeq = 1;
+
+function rowMatchesUsageInstanceSearchTags(r) {
+    if (!usageInstanceSearchTags.length) return true;
+    for (var ti = 0; ti < usageInstanceSearchTags.length; ti++) {
+        var q = String(usageInstanceSearchTags[ti].text || '').toLowerCase();
+        if (!q) continue;
+        var hit =
+            String(r.id || '').toLowerCase().indexOf(q) >= 0 ||
+            String(r.name || '').toLowerCase().indexOf(q) >= 0 ||
+            (r.owner && String(r.owner).toLowerCase().indexOf(q) >= 0) ||
+            (r.admin && String(r.admin).toLowerCase().indexOf(q) >= 0) ||
+            (r.consumer && String(r.consumer).toLowerCase().indexOf(q) >= 0) ||
+            (r.env && String(r.env).toLowerCase().indexOf(q) >= 0) ||
+            (r.product && String(r.product).toLowerCase().indexOf(q) >= 0) ||
+            (r.specCluster && String(r.specCluster).toLowerCase().indexOf(q) >= 0) ||
+            (r.spec && String(r.spec).toLowerCase().indexOf(q) >= 0) ||
+            (r.config && String(r.config).toLowerCase().indexOf(q) >= 0);
+        if (!hit) return false;
+    }
+    return true;
+}
+
+function usageAdvFieldTagDisplay(elId) {
+    var el = document.getElementById(elId);
+    if (!el) return '';
+    var tag = el.tagName && el.tagName.toLowerCase();
+    if (tag === 'select') {
+        if (el.value === '' || el.value == null) return '';
+        var opt = el.options[el.selectedIndex];
+        return opt ? String(opt.textContent || '').trim() : String(el.value);
+    }
+    return String(el.value || '').trim();
+}
+
+function usageAdvTagHtml(label, val, advKey) {
+    return (
+        '<span class="res-query-tag res-query-tag--adv" title="高级筛选">' +
+        '<span class="res-query-tag-key">' +
+        escHtmlText(label) +
+        '</span>' +
+        '<span class="res-query-tag-val">' +
+        escHtmlText(val) +
+        '</span>' +
+        '<button type="button" class="res-query-tag-remove" data-usage-remove-adv="' +
+        escHtmlAttr(advKey) +
+        '" aria-label="删除该筛选条件">×</button></span>'
+    );
+}
+
+function renderUsageQueryTags() {
+    var box = document.getElementById('usageQueryTags');
+    if (!box) return;
+    var parts = [];
+    usageInstanceSearchTags.forEach(function (t) {
+        parts.push(
+            '<span class="res-query-tag">' +
+                '<span class="res-query-tag-key">关键字</span>' +
+                '<span class="res-query-tag-val">' +
+                escHtmlText(t.text) +
+                '</span>' +
+                '<button type="button" class="res-query-tag-remove" data-usage-remove-tag="' +
+                escHtmlAttr(t.id) +
+                '" aria-label="删除该关键字">×</button></span>'
+        );
+    });
+    var dDept = usageAdvFieldTagDisplay('filterDept');
+    if (dDept) parts.push(usageAdvTagHtml('部门', dDept, 'dept'));
+    var dStatus = usageAdvFieldTagDisplay('filterStatus');
+    if (dStatus) parts.push(usageAdvTagHtml('确认状态', dStatus, 'status'));
+    var dInst = usageAdvFieldTagDisplay('filterInstState');
+    if (dInst) parts.push(usageAdvTagHtml('实例状态', dInst, 'instState'));
+    var ownV = usageAdvFieldTagDisplay('filterOwner');
+    if (ownV) parts.push(usageAdvTagHtml('费用归属人', ownV, 'owner'));
+    var suV = usageAdvFieldTagDisplay('filterStartUse');
+    if (suV) parts.push(usageAdvTagHtml('开始使用时间', suV, 'startUse'));
+    var euV = usageAdvFieldTagDisplay('filterEndUse');
+    if (euV) parts.push(usageAdvTagHtml('结束使用时间', euV, 'endUse'));
+    box.innerHTML = parts.join('');
+}
+
+function clearUsageAdvFieldByKey(key) {
+    if (key === 'dept') document.getElementById('filterDept').value = '';
+    else if (key === 'status') document.getElementById('filterStatus').value = '';
+    else if (key === 'instState') document.getElementById('filterInstState').value = '';
+    else if (key === 'owner') document.getElementById('filterOwner').value = '';
+    else if (key === 'startUse') document.getElementById('filterStartUse').value = '';
+    else if (key === 'endUse') document.getElementById('filterEndUse').value = '';
+}
+
+function clearUsageAdvDrawerInputs() {
+    clearUsageAdvFieldByKey('dept');
+    clearUsageAdvFieldByKey('status');
+    clearUsageAdvFieldByKey('instState');
+    clearUsageAdvFieldByKey('owner');
+    clearUsageAdvFieldByKey('startUse');
+    clearUsageAdvFieldByKey('endUse');
+}
+
+function openUsageAdvDrawer() {
+    buildUsageAdvDrawerFields();
+    var ov = document.getElementById('usageAdvOverlay');
+    var dr = document.getElementById('usageAdvDrawer');
+    var tgl = document.getElementById('btnUsageAdvToggle');
+    if (!ov || !dr) return;
+    ov.classList.add('on');
+    dr.classList.add('on');
+    dr.setAttribute('aria-hidden', 'false');
+    ov.setAttribute('aria-hidden', 'false');
+    if (tgl) {
+        tgl.setAttribute('aria-expanded', 'true');
+        tgl.textContent = '收起高级筛选';
+    }
+}
+
+function closeUsageAdvDrawer() {
+    var ov = document.getElementById('usageAdvOverlay');
+    var dr = document.getElementById('usageAdvDrawer');
+    var tgl = document.getElementById('btnUsageAdvToggle');
+    if (!ov || !dr) return;
+    ov.classList.remove('on');
+    dr.classList.remove('on');
+    dr.setAttribute('aria-hidden', 'true');
+    ov.setAttribute('aria-hidden', 'true');
+    if (tgl) {
+        tgl.setAttribute('aria-expanded', 'false');
+        tgl.textContent = '高级筛选';
+    }
+}
+
+function addUsageInstanceSearchTagFromInput() {
+    var inp = document.getElementById('usageMainSearch');
+    if (!inp) return;
+    var v = inp.value.trim();
+    if (!v) return;
+    var dup = usageInstanceSearchTags.some(function (t) {
+        return t.text === v;
+    });
+    if (!dup) usageInstanceSearchTags.push({ id: 'ust' + usageInstanceSearchTagSeq++, text: v });
+    inp.value = '';
+    renderUsageQueryTags();
+    renderDetailTable();
+    var n = applyUsageFormFilters(getUsageDetailSourceRows()).length;
+    showToast('筛选已应用，共 ' + n + ' 条');
+}
+
+function resetUsageSearchFilters() {
+    usageInstanceSearchTags = [];
+    var ms = document.getElementById('usageMainSearch');
+    if (ms) ms.value = '';
+    clearUsageAdvDrawerInputs();
+    closeUsageAdvDrawer();
+    usageServiceCategoryFilter = { mode: 'all' };
+    renderUsageServiceCategoryTree('resServiceCategoryTree');
+    updateUsageServiceCategoryTreeActiveState();
+    renderUsageQueryTags();
+    renderDetailTable();
+    showToast('筛选条件已重置');
+}
+
+function renderDetailTable() {
+    renderFilteredTable(applyUsageFormFilters(getUsageDetailSourceRows()));
+}
+
+/** 用量明细：按实例创建时间升序（无创建时间字段时排在末尾） */
+function sortDetailRowsByCreatedAt(rows) {
+    return rows.slice().sort(function (a, b) {
+        return String(a.createdAt || '').localeCompare(String(b.createdAt || ''));
+    });
+}
+
+/** 用量明细：根据当前筛选表单过滤（服务分类侧栏在 getUsageDetailSourceRows 中已应用） */
+function applyUsageFormFilters(rows) {
+    let filtered = rows.slice();
+    const dept = document.getElementById('filterDept').value;
+    const statusVal = document.getElementById('filterStatus').value;
+    const instSt = document.getElementById('filterInstState').value;
+    const ownerKw = (document.getElementById('filterOwner').value || '').trim().toLowerCase();
+    const startUseKw = (document.getElementById('filterStartUse').value || '').trim();
+    const endUseKw = (document.getElementById('filterEndUse').value || '').trim();
+
+    const statusMapFilter = {
+        '待确认': 'pending',
+        '异议中': 'dispute',
+    };
+
+    if (dept) filtered = filtered.filter(function (r) { return r.dept === dept; });
+    if (statusVal) {
+        if (statusVal === '已确认') {
+            filtered = filtered.filter(function (r) { return r.status === 'confirmed' || r.status === 'auto_confirmed'; });
+        } else {
+            const st = statusMapFilter[statusVal];
+            if (st) filtered = filtered.filter(function (r) { return r.status === st; });
+        }
+    }
+    if (instSt === '正常') {
+        filtered = filtered.filter(function (r) {
+            return r.status !== 'voided' && String(r.instState || '正常') !== '作废';
+        });
+    } else if (instSt === '作废') {
+        filtered = filtered.filter(function (r) {
+            return r.status === 'voided' || r.instState === '作废';
+        });
+    }
+    if (ownerKw) {
+        filtered = filtered.filter(function (r) {
+            return String(r.owner || '').toLowerCase().indexOf(ownerKw) >= 0;
+        });
+    }
+    if (startUseKw) {
+        filtered = filtered.filter(function (r) {
+            return String(r.startTime || '').indexOf(startUseKw) >= 0;
+        });
+    }
+    if (endUseKw) {
+        filtered = filtered.filter(function (r) {
+            return String(r.endTime || '').indexOf(endUseKw) >= 0;
+        });
+    }
+    filtered = filtered.filter(function (r) {
+        return rowMatchesUsageInstanceSearchTags(r);
+    });
+    return filtered;
+}
+
+function renderFilteredTable(data) {
+    const sorted = sortDetailRowsByCreatedAt(data);
+    document.getElementById('detailTableBody').innerHTML = sorted.map((r) => `
+        <tr>
+            <td><input type="checkbox" class="js-usage-row-check" data-row-id="${r.id}" ${currentView === 'user' ? (r.status !== 'pending' ? 'disabled' : '') : (r.status === 'voided' ? 'disabled' : '')}></td>
+            <td>2026-04</td>
+            <td>${r.id}</td>
+            <td>${r.name}</td>
+            <td>${r.svc}</td>
+            <td>${r.dept}</td>
+            <td>${r.specCluster || '—'}</td>
+            <td>${r.spec || '—'}</td>
+            <td>${r.config || '—'}</td>
+            <td>${r.product || '—'}</td>
+            <td>${r.owner || '—'}</td>
+            <td>${r.admin || '—'}</td>
+            <td>${r.consumer || '—'}</td>
+            <td>${r.env || '—'}</td>
+            <td>${r.startTime || '—'}</td>
+            <td>${r.endTime || '—'}</td>
+            <td>${statusMap[r.status]}</td>
+            <td>${formatInstStateHtml(r)}</td>
+        </tr>
+    `).join('');
+    
+    document.getElementById('pageTotal').textContent = sorted.length;
+    updateStats();
+}
+
+// 快速确认
+function quickConfirm(id) {
+    const r = detailData.find(x => x.id === id);
+    if (r) {
+        r.status = 'confirmed';
+        renderDetailTable();
+        showToast('用量已确认！');
+    }
+}
+
+// 批量确认（工具栏「确认」）
+function batchConfirm() {
+    const pending = getDetailRowsForUserScope().filter(function (r) { return r.status === 'pending'; });
+    if (pending.length === 0) {
+        showToast('没有待确认的用量');
+        return;
+    }
+    const countEl = document.getElementById('batchConfirmPendingCount');
+    if (countEl) countEl.textContent = String(pending.length);
+    openModal('batchConfirmModal');
+}
+
+function executeBatchConfirm() {
+    const pending = getDetailRowsForUserScope().filter(function (r) { return r.status === 'pending'; });
+    if (pending.length === 0) {
+        closeModal('batchConfirmModal');
+        showToast('没有待确认的用量');
+        return;
+    }
+    pending.forEach(function (r) { r.status = 'confirmed'; });
+    closeModal('batchConfirmModal');
+    renderDetailTable();
+    showToast('已确认本月无异议的全部 ' + pending.length + ' 条待确认用量');
+}
+
+// 详情
+function openUsageDetail(id) {
+    const r = detailData.find(x => x.id === id);
+    if (!r) return;
+    if (currentView === 'user' && !detailRowVisibleForCurrentUserScope(r)) {
+        showToast('无权查看该用量记录（仅本人归属或本部门数据可见）。');
+        return;
+    }
+
+    const isPending = r.status === 'pending';
+    const isAdmin = currentView === 'admin';
+    
+    // 底部按钮
+    let footHtml = '';
+    if (isAdmin) {
+        if (r.status === 'dispute') {
+            footHtml = `<button class="btn btn-warning" onclick="closeModal('usageDetailModal');openAdminDisputeHandler('${r.id}')">处理</button>`;
+        }
+        footHtml += `${footHtml ? ' ' : ''}<button class="btn btn-default" onclick="closeModal('usageDetailModal')">关闭</button>`;
+    } else {
+        if (isPending) {
+            footHtml = `<button class="btn btn-success" onclick="confirmUsageAndClose('${r.id}')">确认</button>
+                        <button class="btn btn-warning" onclick="closeModal('usageDetailModal');openDisputeFromRow('${r.id}','${r.name}')">异议</button>`;
+        }
+        const dConfirm = findPendingConfirmDisputeForResid(r.id);
+        if (dConfirm && disputeRowVisibleForCurrentUserScope(dConfirm)) {
+            const c1 = isPending ? '异议确认' : '确认';
+            const c2 = isPending ? '异议退回' : '退回';
+            footHtml += (footHtml ? ' ' : '') + `<button class="btn btn-success" onclick="userConfirmDispute('${dConfirm.id}')">${c1}</button>`;
+            footHtml += ` <button class="btn btn-default" onclick="userReturnDispute('${dConfirm.id}')">${c2}</button>`;
+        }
+        footHtml += (footHtml ? ' ' : '') + `<button class="btn btn-default" onclick="closeModal('usageDetailModal')">关闭</button>`;
+    }
+    document.getElementById('usageDetailFoot').innerHTML = footHtml;
+    
+    document.getElementById('usageDetailContent').innerHTML = `
+        <div class="card-title-sm" style="margin-bottom:10px;">资源信息</div>
+        <dl class="dl-grid" style="margin-bottom:16px;">
+            <dt>实例ID</dt><dd>${r.id}</dd>
+            <dt>实例名称</dt><dd>${r.name}</dd>
+            <dt>服务分类</dt><dd>${r.svc}</dd>
+            <dt>所属部门</dt><dd>${r.dept}</dd>
+            <dt>费用归属人</dt><dd>${r.owner || '-'}</dd>
+            <dt>管理员</dt><dd>${r.admin || '-'}</dd>
+            <dt>使用人</dt><dd>${r.consumer || '-'}</dd>
+            <dt>环境</dt><dd>${r.env || '-'}</dd>
+            <dt>账期</dt><dd>2026-04</dd>
+        </dl>
+        <div class="card-title-sm" style="margin-bottom:10px;">规格与备案</div>
+        <dl class="dl-grid" style="margin-bottom:16px;">
+            <dt>规格簇</dt><dd>${r.specCluster || '-'}</dd>
+            <dt>规格</dt><dd>${r.spec || '-'}</dd>
+            <dt>配置</dt><dd>${r.config || '-'}</dd>
+            <dt>备案产品</dt><dd>${r.product || '-'}</dd>
+            <dt>配额</dt><dd>${r.quota || '-'}</dd>
+        </dl>
+        <div class="card-title-sm" style="margin-bottom:10px;">使用与确认</div>
+        <dl class="dl-grid" style="margin-bottom:16px;">
+            <dt>开始使用时间</dt><dd>${r.startTime || '-'}</dd>
+            <dt>结束使用时间</dt><dd>${r.endTime || '-'}</dd>
+            <dt>确认状态</dt><dd>${statusMap[r.status]}</dd>
+            <dt>实例状态</dt><dd>${formatInstStateHtml(r)}</dd>
+            ${r.usageDuration ? `<dt>使用时长（修正口径）</dt><dd>${escHtmlText(r.usageDuration)}</dd>` : ''}
+            ${r.instanceStateInfo ? `<dt>实例状态信息</dt><dd>${escHtmlText(r.instanceStateInfo)}</dd>` : ''}
+            <dt>采集时间</dt><dd>2026-04-30 23:59</dd>
+            <dt>数据来源</dt><dd>私有云监控平台</dd>
+        </dl>
+    `;
+    openModal('usageDetailModal');
+}
+
+function confirmUsageAndClose(id) {
+    quickConfirm(id);
+    closeModal('usageDetailModal');
+}
+
+/** 用量明细 / 异议列表：待处理（processing）且申请人为当前登录用户时可撤回 */
+function withdrawProcessingDisputeCore(d) {
+    if (!d || d.status !== 'processing' || String(d.user || '') !== String(sessionUser.name || '')) {
+        showToast('仅待处理中的本人异议可申请撤回。');
+        return false;
+    }
+    if (!confirm('确定撤回？撤回后异议单状态变为「已撤回」，用量确认状态将恢复为「待确认」，可点击「确认」完成确认或重新发起异议。')) return false;
+    d.status = 'withdrawn';
+    const resid = d.resid;
+    if (resid) {
+        const r = detailData.find(function (x) {
+            return x.id === resid;
+        });
+        if (r && (r.status === 'dispute' || r.status === 'pending_confirm')) {
+            r.status = 'pending';
+        }
+    }
+    renderDetailTable();
+    renderDisputeTable();
+    updateStats();
+    showToast('已撤回，用量确认状态为「待确认」，请使用工具栏「确认」完成确认或提交异议。');
+    return true;
+}
+
+/** 异议管理列表：费用归属人视角，待处理单据按异议单号撤回 */
+function withdrawDisputeByDisputeId(disputeId) {
+    const d = disputeData.find(function (x) {
+        return x.id === disputeId;
+    });
+    if (!withdrawProcessingDisputeCore(d)) return;
+    closeModal('disputeDetailModal');
+}
+
+function confirmUsage() { showToast('用量已确认'); }
+
+function resetFilter() {
+    resetUsageSearchFilters();
+}
+function setStatPeriod(period, btn) {
+    document.querySelectorAll('.res-stat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    showToast('统计周期已切换为' + (period === 'month' ? '按账期' : '按天'));
+}
+
+// ══════════════════════════════════════════════
+// 异议管理
+// ══════════════════════════════════════════════
+function applyDisputeFilters(rows) {
+    let out = rows.slice();
+    const idEl = document.getElementById('filterDisputeId');
+    const kwEl = document.getElementById('filterDisputeKw');
+    const typeEl = document.getElementById('filterDisputeType');
+    const stEl = document.getElementById('filterDisputeStatus');
+    const idKw = idEl ? String(idEl.value || '').trim().toLowerCase() : '';
+    const kw = kwEl ? String(kwEl.value || '').trim().toLowerCase() : '';
+    const typeVal = typeEl ? typeEl.value : '';
+    const stVal = stEl ? stEl.value : '';
+
+    if (idKw) {
+        out = out.filter(function (d) {
+            return String(d.id || '').toLowerCase().indexOf(idKw) >= 0;
+        });
+    }
+    if (kw) {
+        out = out.filter(function (d) {
+            return String(d.resid || '').toLowerCase().indexOf(kw) >= 0 ||
+                String(d.name || '').toLowerCase().indexOf(kw) >= 0;
+        });
+    }
+    if (typeVal === '__unset__') {
+        out = out.filter(function (d) { return isDisputeTypeUnset(d.type); });
+    } else if (typeVal) {
+        out = out.filter(function (d) { return d.type === typeVal; });
+    }
+    if (stVal) {
+        out = out.filter(function (d) { return d.status === stVal; });
+    }
+    return out;
+}
+
+function doDisputeFilter() {
+    const n = applyDisputeFilters(getDisputeRowsForUserScope()).length;
+    renderDisputeTable();
+    showToast('筛选已应用，共 ' + n + ' 条');
+}
+
+function resetDisputeFilter() {
+    const idEl = document.getElementById('filterDisputeId');
+    const kwEl = document.getElementById('filterDisputeKw');
+    const typeEl = document.getElementById('filterDisputeType');
+    const stEl = document.getElementById('filterDisputeStatus');
+    if (idEl) idEl.value = '';
+    if (kwEl) kwEl.value = '';
+    if (typeEl) typeEl.value = '';
+    if (stEl) stEl.value = '';
+    renderDisputeTable();
+    showToast('异议筛选条件已重置');
+}
+
+function renderDisputeTable() {
+    const tbody = document.getElementById('disputeTableBody');
+    let rows = getDisputeRowsForUserScope();
+    rows = applyDisputeFilters(rows);
+    rows.sort(function (a, b) {
+        return String(b.time || '').localeCompare(String(a.time || ''));
+    });
+    tbody.innerHTML = rows.map(d => {
+        const actions = [];
+        const isAdmin = currentView === 'admin';
+        const isPending = d.status === 'processing';
+        const isPendingConfirm = d.status === 'pending_confirm';
+        
+        if (isAdmin && isPending) {
+            actions.push(`<button class="btn btn-sm btn-primary" onclick="openDisputeDetail('${d.id}')">查看</button>`);
+            actions.push(`<button class="btn btn-sm btn-warning" onclick="openDisputeProcessFromRow('${d.id}')">处理</button>`);
+        } else if (isAdmin && isPendingConfirm) {
+            actions.push(`<button class="btn btn-sm btn-primary" onclick="openDisputeDetail('${d.id}')">查看</button>`);
+        } else {
+            actions.push(`<button class="btn btn-sm btn-default" onclick="openDisputeDetail('${d.id}')">查看</button>`);
+            if (!isAdmin && isPending && String(d.user || '') === String(sessionUser.name || '')) {
+                actions.push(`<button class="btn btn-sm btn-default" onclick="withdrawDisputeByDisputeId('${d.id}')">撤回</button>`);
+            }
+            if (!isAdmin && isPendingConfirm && disputeRowVisibleForCurrentUserScope(d)) {
+                actions.push(`<button type="button" class="btn btn-sm btn-success" onclick="userConfirmDispute('${d.id}')" title="核对运维处理结果后完结本异议">确认</button>`);
+                actions.push(`<button type="button" class="btn btn-sm btn-default" onclick="userReturnDispute('${d.id}')" title="退回由运维继续处理">退回</button>`);
+            }
+        }
+        
+        return `
+        <tr>
+            <td><button class="btn-link" onclick="openDisputeDetail('${d.id}')">${d.id}</button></td>
+            <td>${d.resid}</td>
+            <td>${
+                d.resid && d.resid !== '—'
+                    ? `<button type="button" class="btn-link" onclick="goToUsageDetailFromDispute('${d.resid}')">${d.name}</button>`
+                    : `<span class="muted">${d.name}</span>`
+            }</td>
+            <td><span class="tag ${disputeTypeTagClass(d.type)}">${formatDisputeTypeDisplay(d)}</span></td>
+            <td>${d.dept}</td>
+            <td>${d.user}</td>
+            <td>${d.time}</td>
+            <td>${statusLabelMap[d.status]}</td>
+            <td><div class="action-btns">${actions.join('')}</div></td>
+        </tr>
+    `}).join('');
+    
+    // 管理员视图：显示新建按钮，用户视图：隐藏
+    document.getElementById('btnNewDispute').style.display = currentView === 'user' ? 'inline-block' : 'none';
+    document.getElementById('adminDisputeNotice').style.display = currentView === 'admin' ? 'block' : 'none';
+}
+
+function goToUsageDetailFromDispute(resid) {
+    if (!resid || resid === '—') {
+        showToast('该异议未关联具体用量行，请在用量明细中按账期与说明自行筛选。');
+        return;
+    }
+    closeModal('disputeDetailModal');
+    switchTab('detail');
+    usageInstanceSearchTags = [];
+    usageInstanceSearchTags.push({ id: 'ust' + usageInstanceSearchTagSeq++, text: resid });
+    var ms = document.getElementById('usageMainSearch');
+    if (ms) ms.value = '';
+    clearUsageAdvDrawerInputs();
+    closeUsageAdvDrawer();
+    renderUsageQueryTags();
+    renderDetailTable();
+    showToast('已定位用量明细');
+}
+
+function openDisputeDetail(id) {
+    const raw = disputeData.find(x => x.id === id);
+    if (!raw) return;
+    if (currentView === 'user' && !disputeRowVisibleForCurrentUserScope(raw)) {
+        showToast('无权查看该异议单（仅本人申请或本部门数据可见）。');
+        return;
+    }
+
+    document.getElementById('disputeDetailTitle').textContent = buildDisputeDetailTitle(raw);
+    document.getElementById('disputeDetailContent').innerHTML = buildDisputeDetailBody(raw);
+    
+    // 底部按钮：管理员仅对「待处理」异议显示处理类操作
+    const isAdmin = currentView === 'admin';
+    const adminActionsAllowed = isAdmin && raw.status === 'processing';
+    
+    let footHtml = '';
+    if (adminActionsAllowed) {
+        footHtml = `
+            <button class="btn btn-primary" onclick="closeModal('disputeDetailModal');openAdminDisputeProcessModal('${id}')">处理</button>
+            <button class="btn btn-default" onclick="handleDispute('${id}','退回')">退回</button>
+            <button class="btn btn-default" onclick="closeModal('disputeDetailModal')">关闭</button>`;
+    } else {
+        if (raw.status === 'pending_confirm' && currentView === 'user' && disputeRowVisibleForCurrentUserScope(raw)) {
+            footHtml = `<button class="btn btn-success" onclick="userConfirmDispute('${id}')">确认</button>
+                <button class="btn btn-default" onclick="userReturnDispute('${id}')">退回</button>
+                <button class="btn btn-default" onclick="closeModal('disputeDetailModal')">关闭</button>`;
+        } else {
+            footHtml = `<button class="btn btn-default" onclick="closeModal('disputeDetailModal')">关闭</button>`;
+        }
+    }
+    document.getElementById('disputeDetailFoot').innerHTML = footHtml;
+    
+    openModal('disputeDetailModal');
+}
+
+// 管理员修正配置（写入用量明细「配置」字段）
+function modifyUsage(disputeId) {
+    const d = disputeData.find(x => x.id === disputeId);
+    if (!d) return;
+    const r = detailData.find(x => x.id === d.resid);
+    const snapBefore = r ? snapshotInstanceForDisputeDisplay(r, d) : null;
+    const cur = r ? (r.config || '—') : '—';
+    const hintRemark = d.remark ? `\n异议说明摘要：${d.remark.slice(0, 120)}${d.remark.length > 120 ? '…' : ''}` : '';
+    
+    const newVal = prompt(`请输入修正后的「配置」说明（将写入用量明细配置字段）：\n（当前配置：${cur}）${hintRemark}\n\n管理员输入：`, cur === '—' ? '' : cur);
+    
+    if (newVal && newVal.trim()) {
+        if (r) {
+            r.config = String(newVal).trim();
+            if (r.status !== 'voided') {
+                r.status = 'confirmed';
+                r.instState = '正常';
+            }
+        }
+        recordDisputeInstanceDiff(d, snapBefore, r ? snapshotInstanceForDisputeDisplay(r, d) : null);
+        appendDisputeProcessLog(
+            d,
+            '运维管理员 admin 已通过「修正配置」更新配置为「' + String(newVal).trim() + '」；异议单已完结，对应用量行已标记为「已确认」（已作废资源保持作废）。',
+            false
+        );
+        d.status = 'closed';
+
+        closeModal('disputeDetailModal');
+        renderDetailTable();
+        renderDisputeTable();
+        updateStats();
+        showToast(`异议 ${disputeId} 已处理，配置已更新为：${newVal}；异议已完结`);
+    }
+}
+
+function handleDispute(id, action) {
+    const d = disputeData.find(x => x.id === id);
+    if (!d) return;
+    
+    const r = detailData.find(x => x.id === d.resid);
+    var instSnapBefore = null;
+    if (action !== '新建实例' && r) {
+        instSnapBefore = snapshotInstanceForDisputeDisplay(r, d);
+    }
+    
+    if (action === '已作废') {
+        // 多算实例：标记为已作废（数据灰显，不统计计费）；实例状态为「作废」
+        if (r) {
+            r.status = 'voided';
+            r.instState = '作废';
+        }
+        appendDisputeProcessLog(
+            d,
+            '运维管理员 admin 将异议处理为「标记已作废」，相关用量行已作废；异议单已完结。',
+            false
+        );
+        d.status = 'closed';
+        showToast(`异议 ${id} 已处理，资源「${d.name}」标记为「已作废」；异议已完结`);
+    } else if (action === '新建实例') {
+        // 少算实例：补录完成后异议直接完结，用量行已确认（无需用户二次确认）
+        if (r) {
+            r.status = 'confirmed';
+            r.instState = '正常';
+        }
+        appendDisputeProcessLog(
+            d,
+            '运维管理员 admin 已完成实例补录并提交；异议单已完结，对应用量行已标记为「已确认」。',
+            false
+        );
+        d.status = 'closed';
+        showToast(`异议 ${id} 已处理，已新建实例「${d.name}」；异议已完结`);
+    } else if (action === '修正') {
+        // 实例信息错误：修正数据后异议直接完结
+        if (r) {
+            const nu = (d.newUsage && String(d.newUsage).trim() && d.newUsage !== '—') ? d.newUsage : null;
+            if (nu) r.config = nu;
+            if (r.status !== 'voided') {
+                r.status = 'confirmed';
+                r.instState = '正常';
+            }
+        }
+        appendDisputeProcessLog(
+            d,
+            '运维管理员 admin 已执行「修正数据」；异议单已完结，对应用量行已标记为「已确认」（已作废资源保持作废）。',
+            false
+        );
+        d.status = 'closed';
+        showToast(`异议 ${id} 已处理，实例「${d.name}」数据已修正；异议已完结`);
+    } else if (action === '退回') {
+        // 运维退回：异议单直接完结；用量行恢复为待确认，可重新核对或再次发起异议
+        if (r && r.status !== 'voided') {
+            r.status = 'pending';
+            r.instState = '正常';
+        }
+        appendDisputeProcessLog(
+            d,
+            '运维管理员 admin 退回本异议申请；异议单已完结，用量行恢复为「待确认」。',
+            true
+        );
+        d.status = 'closed';
+        showToast(`异议 ${id} 已退回；异议已完结`);
+    }
+    
+    if (action !== '新建实例') {
+        var rAfter = d.resid && d.resid !== '—' ? detailData.find(function (x) { return x.id === d.resid; }) : null;
+        recordDisputeInstanceDiff(d, instSnapBefore, rAfter ? snapshotInstanceForDisputeDisplay(rAfter, d) : null);
+    }
+    
+    closeModal('disputeDetailModal');
+    renderDetailTable();
+    renderDisputeTable();
+    updateStats();
+}
+
+function escHtmlText(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escHtmlAttr(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function initDisputeResMs() {
+    if (typeof FinOpsMultiselect === 'undefined') return null;
+    return FinOpsMultiselect.init({
+        tagsId: 'disputeResMsTags',
+        ddId: 'disputeResMsDd',
+        triggerId: 'disputeResMsTrigger',
+        hiddenId: 'disputeResMsHidden',
+        ddSearchId: 'disputeResMsDdSearch',
+        optionsId: 'disputeResMsOptions',
+        searchId: 'disputeResMsSearch',
+        placeholder: '请选择实例'
+    });
+}
+
+function refreshDisputeResPickOptions(keepValues) {
+    const root = document.getElementById('disputeResMsOptions');
+    if (!root) return;
+    const prev = keepValues || (disputeResMsApi ? disputeResMsApi.getValues() : []);
+    let html = '';
+    getDetailRowsForUserScope().forEach(function (r) {
+        const label = r.name + ' · ' + r.id + ' · ' + (r.spec || r.specCluster || '—');
+        html += '<div class="finops-ms-row" data-value="' + escHtmlAttr(r.id) + '" data-label="' + escHtmlAttr(label) + '"><span>' + escHtmlText(label) + '</span><span class="finops-ms-check">✓</span></div>';
+    });
+    root.innerHTML = html;
+    disputeResMsApi = initDisputeResMs();
+    if (disputeResMsApi && prev.length) {
+        const valid = prev.filter(function (id) {
+            return Array.prototype.some.call(root.querySelectorAll('.finops-ms-row'), function (row) {
+                return row.getAttribute('data-value') === id;
+            });
+        });
+        disputeResMsApi.setValues(valid);
+    }
+}
+
+function resetNewDisputeForm() {
+    const rm = document.getElementById('disputeRemark');
+    if (rm) rm.value = '';
+    if (disputeResMsApi) disputeResMsApi.setValues([]);
+}
+
+function ensureDisputeDeptOption(dept) {
+    const sel = document.getElementById('disputeDept');
+    if (!sel || !dept) return;
+    const exists = Array.prototype.some.call(sel.options, function (o) {
+        return o.value === dept || o.textContent === dept;
+    });
+    if (!exists) {
+        const opt = document.createElement('option');
+        opt.value = dept;
+        opt.textContent = dept;
+        sel.appendChild(opt);
+    }
+}
+
+/** 基本信息：同步全局账期与登录用户，锁定不可编辑 */
+function applyDisputeBasicInfoLocked() {
+    const gb = document.getElementById('globalBillMonth');
+    const periodEl = document.getElementById('disputePeriod');
+    const deptEl = document.getElementById('disputeDept');
+    const apEl = document.getElementById('disputeApplicant');
+    if (periodEl) {
+        periodEl.value = gb && gb.value ? gb.value : '2026-04';
+        periodEl.disabled = true;
+        periodEl.classList.add('field-locked');
+    }
+    if (deptEl) {
+        ensureDisputeDeptOption(sessionUser.dept);
+        deptEl.value = sessionUser.dept;
+        deptEl.disabled = true;
+        deptEl.classList.add('field-locked');
+    }
+    if (apEl) {
+        apEl.value = sessionUser.name;
+        apEl.disabled = true;
+        apEl.classList.add('field-locked');
+    }
+}
+
+function openDisputeModal(preId) {
+    resetNewDisputeForm();
+    applyDisputeBasicInfoLocked();
+    refreshDisputeResPickOptions(preId ? [preId] : []);
+    openModal('disputeModal');
+}
+
+function openDisputeFromRow(id, name) {
+    openDisputeModal(id);
+}
+
+/** 运维「处理异议」弹窗：资源规格模板（云主机 / 物理机 / 其他） */
+function getCorrectionResourceKind(r) {
+    if (r.svcCatL1 === '物理机') return 'pm';
+    if (r.svcCatL1 === '虚机化' && r.svcCatL2 === '虚拟机') return 'vm';
+    const svc = String(r.svc || '');
+    if (svc.indexOf('物理机') !== -1) return 'pm';
+    if (svc.indexOf('虚机化') !== -1 && svc.indexOf('虚拟机') !== -1) return 'vm';
+    if (svc.indexOf('云服务器') !== -1 || svc.indexOf('云主机') !== -1) return 'vm';
+    return 'generic';
+}
+
+function buildCorrectionSpecFieldsHtml(r, kind, cpuMem) {
+    if (kind === 'vm') {
+        return (
+            '<div class="corr-spec-block" style="margin-bottom:4px;">' +
+            '<p class="muted" style="font-size:12px;margin-bottom:8px;">当前为<strong>云主机</strong>类资源，可填写 vCPU 与内存（GB），均为选填。</p>' +
+            '<div class="form-row">' +
+            '<div class="form-item"><label>CPU（vCPU）</label>' +
+            '<input type="number" id="corrVmCpu" min="0" step="1" value="' +
+            escHtmlAttr(cpuMem.cpu) +
+            '" placeholder="如 4"></div>' +
+            '<div class="form-item"><label>内存（GB）</label>' +
+            '<input type="number" id="corrVmMem" min="0" step="0.5" value="' +
+            escHtmlAttr(cpuMem.mem) +
+            '" placeholder="如 8"></div>' +
+            '</div></div>'
+        );
+    }
+    if (kind === 'pm') {
+        const models = [
+            'Dell R740 (2×Gold 6230 / 256GB)',
+            'HPE DL380 Gen10 (2×Silver 4214 / 128GB)',
+            'Lenovo SR650 (2×Gold 5218 / 512GB)',
+            '浪潮 NF5280M5 (2×Gold 6248 / 384GB)',
+        ];
+        const opts =
+            '<option value="">请选择机型</option>' +
+            models
+                .map(function (m) {
+                    return '<option value="' + escHtmlAttr(m) + '">' + escHtmlText(m) + '</option>';
+                })
+                .join('');
+        return (
+            '<div class="corr-spec-block" style="margin-bottom:4px;">' +
+            '<p class="muted" style="font-size:12px;margin-bottom:8px;">当前为<strong>物理机</strong>类资源，请选择机型（选填）。</p>' +
+            '<div class="form-row full"><div class="form-item"><label>机型</label><select id="corrPmModel">' +
+            opts +
+            '</select></div></div></div>'
+        );
+    }
+    return (
+        '<div class="corr-spec-block" style="margin-bottom:4px;">' +
+        '<p class="muted" style="font-size:12px;margin-bottom:8px;">非云主机/物理机模板时，可填写<strong>服务规格</strong>说明（选填）。</p>' +
+        '<div class="form-row full"><div class="form-item"><label>服务规格说明</label>' +
+        '<input type="text" id="corrSpecGeneric" value="" placeholder="容量、节点数、网络规格等"></div></div></div>'
+    );
+}
+
+function buildCorrectionModifyFieldsHtml(r) {
+    const kind = getCorrectionResourceKind(r);
+    const emptyCpuMem = { cpu: '', mem: '' };
+    const specBlockHtml = buildCorrectionSpecFieldsHtml(r, kind, emptyCpuMem);
+    const dr = { start: '', end: '' };
+    const instSelectHtml =
+        '<option value="" selected>请选择</option>' +
+        ['正常', '作废']
+            .map(function (s) {
+                return '<option value="' + escHtmlAttr(s) + '">' + escHtmlText(s) + '</option>';
+            })
+            .join('');
+    return (
+        '<p id="corrPanelModifyHint" class="muted" style="font-size:12px;margin-bottom:12px;"></p>' +
+        '<div class="form-row full"><div class="form-item"><label>费用归属人</label>' +
+        '<input type="text" id="corrOwner" value="" placeholder="选填"></div></div>' +
+        '<div class="form-row full"><div class="form-item"><label>使用时长（起止日期，选填）</label>' +
+        '<div class="corr-date-row">' +
+        '<div><span class="muted" style="font-size:12px;display:block;margin-bottom:4px;">开始日期</span>' +
+        '<input type="date" id="corrDurStart" value="' + escHtmlAttr(dr.start) + '"></div>' +
+        '<div><span class="muted" style="font-size:12px;display:block;margin-bottom:4px;">结束日期</span>' +
+        '<input type="date" id="corrDurEnd" value="' + escHtmlAttr(dr.end) + '"></div></div></div></div>' +
+        specBlockHtml +
+        '<div class="form-row full"><div class="form-item"><label>实例状态</label>' +
+        '<select id="corrInstState">' + instSelectHtml + '</select></div></div>' +
+        '<div class="form-row full"><div class="form-item"><label>补充说明</label>' +
+        '<textarea id="corrExtraNote" rows="2" placeholder="选填：维护窗口、停机说明等"></textarea></div></div>'
+    );
+}
+
+function openAdminDisputeProcessModal(disputeId, resourceId) {
+    var d = null;
+    if (disputeId) {
+        d = disputeData.find(function (x) { return x.id === disputeId && x.status === 'processing'; });
+    }
+    if (!d && resourceId) {
+        d = disputeData.find(function (x) { return x.resid === resourceId && x.status === 'processing'; });
+    }
+    if (!d) { showToast('未找到待处理的异议单'); return; }
+    var rid = resourceId || (d.resid && d.resid !== '—' ? d.resid : '');
+    var r = rid ? detailData.find(function (x) { return x.id === rid; }) : null;
+    var gb = document.getElementById('globalBillMonth');
+    var billMonthVal = gb && gb.value ? gb.value : '2026-04';
+    var billMonthDisp = formatBillMonthLabel(billMonthVal);
+    var typePreset = isDisputeTypeUnset(d.type) ? '' : d.type;
+    var basicBlock = '';
+    if (r) {
+        var svcSpecDd = escHtmlText([r.specCluster, r.spec, r.config].filter(Boolean).join(' · ') || '—');
+        basicBlock = '<div class="card-title-sm" style="margin-bottom:10px;">关联实例</div>' +
+            '<dl class="dl-grid" style="margin-bottom:16px;">' +
+            '<dt>实例ID</dt><dd>' + escHtmlText(r.id) + '</dd>' +
+            '<dt>实例名称</dt><dd>' + escHtmlText(r.name) + '</dd>' +
+            '<dt>服务规格</dt><dd>' + svcSpecDd + '</dd>' +
+            '<dt>账期</dt><dd>' + escHtmlText(billMonthDisp) + ' <span class="muted" style="font-size:12px;">（' + escHtmlText(billMonthVal) + '）</span></dd></dl>';
+    } else {
+        basicBlock = '<p class="muted" style="font-size:13px;margin-bottom:12px;">本异议未关联现有用量行；选择「少算实例」后将展示<strong>新增实例</strong>字段用于补录。</p>';
+    }
+    var modifyPanelHtml = r ? buildCorrectionModifyFieldsHtml(r) : '<p class="muted" style="font-size:13px;">未关联用量行，无法修改实例字段；请选择「少算实例」进行补录。</p>';
+    var addPanelInner = buildAddInstanceFormHtml(d).replace(/^<p class="muted"[^>]*>[\s\S]*?<\/p>/, '');
+    document.getElementById('usageCorrectionTitle').textContent = '处理异议 · ' + (r ? r.name : d.name || d.id);
+    document.getElementById('usageCorrectionBody').innerHTML =
+        '<p class="muted" style="margin-bottom:12px;font-size:13px;">关联异议单：<strong>' + escHtmlText(d.id) + '</strong> · 申请人：' + escHtmlText(d.user || '—') + ' · 说明：' + escHtmlText((d.remark || '—').slice(0, 80)) + ((d.remark || '').length > 80 ? '…' : '') + '</p>' +
+        '<input type="hidden" id="corrInstId" value="' + escHtmlAttr(r ? r.id : '') + '">' +
+        '<input type="hidden" id="corrDisputeId" value="' + escHtmlAttr(d.id) + '">' + basicBlock +
+        '<div class="card-title-sm" style="margin-bottom:6px;">异议认定</div>' +
+        '<p class="muted" style="font-size:12px;margin-bottom:10px;">请选择异议类型，系统将联动展示<strong>修改实例</strong>或<strong>新增实例</strong>字段。</p>' +
+        '<div class="form-row full"><div class="form-item"><label>异议类型 *</label>' +
+        '<select id="corrDisputeType" onchange="onAdminDisputeTypeChange()">' + buildDisputeTypeSelectHtml('', typePreset) + '</select></div></div>' +
+        '<div id="corrPanelTypeHint">请先选择异议类型，再填写下方对应处理字段。</div>' +
+        '<div id="corrPanelModify" class="admin-dispute-panel" style="display:none;">' +
+        '<div class="admin-dispute-panel-hd">修改实例字段</div>' + modifyPanelHtml + '</div>' +
+        '<div id="corrPanelAdd" class="admin-dispute-panel" style="display:none;">' +
+        '<div class="admin-dispute-panel-hd">新增实例字段</div>' + addPanelInner + '</div>';
+    onAdminDisputeTypeChange();
+    openModal('usageCorrectionModal');
+}
+
+function openUsageCorrectionModal(resourceId) {
+    openAdminDisputeProcessModal('', resourceId);
+}
+
+function saveUsageCorrection() {
+    const typeEl = document.getElementById('corrDisputeType');
+    const typeVal = typeEl ? (typeEl.value || '').trim() : '';
+    if (!typeVal) {
+        showToast('请选择异议类型');
+        return;
+    }
+    if (isDisputeTypeUndercount(typeVal)) {
+        const hidType = document.getElementById('corrDisputeId');
+        const linkedId = hidType && hidType.value ? hidType.value.trim() : '';
+        const dUnder = linkedId ? disputeData.find(function (x) { return x.id === linkedId; }) : null;
+        if (dUnder) dUnder.type = typeVal;
+        submitNewInstance();
+        return;
+    }
+    const idEl = document.getElementById('corrInstId');
+    if (!idEl) return;
+    const id = idEl.value;
+    const r = detailData.find(x => x.id === id);
+    if (!r) return showToast('记录不存在，请选择「少算实例」进行补录');
+    const hidCorrEarly = document.getElementById('corrDisputeId');
+    const linkedDisputeIdEarly = hidCorrEarly && hidCorrEarly.value ? hidCorrEarly.value.trim() : '';
+    const dSnapCtx =
+        linkedDisputeIdEarly ? disputeData.find(function (x) { return x.id === linkedDisputeIdEarly; }) : null;
+    const snapBefore = snapshotInstanceForDisputeDisplay(r, dSnapCtx);
+
+    const ownerEl = document.getElementById('corrOwner');
+    if (ownerEl) {
+        const v = (ownerEl.value || '').trim();
+        if (v) r.owner = v;
+    }
+
+    const ds = document.getElementById('corrDurStart');
+    const de = document.getElementById('corrDurEnd');
+    if (ds && de) {
+        const s = (ds.value || '').trim();
+        const e = (de.value || '').trim();
+        if (s && e) r.usageDuration = s + ' ~ ' + e;
+        else if (s || e) r.usageDuration = (s || '…') + ' ~ ' + (e || '…');
+    }
+
+    const kind = getCorrectionResourceKind(r);
+    if (kind === 'vm') {
+        const cpuEl = document.getElementById('corrVmCpu');
+        const memEl = document.getElementById('corrVmMem');
+        const cpu = cpuEl && cpuEl.value !== '' ? String(cpuEl.value).trim() : '';
+        const mem = memEl && memEl.value !== '' ? String(memEl.value).trim() : '';
+        if (cpu || mem) {
+            const cpuPart = cpu ? cpu + ' vCPU' : '';
+            const memPart = mem ? mem + ' GB' : '';
+            r.quota = [cpuPart, memPart].filter(Boolean).join(' / ');
+        }
+    } else if (kind === 'pm') {
+        const sel = document.getElementById('corrPmModel');
+        if (sel && sel.value) r.quota = '机型：' + sel.value;
+    } else {
+        const g = document.getElementById('corrSpecGeneric');
+        if (g && (g.value || '').trim()) r.quota = (g.value || '').trim();
+    }
+
+    const st = document.getElementById('corrInstState');
+    if (st) {
+        const sv = (st.value || '').trim();
+        if (sv) {
+            r.instState = sv;
+            if (sv === '作废') r.status = 'voided';
+        }
+    }
+
+    const note = document.getElementById('corrExtraNote');
+    if (note) {
+        const nv = (note.value || '').trim();
+        if (nv) r.instanceStateInfo = nv;
+    }
+
+    if (linkedDisputeIdEarly) {
+        const dLinked = disputeData.find(function (x) {
+            return x.id === linkedDisputeIdEarly;
+        });
+        if (dLinked && dLinked.status === 'processing') {
+            dLinked.type = typeVal;
+            appendDisputeProcessLog(
+                dLinked,
+                '运维管理员 admin 已认定异议类型为「' +
+                    typeVal +
+                    '」并提交「实例用量修正」；异议单已完结，对应用量行已标记为「已确认」（已作废资源保持作废）。',
+                false
+            );
+            dLinked.status = 'closed';
+            if (r && r.status !== 'voided') {
+                r.status = 'confirmed';
+            }
+            recordDisputeInstanceDiff(dLinked, snapBefore, snapshotInstanceForDisputeDisplay(r, dSnapCtx));
+        }
+    }
+
+    closeModal('usageCorrectionModal');
+    renderDetailTable();
+    renderDisputeTable();
+    updateStats();
+    showToast('提交修正成功（原型），异议已完结');
+}
+
+function rejectUsageCorrectionDispute() {
+    const hid = document.getElementById('corrDisputeId');
+    const disputeId = hid && hid.value ? hid.value.trim() : '';
+    if (!disputeId) {
+        showToast('未关联处理中的异议单，无法从本入口退回');
+        return;
+    }
+    closeModal('usageCorrectionModal');
+    handleDispute(disputeId, '退回');
+}
+
+function openDisputeFromRes(id) {
+    openUsageCorrectionModal(id);
+}
+
+function submitDispute() {
+    const ids = disputeResMsApi ? disputeResMsApi.getValues() : [];
+    const remark = (document.getElementById('disputeRemark').value || '').trim();
+    const periodEl = document.getElementById('disputePeriod');
+    const period = periodEl ? periodEl.value : '2026-04';
+    const deptEl = document.getElementById('disputeDept');
+    const dept = deptEl ? deptEl.value : '研发中心';
+    const applicant = (document.getElementById('disputeApplicant').value || '').trim();
+
+    if (!ids.length && !remark) {
+        showToast('请选择异议涉及的实例，或填写异议说明');
+        return;
+    }
+    if (!applicant) {
+        showToast('请填写申请人');
+        return;
+    }
+
+    const timeStr = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-');
+    const targets = ids.length ? ids : [''];
+
+    targets.forEach(function (id) {
+        const newId = 'DIS-2026-00' + (Math.floor(Math.random() * 90) + 10);
+        let name = '—';
+        if (id) {
+            const row = detailData.find(function (x) { return x.id === id; });
+            name = row ? (row.name || id) : id;
+        }
+        const newDispute = {
+            id: newId, resid: id || '—', name: id ? name : '—', type: '', dept: dept,
+            user: applicant,
+            period: period,
+            time: timeStr,
+            remark: remark,
+            sysUsage: '—', newUsage: '—', status: 'processing',
+            processLog: []
+        };
+        appendDisputeProcessLog(
+            newDispute,
+            '用户 ' + applicant + ' 提交异议申请，资源状态变更为「异议中」',
+            false
+        );
+        disputeData.unshift(newDispute);
+        if (id) {
+            const r = detailData.find(function (x) { return x.id === id; });
+            if (r) r.status = 'dispute';
+        }
+    });
+
+    closeModal('disputeModal');
+    renderDetailTable();
+    renderDisputeTable();
+    if (targets.length > 1) {
+        showToast('已提交 ' + targets.length + ' 条异议申请，等待运维管理员处理');
+    } else {
+        showToast('异议申请已提交，等待运维管理员处理！');
+    }
+}
+
+function openExportModal() { openModal('exportModal'); }
+
+// ══════════════════════════════════════════════
+// Tab / View 切换
+// ══════════════════════════════════════════════
+function switchTab(name) {
+    document.querySelectorAll('.bill-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+    
+    const sideMap = { detail:'用量明细', dispute:'异议管理' };
+    document.querySelectorAll('.sub-menu-item').forEach(el => {
+        if(el.textContent.trim().startsWith(sideMap[name])) el.classList.add('active');
+    });
+    
+    if (name === 'dispute') renderDisputeTable();
+    if (name === 'detail')  renderDetailTable();
+}
+
+function switchView(view) {
+    currentView = view;
+    
+    document.getElementById('viewUser').classList.toggle('active', view === 'user');
+    document.getElementById('viewAdmin').classList.toggle('active', view === 'admin');
+    
+    // 更新通知栏
+    const noticeBar = document.getElementById('noticeBar');
+    if (view === 'admin') {
+        document.getElementById('noticeText').innerHTML = `<strong>运维管理员视图：</strong>您可以查看所有用户的用量数据，处理异议申请并修正实例与规格信息。`;
+        noticeBar.className = 'notice-bar';
+        // 管理员可见按钮
+        document.getElementById('btnAddInstance').style.display = 'inline-block';
+        document.getElementById('btnBatchConfirm').style.display = 'none';
+        const btnUsageDispute = document.getElementById('btnUsageDispute');
+        if (btnUsageDispute) btnUsageDispute.style.display = 'none';
+        const btnPush = document.getElementById('btnPushUsage');
+        const pushHint = document.getElementById('billMonthPushHint');
+        if (btnPush) btnPush.style.display = 'inline-block';
+        if (pushHint) pushHint.style.display = 'block';
+    } else {
+        const scopePending = getDetailRowsForUserScope().filter(r => r.status === 'pending').length;
+        document.getElementById('noticeText').innerHTML = `系统于<span style="color:#1890ff;font-weight:600;">每月1日 10:00</span>发送确认通知，当前账期 <strong>2026年4月</strong> 处于「<strong>用量确认阶段</strong>」（次月初 ~ 7个工作日后 24:00），共 <strong id="pendingCount">${scopePending}</strong> 条用量待确认（可见范围内），截止：<strong>2026-05-12 24:00</strong>（超时自动确认）。<br><span class="muted" style="font-size:12px;margin-top:6px;display:inline-block;">费用归属人视角下，用量明细与异议列表仅展示<strong>本人为费用归属人</strong>或<strong>本部门</strong>的数据。</span>`;
+        // 用户可见按钮
+        document.getElementById('btnAddInstance').style.display = 'none';
+        document.getElementById('btnBatchConfirm').style.display = 'inline-block';
+        const btnUsageDisputeU = document.getElementById('btnUsageDispute');
+        if (btnUsageDisputeU) btnUsageDisputeU.style.display = 'inline-block';
+        const btnPushU = document.getElementById('btnPushUsage');
+        const pushHintU = document.getElementById('billMonthPushHint');
+        if (btnPushU) btnPushU.style.display = 'none';
+        if (pushHintU) pushHintU.style.display = 'none';
+    }
+    
+    // 重新渲染当前tab
+    const activePanel = document.querySelector('.panel.active');
+    if (activePanel && activePanel.id === 'panel-detail') renderDetailTable();
+    if (activePanel && activePanel.id === 'panel-dispute') renderDisputeTable();
+}
+
+// ══════════════════════════════════════════════
+// 管理员：实例用量修正 / 新增（编辑、删除入口已从用量明细操作列移除）
+// ══════════════════════════════════════════════
+let pendingDeleteId = null; // 待删除实例ID
+
+// 打开编辑弹窗
+function openEditInstanceModal(id) {
+    const r = detailData.find(x => x.id === id);
+    if (!r) return showToast('记录不存在');
+    
+    const formHtml = `
+    <div class="form-row">
+        <div class="form-item">
+            <label>实例ID</label>
+            <input type="text" id="editInstId" value="${r.id}" readonly style="background:#f5f5f5;">
+        </div>
+        <div class="form-item">
+            <label>实例名称</label>
+            <input type="text" id="editInstName" value="${r.name}">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-item">
+            <label>服务分类</label>
+            <input type="text" id="editInstSvc" value="${r.svc}">
+        </div>
+        <div class="form-item">
+            <label>所属部门</label>
+            <input type="text" id="editInstDept" value="${r.dept}">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-item">
+            <label>费用归属人</label>
+            <input type="text" id="editInstOwner" value="${r.owner || ''}" placeholder="费用归属人">
+        </div>
+        <div class="form-item">
+            <label>管理员</label>
+            <input type="text" id="editInstAdmin" value="${r.admin || ''}" placeholder="管理员">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-item">
+            <label>使用人</label>
+            <input type="text" id="editInstConsumer" value="${r.consumer || ''}" placeholder="使用人">
+        </div>
+        <div class="form-item">
+            <label>环境</label>
+            <input type="text" id="editInstEnv" value="${r.env || ''}" placeholder="如：生产 / UAT">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-item">
+            <label>规格簇</label>
+            <input type="text" id="editInstSpecCluster" value="${r.specCluster || ''}">
+        </div>
+        <div class="form-item">
+            <label>规格</label>
+            <input type="text" id="editInstSpec" value="${r.spec || ''}">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-item">
+            <label>配置</label>
+            <input type="text" id="editInstConfig" value="${r.config || ''}" placeholder="CPU/内存/磁盘等">
+        </div>
+        <div class="form-item">
+            <label>备案产品</label>
+            <input type="text" id="editInstProduct" value="${r.product || ''}">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-item">
+            <label>配额</label>
+            <input type="text" id="editInstQuota" value="${r.quota || ''}" placeholder="如：2 vCPU / 4 GB">
+        </div>
+        <div class="form-item">
+            <label>确认状态</label>
+            <select id="editInstStatus">
+                <option value="pending" ${r.status==='pending'?'selected':''}>待确认</option>
+                <option value="confirmed" ${r.status === 'confirmed' || r.status === 'auto_confirmed' ? 'selected' : ''}>已确认</option>
+                <option value="dispute" ${r.status==='dispute'?'selected':''}>异议中</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-item">
+            <label>开始使用时间</label>
+            <input type="text" id="editInstStartTime" value="${r.startTime || ''}" placeholder="如：2026-04-01 00:00">
+        </div>
+        <div class="form-item">
+            <label>结束使用时间</label>
+            <input type="text" id="editInstEndTime" value="${r.endTime || ''}" placeholder="如：2026-04-30 23:59">
+        </div>
+    </div>`;
+    
+    document.getElementById('editInstanceContent').innerHTML = formHtml;
+    document.getElementById('editInstanceTitle').textContent = '编辑实例：' + r.name;
+    document.getElementById('editInstanceFoot').innerHTML = `
+        <button class="btn btn-primary" onclick="saveEditInstance()">提交修正</button>
+        <button class="btn btn-default" onclick="closeModal('editInstanceModal')">取消</button>`;
+    openModal('editInstanceModal');
+}
+
+// 保存编辑
+function saveEditInstance() {
+    const id = document.getElementById('editInstId').value;
+    const r = detailData.find(x => x.id === id);
+    if (!r) return showToast('记录不存在');
+    
+    r.name = document.getElementById('editInstName').value || r.name;
+    var svcNew = document.getElementById('editInstSvc').value || r.svc;
+    applyUsageSvcPathToRow(r, svcNew);
+    r.dept = document.getElementById('editInstDept').value || r.dept;
+    r.owner = document.getElementById('editInstOwner').value || '';
+    r.admin = document.getElementById('editInstAdmin').value || '';
+    r.consumer = document.getElementById('editInstConsumer').value || '';
+    r.env = document.getElementById('editInstEnv').value || '';
+    r.specCluster = document.getElementById('editInstSpecCluster').value || '';
+    r.spec = document.getElementById('editInstSpec').value || '';
+    r.config = document.getElementById('editInstConfig').value || '';
+    r.product = document.getElementById('editInstProduct').value || '';
+    r.quota = document.getElementById('editInstQuota').value || '';
+    r.startTime = document.getElementById('editInstStartTime').value || '';
+    r.endTime = document.getElementById('editInstEndTime').value || '';
+    r.status = document.getElementById('editInstStatus').value;
+    r.instState = r.status === 'voided' ? '作废' : '正常';
+    
+    closeModal('editInstanceModal');
+    renderDetailTable();
+    updateStats();
+    showToast('实例已更新：' + id);
+}
+
+/** 新增实例：规格属性字段与规格属性值表单一致（CPU/内存/磁盘/显卡/台数等） */
+var ADD_INST_SPEC_ATTR_FIELDS = [
+    { key: 'cpuModel', label: 'CPU型号', type: 'text', placeholder: '请输入字符串' },
+    { key: 'cpuC', label: 'CPU（C）', type: 'number', step: '0.0001', placeholder: '数值，支持小数' },
+    { key: 'memGb', label: '内存（GB）', type: 'number', step: '0.0001', placeholder: '数值，支持小数' },
+    { key: 'hddTb', label: '机械硬盘（TB）', type: 'number', step: '0.0001', placeholder: '数值，支持小数' },
+    { key: 'ssdTb', label: '固态硬盘（TB）', type: 'number', step: '0.0001', placeholder: '数值，支持小数' },
+    { key: 'gpuModel', label: '显卡型号', type: 'text', placeholder: '请输入字符串' },
+    { key: 'gpuCount', label: '显卡数量（个）', type: 'number', step: '0.0001', placeholder: '数值，支持小数' },
+    { key: 'vramGb', label: '显存（GB）', type: 'number', step: '0.0001', placeholder: '数值，支持小数' },
+    { key: 'serverUnits', label: '服务器（台）', type: 'number', step: '0.0001', placeholder: '数值，支持小数' },
+];
+
+function getAddInstDistinct(field) {
+    var seen = {};
+    detailData.forEach(function (r) {
+        var v = r[field];
+        if (v == null) return;
+        var s = String(v).trim();
+        if (!s || s === '—') return;
+        seen[s] = 1;
+    });
+    return Object.keys(seen).sort();
+}
+
+function addInstRowTimeToLocal(v) {
+    if (!v) return '';
+    var s = String(v).trim();
+    if (s.indexOf('T') >= 0) return s.length >= 16 ? s.slice(0, 16) : s;
+    return s.replace(' ', 'T').slice(0, 16);
+}
+
+function addInstLocalToRowTime(v) {
+    if (!v) return '';
+    return String(v).replace('T', ' ');
+}
+
+function mergeAddInstSelectOptions(distinctList, extraArr, selectedVal) {
+    var seen = {};
+    var out = [];
+    function add(s) {
+        if (s == null) return;
+        var t = String(s).trim();
+        if (!t || t === '—') return;
+        if (!seen[t]) {
+            seen[t] = 1;
+            out.push(t);
+        }
+    }
+    (distinctList || []).forEach(add);
+    (extraArr || []).forEach(add);
+    if (selectedVal != null && String(selectedVal).trim() !== '') add(String(selectedVal).trim());
+    return out.sort(function (a, b) {
+        return a.localeCompare(b, 'zh-CN');
+    });
+}
+
+/** 下拉筛选：选项来自用量明细去重 + 异议预填等补充项 */
+function buildAddInstSelectField(elId, label, dataField, required, selectedRaw, extraVals) {
+    var sel = selectedRaw != null ? String(selectedRaw).trim() : '';
+    var opts = mergeAddInstSelectOptions(getAddInstDistinct(dataField), extraVals || [], sel);
+    var parts = [];
+    parts.push('<div class="form-item"><label>' + escHtmlText(label) + (required ? ' *' : '') + '</label>');
+    parts.push('<select id="' + escHtmlAttr(elId) + '"' + (required ? ' required' : '') + '>');
+    parts.push('<option value="">' + escHtmlText(required ? '请选择' : '请选择（可留空）') + '</option>');
+    opts.forEach(function (t) {
+        parts.push(
+            '<option value="' +
+                escHtmlAttr(t) +
+                '"' +
+                (t === sel ? ' selected' : '') +
+                '>' +
+                escHtmlText(t) +
+                '</option>'
+        );
+    });
+    parts.push('</select></div>');
+    return parts.join('');
+}
+
+function snapshotAddInstAttrVals() {
+    var o = {};
+    ADD_INST_SPEC_ATTR_FIELDS.forEach(function (f) {
+        var el = document.getElementById('addInstAttr_' + f.key);
+        if (el) o[f.key] = el.value;
+    });
+    return o;
+}
+
+function renderAddInstSpecAttrs(mergePrev) {
+    var wrap = document.getElementById('addInstSpecAttrWrap');
+    if (!wrap) return;
+    var prev = mergePrev ? snapshotAddInstAttrVals() : {};
+    var parts = [];
+    ADD_INST_SPEC_ATTR_FIELDS.forEach(function (f) {
+        var fid = 'addInstAttr_' + f.key;
+        var raw = Object.prototype.hasOwnProperty.call(prev, f.key) ? prev[f.key] : '';
+        var val = raw != null && String(raw) !== '' ? escHtmlAttr(String(raw)) : '';
+        if (f.type === 'number') {
+            parts.push(
+                '<div class="form-row full"><div class="form-item"><label>' +
+                    escHtmlText(f.label) +
+                    '</label><input type="number" step="' +
+                    escHtmlAttr(f.step || '1') +
+                    '" id="' +
+                    escHtmlAttr(fid) +
+                    '" placeholder="' +
+                    escHtmlAttr(f.placeholder || '') +
+                    '" value="' +
+                    val +
+                    '"></div></div>'
+            );
+        } else {
+            parts.push(
+                '<div class="form-row full"><div class="form-item"><label>' +
+                    escHtmlText(f.label) +
+                    '</label><input type="text" id="' +
+                    escHtmlAttr(fid) +
+                    '" placeholder="' +
+                    escHtmlAttr(f.placeholder || '') +
+                    '" value="' +
+                    val +
+                    '"></div></div>'
+            );
+        }
+    });
+    wrap.innerHTML = parts.join('');
+}
+
+function applyAddInstAttrValues(obj) {
+    if (!obj) return;
+    Object.keys(obj).forEach(function (k) {
+        var el = document.getElementById('addInstAttr_' + k);
+        if (el && obj[k] != null && String(obj[k]) !== '') el.value = String(obj[k]);
+    });
+}
+
+function parseNewUsageHintToAttrs(q) {
+    var s = String(q || '').trim();
+    if (!s || s === '—' || s === '无记录') return {};
+    var o = {};
+    var m1 = /([\d.]+)\s*vcpu/i.exec(s);
+    if (m1) o.cpuC = m1[1];
+    var m2 = /([\d.]+)\s*gb/i.exec(s);
+    if (m2) o.memGb = m2[1];
+    return o;
+}
+
+function prefillAddInstSpecAttrsFromDispute(d) {
+    if (!d || !d.newUsage) return;
+    applyAddInstAttrValues(parseNewUsageHintToAttrs(String(d.newUsage).trim()));
+}
+
+function initAddInstanceFormUI(disputeRow) {
+    renderAddInstSpecAttrs(false);
+    prefillAddInstSpecAttrsFromDispute(disputeRow || null);
+}
+
+function collectAddInstAttrVals() {
+    var o = {};
+    ADD_INST_SPEC_ATTR_FIELDS.forEach(function (f) {
+        var el = document.getElementById('addInstAttr_' + f.key);
+        o[f.key] = el ? String(el.value || '').trim() : '';
+    });
+    return o;
+}
+
+function buildAddInstDerivedConfigQuota() {
+    var v = collectAddInstAttrVals();
+    var bits = [];
+    if (v.cpuModel) bits.push('CPU型号 ' + v.cpuModel);
+    if (v.cpuC) bits.push('CPU ' + v.cpuC + 'C');
+    if (v.memGb) bits.push('内存 ' + v.memGb + ' GB');
+    if (v.hddTb) bits.push('机械硬盘 ' + v.hddTb + ' TB');
+    if (v.ssdTb) bits.push('固态硬盘 ' + v.ssdTb + ' TB');
+    if (v.gpuModel) bits.push('显卡型号 ' + v.gpuModel);
+    if (v.gpuCount) bits.push('显卡数量 ' + v.gpuCount + ' 个');
+    if (v.vramGb) bits.push('显存 ' + v.vramGb + ' GB');
+    if (v.serverUnits) bits.push('服务器 ' + v.serverUnits + ' 台');
+    var config = bits.join('；') || '—';
+    var quota = [v.cpuC && v.cpuC + 'C', v.memGb && v.memGb + ' GB', v.serverUnits && v.serverUnits + ' 台'].filter(Boolean).join(' / ') || config;
+    if (!quota || quota === '—') quota = config !== '—' ? config : '—';
+    if (!config || config === '—') config = quota !== '—' ? quota : '—';
+    return { config: config, quota: quota };
+}
+
+function setAddInstanceModalFooter(fromDispute) {
+    const foot = document.getElementById('addInstanceFoot');
+    if (!foot) return;
+    if (fromDispute) {
+        foot.innerHTML =
+            '<button type="button" class="btn btn-primary" onclick="submitNewInstance()">确认新增</button>' +
+            '<button type="button" class="btn btn-default" onclick="rejectAddInstanceDispute()">退回</button>' +
+            '<button type="button" class="btn btn-default" onclick="closeModal(\'addInstanceModal\')">取消</button>';
+    } else {
+        foot.innerHTML =
+            '<button type="button" class="btn btn-primary" onclick="submitNewInstance()">确认新增</button>' +
+            '<button type="button" class="btn btn-default" onclick="closeModal(\'addInstanceModal\')">取消</button>';
+    }
+}
+
+function buildAddInstanceFormHtml(d) {
+    const gb = document.getElementById('globalBillMonth');
+    const mon = gb && gb.value ? gb.value : '2026-04';
+    const startTimeDef = mon + '-01 00:00';
+    const endTimeDef = mon + '-30 23:59';
+    const hid = d ? '<input type="hidden" id="addInstDisputeId" value="' + escHtmlAttr(d.id) + '">' : '';
+    const idv = d && d.resid ? escHtmlAttr(d.resid) : '';
+    const namev = d && d.name ? escHtmlAttr(d.name) : '';
+    const deptSel = d && d.dept ? String(d.dept) : '';
+    const ownerSel = d && d.user ? String(d.user) : '';
+    const svcDef = d ? '虚机化/虚拟机' : '';
+    const specClusterDef = d ? '通用型 g6' : '';
+    const specDef = d ? 'ecs.g6.large' : '';
+    var exSvc = d ? ['虚机化/虚拟机'] : [];
+    var exDept = d && d.dept ? [d.dept] : [];
+    var exOwner = d && d.user ? [d.user] : [];
+    var exSc = d ? ['通用型 g6'] : [];
+    var exSpec = d ? ['ecs.g6.large'] : [];
+    var envSelProd = d ? ' selected' : '';
+    return (
+        hid +
+        '<p class="muted" style="font-size:13px;margin-bottom:12px;">' +
+        (d
+            ? '当前为<strong>少算实例</strong>异议处理：请核对并补全归属信息与规格属性后点击「确认新增」；不需要处理请点击「退回」。'
+            : '请填写新增实例信息；上方为<strong>归属信息</strong>，下方为<strong>规格属性值</strong>；新增记录默认为<strong>待确认</strong>。') +
+        '</p>' +
+        '<div class="add-inst-owner-section">' +
+        '<div class="add-inst-spec-divider"><span>归属信息</span></div>' +
+        '<div class="form-row">' +
+        '<div class="form-item"><label>实例ID *</label>' +
+        '<input type="text" id="addInstId" value="' +
+        idv +
+        '" placeholder="留空则自动生成" style="background:#f8f9fa;"></div>' +
+        '<div class="form-item"><label>实例名称 *</label>' +
+        '<input type="text" id="addInstName" value="' +
+        namev +
+        '" placeholder="如：prod-api-02"></div></div>' +
+        '<div class="form-row">' +
+        buildAddInstSelectField('addInstSvc', '服务分类', 'svc', true, svcDef, exSvc) +
+        buildAddInstSelectField('addInstDept', '部门', 'dept', true, deptSel, exDept) +
+        '</div>' +
+        '<div class="form-row">' +
+        buildAddInstSelectField('addInstOwner', '归属人', 'owner', false, ownerSel, exOwner) +
+        buildAddInstSelectField('addInstAdmin', '管理员', 'admin', false, '', []) +
+        '</div>' +
+        '<div class="form-row">' +
+        buildAddInstSelectField('addInstConsumer', '使用人', 'consumer', false, '', []) +
+        '<div class="form-item"><label>环境</label>' +
+        '<select id="addInstEnv">' +
+        '<option value="">请选择</option>' +
+        '<option value="生产"' +
+        envSelProd +
+        '>生产</option>' +
+        '<option value="UAT">UAT</option>' +
+        '<option value="测试">测试</option>' +
+        '<option value="开发">开发</option>' +
+        '<option value="其他">其他</option>' +
+        '</select></div></div>' +
+        '<div class="form-row">' +
+        buildAddInstSelectField('addInstSpecCluster', '规格簇', 'specCluster', true, specClusterDef, exSc) +
+        buildAddInstSelectField('addInstSpec', '规格', 'spec', true, specDef, exSpec) +
+        '</div>' +
+        '<div class="form-row full">' +
+        buildAddInstSelectField('addInstProduct', '备案产品', 'product', false, '', []) +
+        '</div>' +
+        '<div class="form-row">' +
+        '<div class="form-item"><label>开始使用时间</label>' +
+        '<input type="datetime-local" id="addInstStartTime" value="' +
+        escHtmlAttr(addInstRowTimeToLocal(startTimeDef)) +
+        '"></div>' +
+        '<div class="form-item"><label>结束使用时间</label>' +
+        '<input type="datetime-local" id="addInstEndTime" value="' +
+        escHtmlAttr(addInstRowTimeToLocal(endTimeDef)) +
+        '"></div></div>' +
+        '</div>' +
+        '<div class="add-inst-spec-section">' +
+        '<div class="add-inst-spec-divider"><span>规格属性值</span></div>' +
+        '<p class="add-inst-spec-hint">按规格填写下列<strong>规格属性</strong>（字段与规格属性值表单一致）；保存后将自动生成「配置」与「配额」列。</p>' +
+        '<div id="addInstSpecAttrWrap"></div></div>'
+    );
+}
+
+function openAddInstanceModalForDispute(disputeId) {
+    openAdminDisputeProcessModal(disputeId);
+}
+
+function openAddInstanceModal() {
+    const tit = document.getElementById('addInstanceTitle');
+    if (tit) tit.textContent = '新增实例记录';
+    document.getElementById('addInstanceContent').innerHTML = buildAddInstanceFormHtml(null);
+    setAddInstanceModalFooter(false);
+    initAddInstanceFormUI(null);
+    openModal('addInstanceModal');
+}
+
+function rejectAddInstanceDispute() {
+    const el = document.getElementById('addInstDisputeId');
+    const id = el && el.value ? el.value.trim() : '';
+    if (!id) {
+        showToast('当前非异议处理流程');
+        return;
+    }
+    closeModal('addInstanceModal');
+    handleDispute(id, '退回');
+}
+
+// 用量明细 / 异议列表：管理员统一处理入口（按异议类型联动字段）
+function openDisputeProcessFromRow(disputeId) {
+    openAdminDisputeProcessModal(disputeId);
+}
+
+function openAdminDisputeHandler(resourceId) {
+    closeModal('usageDetailModal');
+    openAdminDisputeProcessModal('', resourceId);
+}
+
+// 提交新增
+function submitNewInstance() {
+    const name = document.getElementById('addInstName').value.trim();
+    const svc = document.getElementById('addInstSvc').value.trim();
+    const dept = document.getElementById('addInstDept').value.trim();
+    const specCluster = document.getElementById('addInstSpecCluster').value.trim();
+    const spec = document.getElementById('addInstSpec').value.trim();
+    
+    if (!name || !svc || !dept || !specCluster || !spec) {
+        return showToast('请填写必填项（*标记）');
+    }
+
+    let id = document.getElementById('addInstId').value.trim();
+    if (!id) {
+        id = 'new-' + Date.now();
+    }
+    
+    var dq = buildAddInstDerivedConfigQuota();
+    const newRecord = {
+        id: id,
+        name: name,
+        svc: '',
+        svcCatL1: '',
+        svcCatL2: '',
+        dept: dept,
+        owner: document.getElementById('addInstOwner').value.trim(),
+        admin: document.getElementById('addInstAdmin').value.trim(),
+        consumer: document.getElementById('addInstConsumer').value.trim(),
+        env: document.getElementById('addInstEnv').value.trim(),
+        specCluster: specCluster,
+        spec: spec,
+        config: dq.config,
+        product: document.getElementById('addInstProduct').value.trim(),
+        quota: dq.quota,
+        startTime: addInstLocalToRowTime(document.getElementById('addInstStartTime').value),
+        endTime: addInstLocalToRowTime(document.getElementById('addInstEndTime').value),
+        status: 'pending',
+        usageDuration: '',
+        instanceStateInfo: '',
+        instState: '正常',
+        createdAt: formatDisputeLogTimestamp(),
+    };
+    applyUsageSvcPathToRow(newRecord, svc);
+
+    const disputeEl = document.getElementById('addInstDisputeId');
+    const disputeId = disputeEl && disputeEl.value ? disputeEl.value.trim() : '';
+    const dCtx = disputeId ? disputeData.find(function (x) { return x.id === disputeId; }) : null;
+    const existing = detailData.find(function (x) {
+        return x.id === id;
+    });
+    const beforeSnap = existing
+        ? snapshotInstanceForDisputeDisplay(existing, dCtx)
+        : { _emptyLabel: '系统中无该实例计费记录（少算补录）' };
+    if (existing) {
+        Object.assign(existing, {
+            name: name,
+            dept: dept,
+            owner: newRecord.owner,
+            admin: newRecord.admin,
+            consumer: newRecord.consumer,
+            env: newRecord.env,
+            specCluster: newRecord.specCluster,
+            spec: newRecord.spec,
+            config: newRecord.config,
+            product: newRecord.product,
+            quota: newRecord.quota,
+            startTime: newRecord.startTime,
+            endTime: newRecord.endTime,
+            status: newRecord.status,
+            instState: '正常',
+        });
+        applyUsageSvcPathToRow(existing, svc);
+    } else {
+        detailData.unshift(newRecord);
+    }
+
+    closeModal('usageCorrectionModal');
+    closeModal('addInstanceModal');
+    renderDetailTable();
+    updateStats();
+    var usageAdvDr = document.getElementById('usageAdvDrawer');
+    if (usageAdvDr && usageAdvDr.classList.contains('on')) buildUsageAdvDrawerFields();
+    if (disputeId) {
+        handleDispute(disputeId, '新建实例');
+        var dNew = disputeData.find(function (x) {
+            return x.id === disputeId;
+        });
+        var rowAfterNew = detailData.find(function (x) {
+            return x.id === id;
+        });
+        if (dNew) {
+            recordDisputeInstanceDiff(dNew, beforeSnap, rowAfterNew ? snapshotInstanceForDisputeDisplay(rowAfterNew, dNew) : null);
+        }
+    } else {
+        showToast('新增成功：' + name);
+    }
+}
+
+// 删除实例
+function deleteInstance(id) {
+    const r = detailData.find(x => x.id === id);
+    if (!r) return showToast('记录不存在');
+    pendingDeleteId = id;
+    document.getElementById('confirmDeleteMsg').textContent = '实例：' + r.name + '（' + r.id + '）';
+    document.getElementById('confirmDeleteBtn').onclick = doDeleteInstance;
+    openModal('confirmDeleteModal');
+}
+
+function doDeleteInstance() {
+    if (!pendingDeleteId) return;
+    detailData = detailData.filter(x => x.id !== pendingDeleteId);
+    const deletedId = pendingDeleteId;
+    pendingDeleteId = null;
+    closeModal('confirmDeleteModal');
+    renderDetailTable();
+    updateStats();
+    var usageAdvDr2 = document.getElementById('usageAdvDrawer');
+    if (usageAdvDr2 && usageAdvDr2.classList.contains('on')) buildUsageAdvDrawerFields();
+    showToast('已删除实例：' + deletedId);
+}
+
+// ══════════════════════════════════════════════
+// Modal helpers
+// ══════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal').forEach(m => {
+    m.addEventListener('click', e => { if(e.target===m) m.classList.remove('active'); });
+});
+
+function toggleAll() {
+    const checked = document.getElementById('checkAll').checked;
+    document.querySelectorAll('#detailTableBody input[type=checkbox]:not([disabled])').forEach(c => c.checked = checked);
+}
+
+// Toast
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+        position:'fixed', bottom:'30px', left:'50%', transform:'translateX(-50%)',
+        background:'rgba(0,0,0,.72)', color:'#fff', padding:'9px 20px',
+        borderRadius:'4px', fontSize:'14px', zIndex:'9999', pointerEvents:'none', transition:'opacity .4s'
+    });
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2200);
+}
+
+// 账期切换
+document.getElementById('globalBillMonth').addEventListener('change', function() {
+    showToast('账期已切换至 ' + this.value);
+});
+
+// 服务目录折叠（侧栏为服务分类两级树）
+document.getElementById('resServiceSidebarToggle').addEventListener('click', function() {
+    const sidebar = document.getElementById('resServiceCategorySidebar');
+    sidebar.classList.toggle('collapsed');
+    this.textContent = sidebar.classList.contains('collapsed') ? '展开' : '收起';
+});
+
+// ══════════════════════════════════════════════
+// Init
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+    buildUsageAdvDrawerFields();
+    (function bindUsageDetailSearchUI() {
+        var btnS = document.getElementById('btnUsageSearch');
+        var btnR = document.getElementById('btnUsageReset');
+        var btnA = document.getElementById('btnUsageAdvToggle');
+        var ms = document.getElementById('usageMainSearch');
+        var combo = document.getElementById('usageSearchComboInner');
+        var ov = document.getElementById('usageAdvOverlay');
+        var drClose = document.getElementById('usageAdvDrawerClose');
+        var drApply = document.getElementById('usageAdvDrawerApply');
+        var drReset = document.getElementById('usageAdvDrawerReset');
+        if (btnS) btnS.addEventListener('click', addUsageInstanceSearchTagFromInput);
+        if (ms) {
+            ms.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addUsageInstanceSearchTagFromInput();
+                }
+            });
+        }
+        if (btnR) btnR.addEventListener('click', resetUsageSearchFilters);
+        if (btnA) {
+            btnA.addEventListener('click', function () {
+                var dr = document.getElementById('usageAdvDrawer');
+                if (dr && dr.classList.contains('on')) closeUsageAdvDrawer();
+                else openUsageAdvDrawer();
+            });
+        }
+        if (ov) ov.addEventListener('click', closeUsageAdvDrawer);
+        if (drClose) drClose.addEventListener('click', closeUsageAdvDrawer);
+        if (drApply) {
+            drApply.addEventListener('click', function () {
+                closeUsageAdvDrawer();
+                renderUsageQueryTags();
+                renderDetailTable();
+                var n = applyUsageFormFilters(getUsageDetailSourceRows()).length;
+                showToast('筛选已应用，共 ' + n + ' 条');
+            });
+        }
+        if (drReset) {
+            drReset.addEventListener('click', function () {
+                clearUsageAdvDrawerInputs();
+                renderUsageQueryTags();
+                renderDetailTable();
+            });
+        }
+        if (combo) {
+            combo.addEventListener('click', function (e) {
+                var rmAdv = e.target.closest('[data-usage-remove-adv]');
+                if (rmAdv) {
+                    clearUsageAdvFieldByKey(rmAdv.getAttribute('data-usage-remove-adv'));
+                    renderUsageQueryTags();
+                    renderDetailTable();
+                    return;
+                }
+                var rm = e.target.closest('[data-usage-remove-tag]');
+                if (!rm) return;
+                var tid = rm.getAttribute('data-usage-remove-tag');
+                usageInstanceSearchTags = usageInstanceSearchTags.filter(function (t) {
+                    return t.id !== tid;
+                });
+                renderUsageQueryTags();
+                renderDetailTable();
+            });
+        }
+    })();
+    document.addEventListener('keydown', function (e) {
+        var dr = document.getElementById('usageAdvDrawer');
+        if (e.key === 'Escape' && dr && dr.classList.contains('on')) closeUsageAdvDrawer();
+    });
+    try {
+        var tab = new URLSearchParams(window.location.search).get('tab');
+        if (tab === 'dispute') switchTab('dispute');
+        else if (tab === 'detail') switchTab('detail');
+    } catch (e) { /* noop */ }
+    try {
+        var params = new URLSearchParams(window.location.search);
+        var bm = params.get('bill_month') || params.get('period');
+        if (bm && /^\d{4}-\d{2}$/.test(String(bm).trim())) {
+            var gb = document.getElementById('globalBillMonth');
+            if (gb) gb.value = String(bm).trim();
+        }
+    } catch (e2) { /* noop */ }
+    renderUsageQueryTags();
+    bindUsageServiceCategoryTree();
+    renderUsageServiceCategoryTree('resServiceCategoryTree');
+    renderDetailTable();
+});
+</script>
+
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
+</body>
+</html>

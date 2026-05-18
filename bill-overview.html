@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>FinOps财务运营管理平台 - 账单分析</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-x: hidden; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            margin-bottom: 20px;
+        }
+        .header-content {
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+        .container {
+            width: 100%;
+            padding: 0 20px 20px;
+            display: flex;
+            gap: 16px;
+            min-height: calc(100vh - 120px);
+            box-sizing: border-box;
+        }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+            flex-shrink: 0;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 32px);
+            overflow: auto;
+        }
+        .sidebar-head {
+            background: #1890ff;
+            color: #fff;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+        .sub-menu { list-style: none; background: #f9f9f9; margin: 0; padding: 0; }
+        .sub-menu-item {
+            display: block;
+            padding: 10px 16px 10px 28px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        .sub-menu-item:hover { background: #f0f0f0; color: #1890ff; }
+        .sub-menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+            font-weight: 500;
+        }
+        .content { flex: 1; min-width: 0; }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+        }
+        .bill-analysis-page {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .analysis-panel.card {
+            margin-bottom: 0;
+        }
+        .analysis-panel--upper {
+            border: 1px solid #e8e8e8;
+            border-left: 4px solid #1890ff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .analysis-panel--lower {
+            border: 1px solid #e8e8e8;
+            border-left: 4px solid #52c41a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            background: linear-gradient(180deg, #f9fff9 0%, #fff 40px);
+        }
+        .analysis-panel--lower .section-block {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: 0;
+        }
+        .bill-overview-head {
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .bill-global-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 14px 20px;
+        }
+        .bill-global-bar .field { min-width: 140px; }
+        .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .field input, .field select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 6px 16px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        .stats-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stats-grid--primary {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        @media (max-width: 900px) {
+            .stats-grid--primary { grid-template-columns: 1fr; }
+        }
+        .stat-box {
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+        }
+        .stat-box .label { color: #666; font-size: 13px; }
+        .stat-box .value { font-size: 22px; font-weight: 600; margin-top: 6px; color: #cf1322; }
+        .stat-box .value--confirmed { color: #389e0d; }
+        .stat-box .value--pending { color: #d46b08; }
+        .stat-box .sub { font-size: 12px; color: #52c41a; margin-top: 4px; }
+        .stat-box .sub.sub--muted { color: #999; }
+        .section-block { margin-top: 28px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+        .section-block:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+        .section-block--stats { margin-top: 18px; padding-top: 0; border-top: 0; }
+        .section-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .section-head h2 { font-size: 15px; font-weight: 600; color: #333; margin: 0; }
+        .chart-modules-grid {
+            display: grid;
+            gap: 16px;
+        }
+        .chart-modules-grid--two {
+            grid-template-columns: 1fr 1fr;
+            align-items: stretch;
+        }
+        @media (max-width: 900px) {
+            .chart-modules-grid--two { grid-template-columns: 1fr; }
+        }
+        .chart-add-tile {
+            align-self: start;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 88px;
+            border: 1px dashed #91d5ff;
+            border-radius: 8px;
+            background: #fafcff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #1890ff;
+            font: inherit;
+            padding: 10px 8px;
+            text-align: center;
+            transition: border-color 0.2s, background 0.2s, color 0.2s;
+        }
+        .chart-add-tile:hover {
+            border-color: #1890ff;
+            background: #e6f7ff;
+            color: #096dd9;
+        }
+        .chart-add-tile:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.35);
+        }
+        .chart-add-tile-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            font-size: 22px;
+            font-weight: 400;
+            line-height: 1;
+        }
+        .chart-add-tile-text {
+            display: block;
+            width: 100%;
+            font-size: 12px;
+            color: #8c8c8c;
+            text-align: center;
+        }
+        .chart-add-tile:hover .chart-add-tile-text { color: #1890ff; }
+        .chart-module {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 14px 16px 16px;
+            min-height: 220px;
+            background: #fff;
+        }
+        .chart-module-toolbar {
+            display: grid;
+            grid-template-columns: 48px minmax(0, 1fr) auto;
+            align-items: center;
+            justify-items: stretch;
+            gap: 10px 12px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .chart-module-mark-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            justify-self: center;
+            align-self: center;
+            width: 100%;
+            min-height: 36px;
+        }
+        .chart-module-mark {
+            display: block;
+            width: 20px;
+            height: 20px;
+            margin: 0 auto;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .chart-module-mark--composition {
+            background: #1890ff;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+        }
+        .chart-module-mark--trend {
+            background: #52c41a;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+        }
+        .chart-module-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
+            min-width: 0;
+        }
+        .chart-module-filters label { font-size: 12px; color: #666; white-space: nowrap; }
+        .chart-module-filters select {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            min-width: 110px;
+            background: #fff;
+        }
+        .btn-icon {
+            margin-left: 0;
+            justify-self: end;
+            padding: 2px 10px;
+            font-size: 15px;
+            line-height: 1.3;
+            border: 1px solid #ffccc7;
+            color: #cf1322;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-icon:hover:not(:disabled) { background: #fff2f0; }
+        .btn-icon:disabled { opacity: .35; cursor: not-allowed; }
+        .btn-outline {
+            background: #fff;
+            border: 1px solid #1890ff;
+            color: #1890ff;
+        }
+        .btn-outline:hover { background: #e6f7ff; }
+        .chart-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 220px;
+        }
+        .chart-card h3 { font-size: 14px; margin-bottom: 12px; color: #333; }
+        .chart-placeholder {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            padding: 8px;
+            border: 1px dashed #d9d9d9;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        .fake-donut {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            margin: 12px auto;
+            background: conic-gradient(#1890ff 0 40%, #52c41a 40% 68%, #faad14 68% 88%, #722ed1 88% 100%);
+            position: relative;
+        }
+        .fake-donut::after {
+            content: '';
+            position: absolute;
+            inset: 28px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        .trend-chart-frame {
+            display: grid;
+            grid-template-columns: 56px 1fr;
+            grid-template-rows: 1fr auto;
+            gap: 4px 6px;
+            min-height: 168px;
+            margin-top: 4px;
+        }
+        .trend-chart-y-axis-label {
+            grid-column: 1;
+            grid-row: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #8c8c8c;
+            white-space: nowrap;
+            transform: rotate(-90deg);
+            transform-origin: center center;
+            letter-spacing: 0.04em;
+            overflow: visible;
+            z-index: 1;
+        }
+        .trend-chart-plot-wrap {
+            grid-column: 2;
+            grid-row: 1;
+            display: flex;
+            gap: 6px;
+            align-items: stretch;
+            min-height: 132px;
+        }
+        .trend-chart-y-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #bfbfbf;
+            padding: 4px 2px 20px 0;
+            text-align: right;
+            width: 26px;
+            flex-shrink: 0;
+            border-right: 1px solid #d9d9d9;
+        }
+        .trend-chart-plot-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            min-width: 0;
+            border-left: 1px solid #8c8c8c;
+            border-bottom: 1px solid #595959;
+            padding: 4px 6px 0 10px;
+        }
+        .trend-chart-x-label {
+            grid-column: 2;
+            grid-row: 2;
+            text-align: center;
+            font-size: 11px;
+            color: #8c8c8c;
+            padding-top: 2px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            min-height: 118px;
+            height: 118px;
+            padding: 8px 2px 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .trend-chart-plot-area .bar-chart {
+            border: none;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .bar {
+            width: 28px;
+            max-width: 100%;
+            background: linear-gradient(180deg, #69c0ff, #1890ff);
+            border-radius: 3px 3px 0 0;
+            position: relative;
+            min-height: 6px;
+        }
+        .bar span {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #666;
+            white-space: nowrap;
+        }
+        .muted { color: #999; font-size: 12px; }
+        .link { color: #1890ff; text-decoration: none; }
+        .link:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; padding: 0 12px 20px; }
+            .sidebar { width: 100%; position: static; max-height: none; }
+            .stats-grid--primary { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+            <span class="header-sub">账单管理 · 账单分析</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-head">菜单导航</div>
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div class="bill-analysis-page">
+                <section class="card analysis-panel analysis-panel--upper" aria-label="账期、账单统计与费用构成">
+                    <div class="bill-overview-head">
+                        <div class="bill-global-bar">
+                            <div class="field">
+                                <label for="globalBillMonth">账期</label>
+                                <input type="month" id="globalBillMonth" value="2026-05" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-block section-block--stats">
+                        <div class="section-head">
+                            <h2>账单统计</h2>
+                        </div>
+                        <div class="stats-grid stats-grid--primary">
+                            <div class="stat-box">
+                                <div class="label">本月账单总额（元）</div>
+                                <div class="value" id="ovTotalBill">128,660.35</div>
+                                <div class="sub" id="ovSubTotal">与当前所选账期一致</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="label">已确认金额（元）</div>
+                                <div class="value value--confirmed" id="ovConfirmed">118,200.00</div>
+                                <div class="sub">占总额 <span id="ovConfirmedRatio">91.9</span>%</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="label">待确认金额（元）</div>
+                                <div class="value value--pending" id="ovPending">10,460.35</div>
+                                <div class="sub sub--muted">含争议单、待对账项（示意）</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>费用构成</h2>
+                        </div>
+                        <div class="chart-modules-grid chart-modules-grid--two" id="compositionChartsRoot" aria-label="费用构成图形模块"></div>
+                    </div>
+                </section>
+
+                <section class="card analysis-panel analysis-panel--lower" aria-label="费用趋势分析">
+                    <div class="section-block">
+                        <div class="section-head">
+                            <h2>费用趋势分析</h2>
+                        </div>
+                        <div class="chart-modules-grid chart-modules-grid--two" id="trendChartsRoot" aria-label="费用趋势分析图形模块"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+(function () {
+    'use strict';
+
+    var DIMENSION_OPTIONS = [
+        { value: 'department', label: '按部门' },
+        { value: 'service', label: '按服务' },
+        { value: 'product', label: '按备案产品' }
+    ];
+
+    /** 费用趋势分析专用：在通用维度上增加「按总费用」（不用于费用构成环形图） */
+    var TREND_DIMENSION_OPTIONS = DIMENSION_OPTIONS.concat([{ value: 'total', label: '按总费用' }]);
+
+    var BASE_DIMENSION_ITEMS = {
+        department: ['研发中心', '运维中心', '大数据部', '安全合规部'],
+        service: ['云主机 ECS', '对象存储 OSS', '云数据库 RDS', '负载均衡 SLB', 'CDN'],
+        product: ['核心交易系统备案', '营销中台备案', '数据中台备案', '日志与审计备案']
+    };
+
+    function getEffectiveDimensionItems(dim) {
+        if (dim === 'total') return ['总费用'];
+        return BASE_DIMENSION_ITEMS[dim].slice();
+    }
+
+    function getEffectiveCompositionSegments(dim) {
+        var base = BASE_COMPOSITION_SEGMENTS[dim] || BASE_COMPOSITION_SEGMENTS.service;
+        return base.slice();
+    }
+
+    var BASE_COMPOSITION_SEGMENTS = {
+        service: [
+            { name: '云主机 ECS', pct: 38 },
+            { name: '对象存储 OSS', pct: 26 },
+            { name: '云数据库 RDS', pct: 22 },
+            { name: '负载均衡 SLB', pct: 8 },
+            { name: '其他', pct: 6 }
+        ],
+        department: [
+            { name: '研发中心', pct: 35 },
+            { name: '运维中心', pct: 28 },
+            { name: '大数据部', pct: 22 },
+            { name: '安全合规部', pct: 15 }
+        ],
+        product: [
+            { name: '核心交易系统备案', pct: 40 },
+            { name: '营销中台备案', pct: 25 },
+            { name: '数据中台备案', pct: 20 },
+            { name: '日志与审计备案', pct: 15 }
+        ]
+    };
+
+    var DONUT_COLORS = ['#1890ff', '#52c41a', '#faad14', '#722ed1', '#13c2c2', '#eb2f96'];
+
+    /** 各账期统计示意（按账期） */
+    var overviewByMonth = {
+        '2026-05': { totalBill: 128660.35, confirmed: 118200, pending: 10460.35 },
+        '2026-04': { totalBill: 122350.8, confirmed: 120000, pending: 2350.8 },
+        '2026-03': { totalBill: 115280.5, confirmed: 115280.5, pending: 0 },
+        '2026-02': { totalBill: 98520.3, confirmed: 98520.3, pending: 0 },
+        '2026-01': { totalBill: 118920.0, confirmed: 118920.0, pending: 0 }
+    };
+
+    var compositionModuleSeq = 0;
+    var trendModuleSeq = 0;
+
+    /** 费用构成各图维度（与下拉同步） */
+    var compositionDims = ['service'];
+    /** 趋势图配置 */
+    var trendChartsSpec = [{ dim: 'service', span: '6' }];
+
+    function nextDimForAdd(currentDimValues) {
+        var list = currentDimValues.slice();
+        for (var k = 0; k < DIMENSION_OPTIONS.length; k++) {
+            var v = DIMENSION_OPTIONS[k].value;
+            if (list.indexOf(v) < 0) {
+                return v;
+            }
+        }
+        return DIMENSION_OPTIONS[list.length % DIMENSION_OPTIONS.length].value;
+    }
+
+    function nextTrendDimForAdd(currentDimValues) {
+        var list = currentDimValues.slice();
+        for (var k = 0; k < TREND_DIMENSION_OPTIONS.length; k++) {
+            var v = TREND_DIMENSION_OPTIONS[k].value;
+            if (list.indexOf(v) < 0) {
+                return v;
+            }
+        }
+        return TREND_DIMENSION_OPTIONS[list.length % TREND_DIMENSION_OPTIONS.length].value;
+    }
+
+    function makeChartAddTile(onClick, ariaLabel) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chart-add-tile';
+        btn.setAttribute('aria-label', ariaLabel || '添加图形');
+        btn.innerHTML =
+            '<span class="chart-add-tile-icon" aria-hidden="true">+</span>' +
+            '<span class="chart-add-tile-text">添加</span>';
+        btn.addEventListener('click', onClick);
+        return btn;
+    }
+
+    function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function getOverviewPack() {
+        var month = document.getElementById('globalBillMonth').value;
+        return overviewByMonth[month] || overviewByMonth['2026-05'] || { totalBill: 0, confirmed: 0, pending: 0 };
+    }
+
+    function getOverviewPackScoped() {
+        return getOverviewPack();
+    }
+
+    function refreshOverviewStats() {
+        var pack = getOverviewPackScoped();
+        var total = Number(pack.totalBill) || 0;
+        var conf = Number(pack.confirmed) || 0;
+        var pend = Number(pack.pending);
+        if (pend == null || isNaN(pend)) pend = Math.max(0, total - conf);
+        document.getElementById('ovTotalBill').textContent = total.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
+        document.getElementById('ovConfirmed').textContent = conf.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
+        document.getElementById('ovPending').textContent = pend.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
+        var ratio = total > 0 ? ((conf / total) * 100).toFixed(1) : '0.0';
+        document.getElementById('ovConfirmedRatio').textContent = ratio;
+        var subEl = document.getElementById('ovSubTotal');
+        if (subEl) subEl.textContent = '与当前所选账期一致';
+    }
+
+    function buildDimensionSelectHtml() {
+        return DIMENSION_OPTIONS.map(function (o) {
+            return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
+        }).join('');
+    }
+
+    function buildTrendDimensionSelectHtml() {
+        return TREND_DIMENSION_OPTIONS.map(function (o) {
+            return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
+        }).join('');
+    }
+
+    function conicFromSegments(segments) {
+        var acc = 0;
+        var parts = [];
+        for (var i = 0; i < segments.length; i++) {
+            var s = segments[i];
+            var start = acc;
+            acc += s.pct;
+            var col = DONUT_COLORS[i % DONUT_COLORS.length];
+            parts.push(col + ' ' + start + '% ' + acc + '%');
+        }
+        if (acc < 100) parts.push('#f0f0f0 ' + acc + '% 100%');
+        return 'conic-gradient(' + parts.join(', ') + ')';
+    }
+
+    function renderCompositionModule(root) {
+        var dimSel = root.querySelector('.js-comp-dim');
+        var dim = dimSel.value;
+        var segments = getEffectiveCompositionSegments(dim);
+        var donut = root.querySelector('.js-comp-donut');
+        var legend = root.querySelector('.js-comp-legend');
+        donut.style.background = conicFromSegments(segments);
+        donut.title = segments.map(function (s) { return s.name + ' ' + s.pct + '%'; }).join(' / ');
+        legend.innerHTML = segments
+            .map(function (s, i) {
+                return (
+                    '<span style="color:' +
+                    DONUT_COLORS[i % DONUT_COLORS.length] +
+                    '">■</span> ' +
+                    escapeHtml(s.name) +
+                    ' ' +
+                    s.pct +
+                    '%'
+                );
+            })
+            .join(' &nbsp;|&nbsp; ');
+    }
+
+    function seedFromString(str) {
+        var h = 0;
+        for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+        return h || 1;
+    }
+
+    function pseudoUnit(seed, i) {
+        var x = Math.sin(seed * 12.9898 + i * 78.233) * 43758.5453;
+        return x - Math.floor(x);
+    }
+
+    function monthLabelsForSpan(monthInputVal, spanMonths) {
+        var parts = String(monthInputVal || '2026-05').split('-');
+        var y = parseInt(parts[0], 10) || 2026;
+        var m = parseInt(parts[1], 10) || 5;
+        var labels = [];
+        for (var k = spanMonths - 1; k >= 0; k--) {
+            var mm = m - k;
+            var yy = y;
+            while (mm < 1) {
+                mm += 12;
+                yy -= 1;
+            }
+            labels.push(yy + '-' + (mm < 10 ? '0' : '') + mm);
+        }
+        return labels;
+    }
+
+    function renderTrendModule(root) {
+        var spanSel = root.querySelector('.js-trend-span');
+        var dimSel = root.querySelector('.js-trend-dim');
+        var itemSel = root.querySelector('.js-trend-item');
+        var wrap = root.querySelector('.js-trend-bars');
+        var spanMonths = spanSel.value === '12' ? 12 : 6;
+        var dim = dimSel.value;
+        var items = getEffectiveDimensionItems(dim);
+        var curItem = itemSel.value;
+        if (items.indexOf(curItem) < 0 && items.length) {
+            itemSel.innerHTML = items.map(function (it) {
+                return '<option value="' + escapeHtml(it) + '">' + escapeHtml(it) + '</option>';
+            }).join('');
+            itemSel.value = items[0];
+            curItem = itemSel.value;
+        }
+        var monthVal = document.getElementById('globalBillMonth').value;
+        var labels = monthLabelsForSpan(monthVal, spanMonths);
+        var bars = [];
+        if (dim === 'total') {
+            var amounts = [];
+            for (var ai = 0; ai < labels.length; ai++) {
+                var row = overviewByMonth[labels[ai]];
+                var v;
+                if (row && row.totalBill != null) {
+                    v = Number(row.totalBill);
+                } else {
+                    v = Math.round(92000 + pseudoUnit(seedFromString('tot|' + labels[ai]), 0) * 38000);
+                }
+                amounts.push(v);
+            }
+            var maxAmt = 0;
+            for (var aj = 0; aj < amounts.length; aj++) {
+                if (amounts[aj] > maxAmt) maxAmt = amounts[aj];
+            }
+            if (maxAmt <= 0) maxAmt = 1;
+            for (var ak = 0; ak < labels.length; ak++) {
+                var ratio = amounts[ak] / maxAmt;
+                var h = 12 + ratio * 78;
+                if (h < 8) h = 8;
+                if (h > 100) h = 100;
+                bars.push(
+                    '<div class="bar" style="height:' +
+                    h.toFixed(1) +
+                    '%" title="' +
+                    escapeHtml(labels[ak] + ' 总费用 ' + amounts[ak].toLocaleString('zh-CN', { minimumFractionDigits: 2 }) + ' 元') +
+                    '"><span>' +
+                    escapeHtml(labels[ak].slice(5)) +
+                    '</span></div>'
+                );
+            }
+        } else {
+            var seed = seedFromString(dim + '|' + curItem + '|' + getOverviewPackScoped().totalBill);
+            var scale = 1;
+            for (var i = 0; i < labels.length; i++) {
+                var h2 = (35 + pseudoUnit(seed, i) * 55) * scale;
+                if (h2 < 8) h2 = 8;
+                bars.push(
+                    '<div class="bar" style="height:' +
+                    h2.toFixed(1) +
+                    '%"><span>' +
+                    escapeHtml(labels[i].slice(5)) +
+                    '</span></div>'
+                );
+            }
+        }
+        wrap.innerHTML = bars.join('');
+    }
+
+    function fillTrendItemOptions(itemSel, dim) {
+        var items = getEffectiveDimensionItems(dim);
+        itemSel.innerHTML = items
+            .map(function (it) {
+                return '<option value="' + escapeHtml(it) + '">' + escapeHtml(it) + '</option>';
+            })
+            .join('');
+    }
+
+    function createCompositionModule(defaultDim) {
+        var id = 'comp-' + ++compositionModuleSeq;
+        var dim = defaultDim || 'service';
+        var wrap = document.createElement('div');
+        wrap.className = 'chart-module';
+        wrap.setAttribute('data-module-id', id);
+        wrap.innerHTML =
+            '<div class="chart-module-toolbar">' +
+            '<div class="chart-module-mark-wrap">' +
+            '<span class="chart-module-mark chart-module-mark--composition" role="img" aria-label="费用构成" title="费用构成"></span>' +
+            '</div>' +
+            '<div class="chart-module-filters">' +
+            '<label>统计维度</label>' +
+            '<select class="js-comp-dim" aria-label="费用构成统计维度">' +
+            buildDimensionSelectHtml() +
+            '</select></div>' +
+            '<button type="button" class="btn-icon js-comp-remove" title="移除此图" aria-label="移除">×</button></div>' +
+            '<div class="chart-placeholder">环形图示意（随维度切换）</div>' +
+            '<div class="fake-donut js-comp-donut" role="img" aria-label="费用构成环形图"></div>' +
+            '<p class="muted js-comp-legend" style="text-align:center;font-size:12px;line-height:1.6;"></p>';
+        wrap.querySelector('.js-comp-dim').value = dim;
+        return wrap;
+    }
+
+    function createTrendModule(defaultDim, defaultSpan) {
+        var id = 'trend-' + ++trendModuleSeq;
+        var dim = defaultDim || 'service';
+        var span = defaultSpan || '6';
+        var wrap = document.createElement('div');
+        wrap.className = 'chart-module';
+        wrap.setAttribute('data-module-id', id);
+        wrap.innerHTML =
+            '<div class="chart-module-toolbar">' +
+            '<div class="chart-module-mark-wrap">' +
+            '<span class="chart-module-mark chart-module-mark--trend" role="img" aria-label="费用趋势分析" title="费用趋势分析"></span>' +
+            '</div>' +
+            '<div class="chart-module-filters">' +
+            '<label>时间跨度</label>' +
+            '<select class="js-trend-span" aria-label="时间跨度">' +
+            '<option value="6">近半年</option>' +
+            '<option value="12">近一年</option>' +
+            '</select>' +
+            '<label>统计维度</label>' +
+            '<select class="js-trend-dim" aria-label="趋势统计维度">' +
+            buildTrendDimensionSelectHtml() +
+            '</select>' +
+            '<label>统计项</label>' +
+            '<select class="js-trend-item" aria-label="统计项"></select>' +
+            '</div>' +
+            '<button type="button" class="btn-icon js-trend-remove" title="移除此图" aria-label="移除">×</button></div>' +
+            '<div class="chart-placeholder">柱状趋势（含坐标轴示意）</div>' +
+            '<div class="trend-chart-frame">' +
+            '<div class="trend-chart-y-axis-label">费用（元）</div>' +
+            '<div class="trend-chart-plot-wrap">' +
+            '<div class="trend-chart-y-scale" aria-hidden="true">' +
+            '<span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>' +
+            '</div>' +
+            '<div class="trend-chart-plot-area">' +
+            '<div class="bar-chart js-trend-bars"></div>' +
+            '</div></div>' +
+            '<div class="trend-chart-x-label">账期（月）</div>' +
+            '</div>';
+        wrap.querySelector('.js-trend-span').value = span;
+        wrap.querySelector('.js-trend-dim').value = dim;
+        fillTrendItemOptions(wrap.querySelector('.js-trend-item'), dim);
+        return wrap;
+    }
+
+    function bindCompositionModule(el, index) {
+        var dim = el.querySelector('.js-comp-dim');
+        var btn = el.querySelector('.js-comp-remove');
+        dim.addEventListener('change', function () {
+            compositionDims[index] = dim.value;
+            renderCompositionModule(el);
+        });
+        btn.addEventListener('click', function () {
+            if (compositionDims.length <= 1) return;
+            compositionDims.splice(index, 1);
+            renderCompositionGrid();
+        });
+        renderCompositionModule(el);
+    }
+
+    function renderCompositionGrid() {
+        var root = document.getElementById('compositionChartsRoot');
+        root.className = 'chart-modules-grid chart-modules-grid--two';
+        root.innerHTML = '';
+        for (var i = 0; i < compositionDims.length; i++) {
+            (function (idx) {
+                var el = createCompositionModule(compositionDims[idx]);
+                root.appendChild(el);
+                bindCompositionModule(el, idx);
+            })(i);
+        }
+        root.appendChild(
+            makeChartAddTile(function () {
+                compositionDims.push(nextDimForAdd(compositionDims));
+                renderCompositionGrid();
+            }, '按统计维度顺序添加费用构成图')
+        );
+        syncCompositionRemoveButtons();
+    }
+
+    function bindTrendModule(el, index) {
+        var span = el.querySelector('.js-trend-span');
+        var dim = el.querySelector('.js-trend-dim');
+        var item = el.querySelector('.js-trend-item');
+        var btn = el.querySelector('.js-trend-remove');
+        function paint() {
+            renderTrendModule(el);
+        }
+        span.addEventListener('change', function () {
+            trendChartsSpec[index].span = span.value;
+            paint();
+        });
+        dim.addEventListener('change', function () {
+            trendChartsSpec[index].dim = dim.value;
+            fillTrendItemOptions(item, dim.value);
+            paint();
+        });
+        item.addEventListener('change', paint);
+        btn.addEventListener('click', function () {
+            if (trendChartsSpec.length <= 1) return;
+            trendChartsSpec.splice(index, 1);
+            renderTrendGrid();
+        });
+        paint();
+    }
+
+    function renderTrendGrid() {
+        var root = document.getElementById('trendChartsRoot');
+        root.className = 'chart-modules-grid chart-modules-grid--two';
+        root.innerHTML = '';
+        for (var i = 0; i < trendChartsSpec.length; i++) {
+            (function (idx) {
+                var spec = trendChartsSpec[idx];
+                var el = createTrendModule(spec.dim, spec.span);
+                root.appendChild(el);
+                bindTrendModule(el, idx);
+            })(i);
+        }
+        root.appendChild(
+            makeChartAddTile(function () {
+                var dimsOnly = trendChartsSpec.map(function (s) {
+                    return s.dim;
+                });
+                trendChartsSpec.push({ dim: nextTrendDimForAdd(dimsOnly), span: '6' });
+                renderTrendGrid();
+            }, '按统计维度顺序添加费用趋势分析图')
+        );
+        syncTrendRemoveButtons();
+    }
+
+    function syncCompositionRemoveButtons() {
+        var root = document.getElementById('compositionChartsRoot');
+        var modules = root.querySelectorAll('.chart-module');
+        var n = modules.length;
+        for (var i = 0; i < n; i++) {
+            var btn = modules[i].querySelector('.js-comp-remove');
+            if (btn) btn.disabled = n <= 1;
+        }
+    }
+
+    function syncTrendRemoveButtons() {
+        var root = document.getElementById('trendChartsRoot');
+        var modules = root.querySelectorAll('.chart-module');
+        var n = modules.length;
+        for (var i = 0; i < n; i++) {
+            var btn = modules[i].querySelector('.js-trend-remove');
+            if (btn) btn.disabled = n <= 1;
+        }
+    }
+
+    function initChartSections() {
+        compositionDims = ['service'];
+        trendChartsSpec = [{ dim: 'service', span: '6' }];
+        renderCompositionGrid();
+        renderTrendGrid();
+    }
+
+    function refreshAllChartModules() {
+        var cRoot = document.getElementById('compositionChartsRoot');
+        var tRoot = document.getElementById('trendChartsRoot');
+        var cMods = cRoot.querySelectorAll('.chart-module');
+        for (var i = 0; i < cMods.length; i++) {
+            renderCompositionModule(cMods[i]);
+        }
+        var tMods = tRoot.querySelectorAll('.chart-module');
+        for (var j = 0; j < tMods.length; j++) {
+            renderTrendModule(tMods[j]);
+        }
+    }
+
+    document.getElementById('globalBillMonth').addEventListener('change', function () {
+        refreshOverviewStats();
+        refreshAllChartModules();
+    });
+
+    refreshOverviewStats();
+    initChartSections();
+})();
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
+</body>
+</html>

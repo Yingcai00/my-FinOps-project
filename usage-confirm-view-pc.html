@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>用量确认（PC）— FinOps</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.85);
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding-bottom: 76px;
+        }
+        .topbar {
+            background: linear-gradient(90deg, #006eff 0%, #1890ff 100%);
+            color: #fff;
+            padding: 12px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .topbar h1 { font-size: 16px; font-weight: 600; }
+        .topbar-meta { font-size: 12px; opacity: .92; text-align: right; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 24px; }
+        .banner {
+            background: #e6f4ff;
+            border: 1px solid #91caff;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+        .banner strong { color: #0958d9; }
+        .hc-node {
+            margin-bottom: 12px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+        }
+        .hc-node > summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 12px 14px;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-left: 4px solid #1890ff;
+            background: #fafafa;
+            user-select: none;
+        }
+        .hc-node > summary::-webkit-details-marker { display: none; }
+        .hc-node > summary::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid #666;
+            border-bottom: 2px solid #666;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            margin-top: -4px;
+            margin-left: auto;
+            transition: transform .2s;
+        }
+        .hc-node[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+        .hc-badge {
+            font-size: 12px;
+            font-weight: 500;
+            color: #0958d9;
+            background: #e6f4ff;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .hc-body { padding: 0; border-top: 1px solid #f0f0f0; }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            overflow: hidden;
+        }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+        th { background: #fafafa; font-weight: 600; white-space: nowrap; }
+        tr:hover td { background: #fafafa; }
+        tr.row-done td { color: #8c8c8c; background: #fafafa; }
+        tr.row-obj td { color: #8c8c8c; background: #f0f0f0; }
+        .col-chk { width: 44px; text-align: center; }
+        .col-chk input { width: 16px; height: 16px; cursor: pointer; vertical-align: middle; }
+        tr.row-obj .col-chk input,
+        tr.row-done .col-chk input { cursor: not-allowed; opacity: .5; }
+        .mono { font-family: ui-monospace, monospace; font-size: 12px; }
+        .time-range { white-space: nowrap; font-size: 12px; color: #333; }
+        .footer-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 12px 24px;
+            background: #fff;
+            border-top: 1px solid #e8e8e8;
+            box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 20;
+        }
+        .btn {
+            padding: 10px 28px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; }
+        .btn-danger { color: #cf1322; border-color: #ffa39e; background: #fff; }
+        .btn-danger:hover { border-color: #cf1322; background: #fff1f0; }
+        .btn:disabled { opacity: .45; cursor: not-allowed; }
+        .muted { color: #999; font-size: 12px; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 720px;
+            max-height: 88vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0,0,0,.18);
+        }
+        .modal-hd { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 16px; }
+        .modal-bd { padding: 16px 20px; overflow-y: auto; flex: 1; }
+        .modal-ft { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+        .modal-bd textarea,
+        .modal-bd select.obj-type-sel {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .modal-bd textarea { min-height: 72px; }
+        .obj-type-label { font-size: 13px; font-weight: 600; margin-top: 4px; display: block; }
+        #objInstanceWrap.hidden { display: none; }
+        .obj-svc { margin-bottom: 16px; }
+        .obj-svc h4 { font-size: 13px; margin-bottom: 8px; color: #333; }
+        .obj-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 13px;
+        }
+        .obj-row:last-child { border-bottom: none; }
+        .obj-row input { margin-top: 3px; flex-shrink: 0; }
+        .obj-row .meta { color: #666; font-size: 12px; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <h1>用量确认 <span style="font-weight:400;opacity:.9">（PC）</span></h1>
+            <div style="font-size:12px;opacity:.88;margin-top:2px;">按服务层级展示 · 支持展开收起 · 从企业微信打开（原型）</div>
+        </div>
+        <div class="topbar-meta">
+            <div>用户：<strong id="displayUser">zhangsan</strong></div>
+            <div>账期：<strong id="displayPeriod">2026-04</strong></div>
+        </div>
+    </header>
+
+    <div class="wrap">
+        <div class="banner" role="region">
+            <div>请在 <strong id="displayDeadline">2026-05-09 24:00</strong> 前完成操作。请<strong>勾选实例</strong>后使用「确认」或「异议」：确认仅作用于已选且仍为待确认的实例；异议弹窗会带出列表中的已选实例，异议类型由运维受理后认定。已提交异议的实例灰显且不可再选。</div>
+        </div>
+        <div id="groupRoot"></div>
+        <p class="muted" style="margin-top:8px;">起止时间为该实例在本账期的计量统计区间（示意）。</p>
+    </div>
+
+    <div class="footer-bar">
+        <button type="button" class="btn btn-primary" id="btnConfirm">确认</button>
+        <button type="button" class="btn btn-danger" id="btnObjection">异议</button>
+    </div>
+
+    <div class="modal-overlay" id="objModal" aria-hidden="true">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="objModalTitle">
+            <div class="modal-hd" id="objModalTitle">提交异议</div>
+            <div class="modal-bd">
+                <p class="muted" id="objInstHint" style="margin-bottom:10px;line-height:1.5;">请勾选存在用量争议的实例；若无对应实例，可在下方说明中描述。异议类型由运维管理员处理时认定，提交时无需选择。</p>
+                <div id="objInstanceWrap">
+                    <div id="objCheckRoot"></div>
+                </div>
+                <label for="objReason" id="objReasonLabel" style="font-size:13px;font-weight:600;margin-top:12px;display:block;">补充说明（选填）</label>
+                <textarea id="objReason" placeholder="可填写争议点、期望核对项等"></textarea>
+            </div>
+            <div class="modal-ft">
+                <button type="button" class="btn" id="objCancel">取消</button>
+                <button type="button" class="btn btn-primary" id="objSubmit">提交异议</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+(function () {
+    'use strict';
+
+    var rows = [
+        { id: 'i-7a8b9c0d1', name: 'web-api-prod-01', spec: '4 vCPU / 8 GiB / 系统盘 100GB', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '云主机 ECS', status: 'pending' },
+        { id: 'i-2e3f4a5b6', name: 'batch-worker-03', spec: '8 vCPU / 16 GiB / 数据盘 500GB', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '云主机 ECS', status: 'pending' },
+        { id: 'i-oss-bucket-a', name: 'archive-logs-prd', spec: '标准存储 / 低频访问', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '对象存储 OSS', status: 'pending' },
+        { id: 'i-rds-mysql-01', name: 'order-db-primary', spec: 'MySQL 8.0 / 高可用 2 节点', start: '2026-04-01 00:00', end: '2026-04-30 23:59', svc: '云数据库 RDS', status: 'pending' }
+    ];
+
+    function qs(name) {
+        var m = new RegExp('[?&]' + name + '=([^&]*)').exec(location.search || '');
+        return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+    }
+
+    function escAttr(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;');
+    }
+
+    function selectedListInstanceIds() {
+        var out = [];
+        document.querySelectorAll('.inst-chk:checked').forEach(function (c) {
+            out.push(c.getAttribute('data-id'));
+        });
+        return out;
+    }
+
+    function syncPeriod() {
+        var p = qs('bill_period') || qs('period') || '2026-04';
+        document.getElementById('displayPeriod').textContent = p;
+    }
+
+    function groupByService() {
+        var order = [];
+        var map = {};
+        rows.forEach(function (r) {
+            if (!map[r.svc]) {
+                map[r.svc] = [];
+                order.push(r.svc);
+            }
+            map[r.svc].push(r);
+        });
+        return order.map(function (s) { return { svc: s, items: map[s] }; });
+    }
+
+    function counts() {
+        var pend = rows.filter(function (r) { return r.status === 'pending'; }).length;
+        document.getElementById('btnConfirm').disabled = pend === 0;
+        document.getElementById('btnObjection').disabled = pend === 0;
+    }
+
+    function renderMain() {
+        var root = document.getElementById('groupRoot');
+        var html = groupByService()
+            .map(function (g) {
+                var n = g.items.length;
+                var body = g.items
+                    .map(function (r) {
+                        var cls = r.status === 'done' ? 'row-done' : r.status === 'objection' ? 'row-obj' : '';
+                        var tag =
+                            r.status === 'done'
+                                ? '（已确认）'
+                                : r.status === 'objection'
+                                  ? '（异议处理中）'
+                                  : '';
+                        var chk =
+                            '<td class="col-chk">' +
+                            '<input type="checkbox" class="inst-chk" data-id="' +
+                            escAttr(r.id) +
+                            '" ' +
+                            (r.status === 'pending' ? 'aria-label="选择实例 ' + escAttr(r.name) + '"' : 'disabled aria-disabled="true"') +
+                            '>' +
+                            '</td>';
+                        return (
+                            '<tr class="' +
+                            cls +
+                            '">' +
+                            chk +
+                            '<td class="mono">' +
+                            r.id +
+                            '</td>' +
+                            '<td>' +
+                            r.name +
+                            tag +
+                            '</td>' +
+                            '<td>' +
+                            r.spec +
+                            '</td>' +
+                            '<td class="time-range">' +
+                            r.start +
+                            ' ～<br>' +
+                            r.end +
+                            '</td>' +
+                            '</tr>'
+                        );
+                    })
+                    .join('');
+                return (
+                    '<details class="hc-node" open aria-label="' +
+                    g.svc +
+                    '">' +
+                    '<summary><span>' +
+                    g.svc +
+                    '</span><span class="hc-badge">' +
+                    n +
+                    ' 条</span></summary>' +
+                    '<div class="hc-body"><div class="table-wrap"><table>' +
+                    '<thead><tr><th class="col-chk" title="勾选待操作实例">选</th><th>实例 ID</th><th>实例名称</th><th>配置快照</th><th>起止时间</th></tr></thead>' +
+                    '<tbody>' +
+                    body +
+                    '</tbody></table></div></div>' +
+                    '</details>'
+                );
+            })
+            .join('');
+        root.innerHTML = html;
+    }
+
+    function renderObjModal() {
+        var el = document.getElementById('objCheckRoot');
+        el.innerHTML = groupByService()
+            .map(function (g) {
+                var lines = g.items
+                    .map(function (r) {
+                        if (r.status !== 'pending') {
+                            return (
+                                '<div class="obj-row" style="opacity:.55;">' +
+                                '<input type="checkbox" disabled>' +
+                                '<div><div>' +
+                                r.name +
+                                ' <span class="mono">(' +
+                                r.id +
+                                ')</span></div>' +
+                                '<div class="meta">' +
+                                (r.status === 'done' ? '已确认，不可再选' : '已提交异议，不可再选') +
+                                '</div></div></div>'
+                            );
+                        }
+                        return (
+                            '<label class="obj-row" style="cursor:pointer;">' +
+                            '<input type="checkbox" class="obj-chk" value="' +
+                            r.id +
+                            '">' +
+                            '<div><div>' +
+                            r.name +
+                            ' <span class="mono">(' +
+                            r.id +
+                            ')</span></div>' +
+                            '<div class="meta">' +
+                            r.spec +
+                            ' · ' +
+                            r.start +
+                            ' ～ ' +
+                            r.end +
+                            '</div></div>' +
+                            '</label>'
+                        );
+                    })
+                    .join('');
+                return '<div class="obj-svc"><h4>' + g.svc + '</h4>' + lines + '</div>';
+            })
+            .join('');
+    }
+
+    function openObjModal() {
+        if (!rows.some(function (r) { return r.status === 'pending'; })) {
+            alert('当前没有待确认的实例。');
+            return;
+        }
+        var preIds = selectedListInstanceIds();
+        renderObjModal();
+        document.getElementById('objReason').value = '';
+        document.querySelectorAll('.obj-chk').forEach(function (c) {
+            c.checked = preIds.indexOf(c.value) >= 0;
+        });
+        document.getElementById('objModal').classList.add('open');
+        document.getElementById('objModal').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeObjModal() {
+        document.getElementById('objModal').classList.remove('open');
+        document.getElementById('objModal').setAttribute('aria-hidden', 'true');
+    }
+
+    function selectedObjIds() {
+        var out = [];
+        document.querySelectorAll('.obj-chk:checked').forEach(function (c) {
+            out.push(c.value);
+        });
+        return out;
+    }
+
+    document.getElementById('btnConfirm').addEventListener('click', function () {
+        var pend = rows.filter(function (r) { return r.status === 'pending'; });
+        if (!pend.length) {
+            alert('没有待确认的实例。');
+            return;
+        }
+        var ids = selectedListInstanceIds();
+        var toConfirm = pend.filter(function (r) {
+            return ids.indexOf(r.id) >= 0;
+        });
+        if (!toConfirm.length) {
+            alert('请先勾选需要确认的实例。');
+            return;
+        }
+        if (!confirm('确认对已勾选的 ' + toConfirm.length + ' 条实例的本期用量数据无异议？')) return;
+        toConfirm.forEach(function (r) {
+            r.status = 'done';
+        });
+        counts();
+        renderMain();
+        alert('【原型】已提交确认。对接后将写入确认流水。');
+    });
+
+    document.getElementById('btnObjection').addEventListener('click', openObjModal);
+    document.getElementById('objCancel').addEventListener('click', closeObjModal);
+    document.getElementById('objModal').addEventListener('click', function (e) {
+        if (e.target === document.getElementById('objModal')) closeObjModal();
+    });
+
+    document.getElementById('objSubmit').addEventListener('click', function () {
+        var reason = (document.getElementById('objReason').value || '').trim();
+        var ids = selectedObjIds();
+        if (!ids.length && !reason) {
+            alert('请至少选择一个异议实例，或填写补充说明。');
+            return;
+        }
+        ids.forEach(function (id) {
+            rows.forEach(function (r) {
+                if (r.id === id && r.status === 'pending') r.status = 'objection';
+            });
+        });
+        counts();
+        renderMain();
+        closeObjModal();
+        alert(
+            '【原型】已提交异议' +
+                (ids.length ? '，共 ' + ids.length + ' 个实例' : '（仅说明，未绑定实例）') +
+                '。\n\n异议类型由运维认定，已提醒运维管理员处理，请留意通知。'
+        );
+    });
+
+    syncPeriod();
+    counts();
+    renderMain();
+})();
+    </script>
+</body>
+</html>

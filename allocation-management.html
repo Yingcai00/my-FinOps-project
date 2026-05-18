@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>FinOps财务运营管理平台 - 分账管理</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.85);
+            background: #f0f2f5;
+        }
+        .header {
+            background: linear-gradient(90deg, #006eff 0%, #1890ff 100%);
+            color: #fff;
+            padding: 14px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,.12);
+        }
+        .header-content {
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+        .container {
+            display: flex;
+            gap: 16px;
+            padding: 16px 20px 32px;
+            min-height: calc(100vh - 56px);
+        }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+            flex-shrink: 0;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 32px);
+            overflow: auto;
+        }
+        .sidebar-head {
+            background: #1890ff;
+            color: #fff;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+        .sub-menu { list-style: none; background: #f9f9f9; margin: 0; padding: 0; }
+        .sub-menu-item {
+            display: block;
+            padding: 10px 16px 10px 28px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+        .sub-menu-item:hover { background: #f0f0f0; color: #1890ff; }
+        .sub-menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+            font-weight: 500;
+        }
+        .content { flex: 1; min-width: 0; }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+        .field { min-width: 140px; }
+        .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .field input, .field select, .field textarea {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .field textarea { min-height: 72px; resize: vertical; white-space: pre-wrap; }
+        .btn {
+            padding: 6px 16px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:disabled { opacity: .45; cursor: not-allowed; }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover:not(:disabled) { background: #40a9ff; border-color: #40a9ff; }
+        .btn-link {
+            padding: 0 6px;
+            border: none;
+            background: none;
+            color: #1890ff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-link:hover { text-decoration: underline; }
+        .btn-link.danger { color: #cf1322; }
+        .table-wrap { overflow-x: auto; border: 1px solid #f0f0f0; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; min-width: 560px; font-size: 13px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        th { background: #fafafa; font-weight: 600; white-space: nowrap; }
+        tr.row-key:hover { background: #fafafa; }
+        .badge { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 12px; background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+        .muted { color: #999; font-size: 12px; }
+        .section-title { font-size: 15px; margin-bottom: 12px; font-weight: 600; }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        #modalVal.modal-backdrop.open { z-index: 1010; }
+        .modal {
+            background: #fff;
+            border-radius: 8px;
+            max-width: 480px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.15);
+        }
+        .modal.wide { max-width: 640px; }
+        .modal h3 { font-size: 16px; margin-bottom: 16px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+        .op-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        td.wrap-ok { white-space: normal; max-width: 280px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+            <span class="header-sub">分账管理 · 分账标签（V2.0扩展）</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-head">菜单导航</div>
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div class="card">
+                <h3 class="section-title">分账标签（V2.0扩展）</h3>
+                <div class="toolbar">
+                    <button type="button" class="btn btn-primary" id="btnAddKey">新增分账标签（V2.0扩展）</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:52px;">启用</th>
+                                <th>分账标签（V2.0扩展）</th>
+                                <th style="width:100px;">绑定资源数</th>
+                                <th style="width:100px;">状态</th>
+                                <th style="width:200px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allocKeyBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-backdrop" id="modalKey" role="dialog" aria-modal="true" aria-labelledby="modalKeyTitle">
+        <div class="modal">
+            <h3 id="modalKeyTitle">新增分账标签（V2.0扩展）</h3>
+            <div class="field" style="margin-bottom:12px;">
+                <label for="inpKeyStr">分账标签（V2.0扩展）</label>
+                <input type="text" id="inpKeyStr" maxlength="128" placeholder="请输入分账标签（V2.0扩展）名称" autocomplete="off">
+            </div>
+            <p class="muted" style="font-size:12px;">保存时会去除首尾空格；同一分账标签（V2.0扩展）不可重复。</p>
+            <div class="modal-actions">
+                <button type="button" class="btn" data-close="modalKey">取消</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmKey">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="modalValList" role="dialog" aria-modal="true" aria-labelledby="modalValListTitle">
+        <div class="modal wide">
+            <h3 id="modalValListTitle">标签值</h3>
+            <p class="muted" id="modalValListSub" style="margin-bottom:14px;font-size:13px;"></p>
+            <div style="margin-bottom:12px;">
+                <button type="button" class="btn btn-primary" id="btnAddValueInModal">新增标签值</button>
+            </div>
+            <div class="table-wrap" style="max-height:360px;overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>标签值</th>
+                            <th>备注（不参与匹配）</th>
+                            <th style="width:120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allocValueBodyModal"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-primary" data-close="modalValList">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="modalVal" role="dialog" aria-modal="true" aria-labelledby="modalValTitle">
+        <div class="modal">
+            <h3 id="modalValTitle">新增标签值</h3>
+            <div class="field" style="margin-bottom:12px;">
+                <label for="inpValStr">标签值</label>
+                <input type="text" id="inpValStr" maxlength="256" placeholder="请输入标签值" autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="inpValRemark">备注（可选）</label>
+                <textarea id="inpValRemark" maxlength="500" placeholder="备注说明（可选）"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn" data-close="modalVal">取消</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmVal">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+(function () {
+    'use strict';
+    var STORAGE_KEY = 'finops_alloc_tag_master_v1';
+    var MAX_KEYS = 15;
+
+    var state = {
+        keys: [],
+        selectedId: null
+    };
+
+    var keyModalMode = 'add';
+    var keyEditId = null;
+    var valModalMode = 'add';
+    var valEditId = null;
+    var valuesModalKeyId = null;
+
+    function uid(prefix) {
+        return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+    }
+
+    function defaultState() {
+        return {
+            keys: [
+                {
+                    id: uid('k'),
+                    key: 'BU',
+                    enabled: true,
+                    resourceCount: 1280,
+                    values: [
+                        { id: uid('v'), value: 'BU-A', remark: '' },
+                        { id: uid('v'), value: 'BU-B', remark: '' }
+                    ]
+                },
+            ],
+            selectedId: null
+        };
+    }
+
+    function loadState() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return defaultState();
+            var o = JSON.parse(raw);
+            if (!o || !Array.isArray(o.keys)) return defaultState();
+            if (!o.keys.length) return defaultState();
+            o.keys.forEach(function (k) {
+                if (!Array.isArray(k.values)) k.values = [];
+                if (typeof k.resourceCount !== 'number') k.resourceCount = 0;
+                k.values.forEach(function (v) {
+                    if (v.remark == null) v.remark = '';
+                });
+                if (k.enabled && k.values.length === 0) k.enabled = false;
+            });
+            return { keys: o.keys, selectedId: o.selectedId || o.keys[0].id };
+        } catch (e) {
+            return defaultState();
+        }
+    }
+
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            keys: state.keys,
+            selectedId: state.selectedId
+        }));
+    }
+
+    function getKeyById(id) {
+        for (var i = 0; i < state.keys.length; i++) {
+            if (state.keys[i].id === id) return state.keys[i];
+        }
+        return null;
+    }
+
+    function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s == null ? '' : String(s);
+        return d.innerHTML;
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+
+    function renderKeys() {
+        var tbody = document.getElementById('allocKeyBody');
+        if (!state.keys.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;padding:20px;">暂无分账标签（V2.0扩展），请点击「新增分账标签（V2.0扩展）」。</td></tr>';
+            return;
+        }
+        tbody.innerHTML = state.keys.map(function (k) {
+            var canEnable = k.values.length > 0;
+            var disabledCb = !canEnable && !k.enabled ? ' disabled' : '';
+            var title = !canEnable && !k.enabled ? ' title="须先添加至少一条标签值后方可启用"' : '';
+            var checked = k.enabled ? ' checked' : '';
+            var badge = k.enabled ? '<span class="badge">已启用</span>' : '<span class="muted">已禁用</span>';
+            return (
+                '<tr class="row-key" data-id="' + escapeHtml(k.id) + '">' +
+                '<td><input type="checkbox" class="js-key-en"' + disabledCb + title + ' data-id="' + escapeHtml(k.id) + '"' + checked + '></td>' +
+                '<td>' + escapeHtml(k.key) + '</td>' +
+                '<td>' + k.resourceCount + '</td>' +
+                '<td>' + badge + '</td>' +
+                '<td class="op-btns">' +
+                '<button type="button" class="btn-link js-open-values" data-id="' + escapeHtml(k.id) + '">标签值</button>' +
+                '<button type="button" class="btn-link js-edit-key" data-id="' + escapeHtml(k.id) + '">编辑</button>' +
+                '<button type="button" class="btn-link danger js-del-key" data-id="' + escapeHtml(k.id) + '">删除</button>' +
+                '</td></tr>'
+            );
+        }).join('');
+
+        tbody.querySelectorAll('.js-open-values').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                openValuesModal(btn.getAttribute('data-id'));
+            });
+        });
+        tbody.querySelectorAll('.js-key-en').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                var id = cb.getAttribute('data-id');
+                var row = getKeyById(id);
+                if (!row) return;
+                if (cb.checked && row.values.length === 0) {
+                    cb.checked = false;
+                    alert('须先为该分账标签（V2.0扩展）维护至少一条标签值，才能启用。');
+                    return;
+                }
+                row.enabled = cb.checked;
+                saveState();
+                renderKeys();
+                renderValuesModal();
+            });
+        });
+        tbody.querySelectorAll('.js-edit-key').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                openKeyModal('edit', btn.getAttribute('data-id'));
+            });
+        });
+        tbody.querySelectorAll('.js-del-key').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var id = btn.getAttribute('data-id');
+                var row = getKeyById(id);
+                if (!row) return;
+                var msg = '确定删除分账标签（V2.0扩展）「' + row.key + '」及其下 ' + row.values.length + ' 条标签值吗？';
+                if (!confirm(msg)) return;
+                state.keys = state.keys.filter(function (k) { return k.id !== id; });
+                if (state.selectedId === id) state.selectedId = state.keys[0] ? state.keys[0].id : null;
+                if (valuesModalKeyId === id) {
+                    valuesModalKeyId = null;
+                    closeModal('modalValList');
+                }
+                saveState();
+                renderKeys();
+                renderValuesModal();
+            });
+        });
+    }
+
+    function openValuesModal(keyId) {
+        var k = getKeyById(keyId);
+        if (!k) return;
+        valuesModalKeyId = keyId;
+        state.selectedId = keyId;
+        saveState();
+        openModal('modalValList');
+        renderValuesModal();
+    }
+
+    function renderValuesModal() {
+        var backdrop = document.getElementById('modalValList');
+        if (!backdrop || !backdrop.classList.contains('open')) return;
+        var k = getKeyById(valuesModalKeyId);
+        if (!k) {
+            closeModal('modalValList');
+            return;
+        }
+        document.getElementById('modalValListSub').textContent = '分账标签（V2.0扩展）：' + k.key;
+        var tbody = document.getElementById('allocValueBodyModal');
+        if (!k.values.length) {
+            tbody.innerHTML = '<tr><td colspan="3" class="muted" style="text-align:center;padding:16px;">暂无标签值。新增后方能启用该分账标签（V2.0扩展）。</td></tr>';
+        } else {
+            tbody.innerHTML = k.values.map(function (v) {
+                return (
+                    '<tr>' +
+                    '<td>' + escapeHtml(v.value) + '</td>' +
+                    '<td class="wrap-ok muted">' + escapeHtml(v.remark || '—') + '</td>' +
+                    '<td class="op-btns">' +
+                    '<button type="button" class="btn-link js-edit-val" data-id="' + escapeHtml(v.id) + '">编辑</button>' +
+                    '<button type="button" class="btn-link danger js-del-val" data-id="' + escapeHtml(v.id) + '">删除</button>' +
+                    '</td></tr>'
+                );
+            }).join('');
+        }
+
+        tbody.querySelectorAll('.js-edit-val').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                state.selectedId = valuesModalKeyId;
+                openValModal('edit', btn.getAttribute('data-id'));
+            });
+        });
+        tbody.querySelectorAll('.js-del-val').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var vid = btn.getAttribute('data-id');
+                var row = getKeyById(valuesModalKeyId);
+                if (!row) return;
+                var item = row.values.filter(function (x) { return x.id === vid; })[0];
+                if (!item) return;
+                if (!confirm('确定删除标签值「' + item.value + '」？')) return;
+                row.values = row.values.filter(function (x) { return x.id !== vid; });
+                if (row.values.length === 0 && row.enabled) row.enabled = false;
+                saveState();
+                renderKeys();
+                renderValuesModal();
+            });
+        });
+    }
+
+    function openKeyModal(mode, editId) {
+        keyModalMode = mode;
+        keyEditId = editId || null;
+        document.getElementById('modalKeyTitle').textContent = mode === 'add' ? '新增分账标签（V2.0扩展）' : '编辑分账标签（V2.0扩展）';
+        document.getElementById('inpKeyStr').value = mode === 'edit' && editId ? (getKeyById(editId).key || '') : '';
+        openModal('modalKey');
+        setTimeout(function () { document.getElementById('inpKeyStr').focus(); }, 50);
+    }
+
+    function openValModal(mode, editValId) {
+        if (valuesModalKeyId) state.selectedId = valuesModalKeyId;
+        if (!state.selectedId) return;
+        valModalMode = mode;
+        valEditId = editValId || null;
+        document.getElementById('modalValTitle').textContent = mode === 'add' ? '新增标签值' : '编辑标签值';
+        var row = getKeyById(state.selectedId);
+        var v = mode === 'edit' && editValId ? row.values.filter(function (x) { return x.id === editValId; })[0] : null;
+        document.getElementById('inpValStr').value = v ? v.value : '';
+        document.getElementById('inpValRemark').value = v ? (v.remark || '') : '';
+        openModal('modalVal');
+        setTimeout(function () { document.getElementById('inpValStr').focus(); }, 50);
+    }
+
+    document.getElementById('btnAddKey').addEventListener('click', function () {
+        if (state.keys.length >= MAX_KEYS) {
+            alert('分账标签（V2.0扩展）数量已达上限（' + MAX_KEYS + ' 个），请先删除或合并后再新增。');
+            return;
+        }
+        openKeyModal('add');
+    });
+
+    document.getElementById('btnAddValueInModal').addEventListener('click', function () {
+        if (valuesModalKeyId) state.selectedId = valuesModalKeyId;
+        openValModal('add');
+    });
+
+    document.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            closeModal(btn.getAttribute('data-close'));
+        });
+    });
+    ['modalKey', 'modalValList', 'modalVal'].forEach(function (mid) {
+        document.getElementById(mid).addEventListener('click', function (e) {
+            if (e.target.id === mid) closeModal(mid);
+        });
+    });
+
+    document.getElementById('btnConfirmKey').addEventListener('click', function () {
+        var raw = document.getElementById('inpKeyStr').value;
+        var keyStr = raw.replace(/^\s+|\s+$/g, '');
+        if (!keyStr) {
+            alert('请输入分账标签（V2.0扩展）。');
+            return;
+        }
+        var dup = state.keys.some(function (k) {
+            return k.key === keyStr && k.id !== keyEditId;
+        });
+        if (dup) {
+            alert('已存在相同分账标签（V2.0扩展），请修改。');
+            return;
+        }
+        if (keyModalMode === 'add') {
+            var nk = {
+                id: uid('k'),
+                key: keyStr,
+                enabled: false,
+                resourceCount: 0,
+                values: []
+            };
+            state.keys.push(nk);
+            state.selectedId = nk.id;
+        } else if (keyEditId) {
+            var ek = getKeyById(keyEditId);
+            if (ek) ek.key = keyStr;
+        }
+        closeModal('modalKey');
+        saveState();
+        renderKeys();
+        renderValuesModal();
+    });
+
+    document.getElementById('btnConfirmVal').addEventListener('click', function () {
+        var kid = state.selectedId;
+        var row = getKeyById(kid);
+        if (!row) return;
+        var raw = document.getElementById('inpValStr').value;
+        var valStr = raw.replace(/^\s+|\s+$/g, '');
+        if (!valStr) {
+            alert('请输入标签值。');
+            return;
+        }
+        var remark = String(document.getElementById('inpValRemark').value || '').replace(/^\s+|\s+$/g, '');
+        var dup = row.values.some(function (v) {
+            return v.value === valStr && v.id !== valEditId;
+        });
+        if (dup) {
+            alert('该分账标签（V2.0扩展）下已存在相同标签值。');
+            return;
+        }
+        if (valModalMode === 'add') {
+            row.values.push({ id: uid('v'), value: valStr, remark: remark });
+        } else if (valEditId) {
+            var ev = row.values.filter(function (x) { return x.id === valEditId; })[0];
+            if (ev) {
+                ev.value = valStr;
+                ev.remark = remark;
+            }
+        }
+        closeModal('modalVal');
+        saveState();
+        renderKeys();
+        renderValuesModal();
+    });
+
+    state = loadState();
+    if (!state.selectedId && state.keys.length) state.selectedId = state.keys[0].id;
+    renderKeys();
+})();
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
+</body>
+</html>

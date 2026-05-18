@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="theme-color" content="#1890ff">
+    <title>异议提交成功</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.88);
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px));
+        }
+        .m-header {
+            background: linear-gradient(180deg, #1890ff 0%, #096dd9 100%);
+            color: #fff;
+            margin: -16px -16px 20px;
+            padding: 16px;
+            padding-top: calc(16px + env(safe-area-inset-top, 0px));
+        }
+        .m-header h1 { font-size: 17px; font-weight: 600; }
+        .m-header-sub { font-size: 12px; opacity: .92; margin-top: 6px; }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px 18px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,.06);
+            border: 1px solid #f0f0f0;
+        }
+        .ok-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: #f6ffed;
+            border: 2px solid #b7eb8f;
+            color: #52c41a;
+            font-size: 32px;
+            line-height: 52px;
+            font-weight: 600;
+        }
+        .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+        .card p { font-size: 14px; color: #595959; text-align: left; line-height: 1.65; }
+        .card p + p { margin-top: 12px; }
+        .muted { color: #8c8c8c; font-size: 13px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #f0f0f0; text-align: left; }
+        .actions { margin-top: 24px; }
+        .m-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid #1890ff;
+            background: #1890ff;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .m-btn:active { opacity: .9; }
+        .demo-bar {
+            margin-top: 20px;
+            padding: 12px;
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #ad6800;
+        }
+        .demo-bar strong { display: block; margin-bottom: 8px; }
+        .demo-bar a { color: #1890ff; }
+    </style>
+</head>
+<body>
+    <header class="m-header">
+        <h1>异议提交成功</h1>
+        <div class="m-header-sub">企业微信 · 用量确认（原型）</div>
+    </header>
+
+    <div class="card">
+        <div class="ok-icon" aria-hidden="true">✓</div>
+        <h2>提交成功</h2>
+        <p>系统已接收您的异议申请。请留意企业微信内的<strong>异议提交通知</strong>，通知中将包含<strong>异议单号</strong>，便于您在会话中检索或到 PC 端查询。</p>
+        <p>本页<strong>不展示</strong>异议单号与详情链接（与需求文档口径一致）。</p>
+        <div class="muted">
+            若长时间未收到企微通知，系统会自动重试并可能转交运维处理，您无需在手机上点击「重发」。
+        </div>
+        <div class="actions">
+            <a class="m-btn" href="usage-confirm-view-mobile.html?bill_period=2026-04">返回用量确认</a>
+        </div>
+    </div>
+
+    <div class="demo-bar" role="note">
+        <strong>原型演示</strong>
+        异议详情（待处理 / 已完结等）：<a href="usage-objection-detail-mobile.html?bill_period=2026-04&amp;state=pending">打开详情页</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,3732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>FinOps财务运营管理平台 - 账单</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.85);
+            background: #f0f2f5;
+        }
+        .header {
+            background: linear-gradient(90deg, #006eff 0%, #1890ff 100%);
+            color: #fff;
+            padding: 14px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,.12);
+        }
+        .header-content {
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header-sub { font-size: 13px; opacity: .92; }
+        .container {
+            display: flex;
+            gap: 16px;
+            padding: 16px 20px 32px;
+            min-height: calc(100vh - 56px);
+        }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+            flex-shrink: 0;
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 32px);
+            overflow: auto;
+        }
+        .sidebar-head {
+            background: #1890ff;
+            color: #fff;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+        }
+        .sub-menu { list-style: none; background: #f9f9f9; margin: 0; padding: 0; }
+        .sub-menu-item {
+            display: block;
+            padding: 10px 16px 10px 28px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+        .sub-menu-item:hover { background: #f0f0f0; color: #1890ff; }
+        .sub-menu-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-left-color: #1890ff;
+            font-weight: 500;
+        }
+        .content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .notice-bar {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: rgba(0,0,0,.75);
+            margin-bottom: 16px;
+        }
+        .notice-bar strong { color: #0050b3; }
+        .th-bill-status {
+            position: relative;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        .th-bill-status-label {
+            vertical-align: middle;
+        }
+        .bill-status-help {
+            position: relative;
+            display: inline-block;
+            margin-left: 6px;
+            vertical-align: middle;
+            outline: none;
+        }
+        .bill-status-help__icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #1890ff;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: help;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+        }
+        .bill-status-help__panel {
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+            position: fixed;
+            left: 8px;
+            top: 8px;
+            z-index: 10050;
+            width: min(360px, 92vw);
+            max-height: min(280px, 50vh);
+            overflow-y: auto;
+            padding: 12px 14px;
+            background: #fff;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            font-size: 13px;
+            font-weight: 400;
+            color: rgba(0, 0, 0, 0.85);
+            text-align: left;
+            line-height: 1.55;
+            white-space: normal;
+        }
+        .bill-status-help--show .bill-status-help__panel {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
+        }
+        .bill-status-help__title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1890ff;
+        }
+        .bill-status-help__p {
+            margin: 0 0 8px;
+            color: rgba(0, 0, 0, 0.78);
+        }
+        .bill-status-help__ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+        .bill-status-help__ul li {
+            margin-bottom: 6px;
+        }
+        .bill-status-help__ul li:last-child {
+            margin-bottom: 0;
+        }
+        .bill-status-cell {
+            font-weight: 500;
+        }
+        .bill-status-cell--issued {
+            color: #389e0d;
+        }
+        .bill-status-cell--closed {
+            color: #531dab;
+        }
+        .bill-status-cell--ing {
+            color: #d46b08;
+        }
+        .bill-status-cell--none {
+            color: #8c8c8c;
+        }
+        #multiScopeBanner.is-on {
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .multi-scope-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 100%;
+            padding: 4px 6px 4px 10px;
+            background: #fff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.45;
+            box-sizing: border-box;
+        }
+        .multi-scope-tag__text {
+            flex: 0 1 auto;
+            min-width: 0;
+            word-break: break-all;
+            color: rgba(0, 0, 0, 0.85);
+        }
+        .multi-scope-tag__clear {
+            flex-shrink: 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #8c8c8c;
+            font-size: 16px;
+            line-height: 1;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .multi-scope-tag__clear:hover {
+            color: #f5222d;
+            background: rgba(245, 34, 45, 0.06);
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.09);
+        }
+        .card.bill-content-card {
+            display: flex;
+            flex-direction: column;
+        }
+        .card.bill-content-card:has(#panel-resource.active),
+        .card.bill-content-card:has(#panel-bill.active) {
+            flex: 1;
+            min-height: 0;
+        }
+        .bill-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            border-bottom: 1px solid #e8e8e8;
+            margin: -4px 0 16px;
+            flex-shrink: 0;
+        }
+        .bill-tab {
+            padding: 12px 18px;
+            cursor: pointer;
+            color: #666;
+            border: none;
+            background: none;
+            font-size: 14px;
+            margin-bottom: -1px;
+            border-bottom: 2px solid transparent;
+            border-radius: 4px 4px 0 0;
+        }
+        .bill-tab:hover { color: #1890ff; background: #fafafa; }
+        .bill-tab.active {
+            color: #1890ff;
+            font-weight: 600;
+            border-bottom-color: #1890ff;
+        }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .panel.res-bill-tab-root.active {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+        .field { min-width: 140px; }
+        .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .field input, .field select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 6px 16px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        .btn-default:hover { border-color: #1890ff; color: #1890ff; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 4px;
+            border: 1px solid #f0f0f0;
+        }
+        .stat-box .label { color: #666; font-size: 13px; }
+        .stat-box .value { font-size: 22px; font-weight: 600; margin-top: 6px; color: #cf1322; }
+        .stat-box .sub { font-size: 12px; color: #52c41a; margin-top: 4px; }
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 16px;
+        }
+        @media (max-width: 1100px) { .chart-row { grid-template-columns: 1fr; } }
+        .chart-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 220px;
+        }
+        .chart-card h3 { font-size: 14px; margin-bottom: 12px; color: #333; }
+        .chart-placeholder {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            padding: 8px;
+            border: 1px dashed #d9d9d9;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        .fake-donut {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            margin: 12px auto;
+            background: conic-gradient(#1890ff 0 40%, #52c41a 40% 68%, #faad14 68% 88%, #722ed1 88% 100%);
+            position: relative;
+        }
+        .fake-donut::after {
+            content: '';
+            position: absolute;
+            inset: 28px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding-top: 20px; justify-content: center; }
+        .bar { width: 36px; background: linear-gradient(180deg, #69c0ff, #1890ff); border-radius: 4px 4px 0 0; position: relative; min-height: 8px; }
+        .bar span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #666; white-space: nowrap; }
+        .dim-pills-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
+            margin-bottom: 16px;
+        }
+        .dim-pills-inline-label {
+            font-size: 13px;
+            color: #333;
+            flex-shrink: 0;
+        }
+        .dim-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
+        .dim-pill {
+            padding: 4px 14px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .dim-pill.active { border-color: #1890ff; color: #1890ff; background: #e6f7ff; }
+        .table-wrap {
+            overflow-x: auto;
+            overflow-y: visible;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+        }
+        #panel-bill .table-wrap {
+            position: relative;
+            z-index: 1;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; font-size: 13px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+        th { background: #fafafa; font-weight: 600; }
+        tr:hover { background: #fafafa; }
+        .amount { color: #cf1322; font-weight: 500; }
+        .link { color: #1890ff; cursor: pointer; text-decoration: none; border: none; background: none; font: inherit; padding: 0; }
+        .link:hover { text-decoration: underline; }
+        .tag-cell { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal.on { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 8px;
+            max-width: 920px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 24px rgba(0,0,0,.15);
+        }
+        .modal-box.narrow { max-width: 480px; }
+        .modal-box.medium { max-width: 520px; }
+        .modal-head {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-head h3 { font-size: 16px; }
+        .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+        .modal-foot { padding: 12px 20px; border-top: 1px solid #f0f0f0; text-align: right; }
+        .modal-close { border: none; background: none; font-size: 22px; cursor: pointer; color: #999; line-height: 1; }
+        .detail-zone { margin-bottom: 20px; }
+        .detail-zone h4 {
+            font-size: 13px;
+            color: #1890ff;
+            border-left: 3px solid #1890ff;
+            padding-left: 8px;
+            margin-bottom: 10px;
+        }
+        .dl-grid { display: grid; grid-template-columns: 160px 1fr; gap: 6px 12px; font-size: 13px; }
+        .dl-grid dt { color: #888; }
+        .dl-grid dd { color: #333; word-break: break-all; white-space: normal; }
+        .check { margin-right: 8px; }
+        .muted { color: #999; font-size: 12px; }
+        .col-check#colCheckList { display: flex; flex-direction: column; gap: 8px; }
+        .col-settings-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .col-settings-row.dragging {
+            opacity: 0.55;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+        .col-settings-row label { display: flex; align-items: center; margin: 0; flex: 1; min-width: 0; }
+        .col-drag-handle {
+            flex-shrink: 0;
+            cursor: grab;
+            color: #999;
+            font-size: 14px;
+            line-height: 1;
+            letter-spacing: -2px;
+            padding: 6px 4px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        .col-drag-handle:active { cursor: grabbing; }
+        .dept-cell { display: flex; align-items: center; gap: 6px; min-width: 200px; }
+        .dept-toggle {
+            width: 22px;
+            height: 22px;
+            line-height: 20px;
+            padding: 0;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 11px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        .dept-toggle:hover { border-color: #1890ff; color: #1890ff; }
+        .dept-toggle.spacer { visibility: hidden; border-color: transparent; background: transparent; cursor: default; }
+        .dept-name { font-weight: 500; }
+        tr.dept-row-l2 .dept-name { font-weight: 400; }
+        tr.dept-row-l3 .dept-name { font-weight: 400; color: #555; }
+        .level-tag { font-size: 12px; color: #888; }
+        .bill-global-card { margin-bottom: 16px; padding: 14px 20px; }
+        .bill-global-card-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px 16px;
+        }
+        .bill-global-bar {
+            flex: 1 1 200px;
+            min-width: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 14px 20px;
+        }
+        .bill-global-bar .field { min-width: 140px; }
+        .bill-global-actions-corner {
+            flex: 0 0 auto;
+            margin-left: auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            padding-top: 22px;
+        }
+        .bill-global-actions-corner .btn {
+            white-space: nowrap;
+        }
+        .bill-global-month-hint {
+            margin: 10px 0 0;
+            max-width: 920px;
+            line-height: 1.55;
+        }
+        .multi-ops { white-space: normal; max-width: 280px; }
+        .multi-ops .op-gap { color: #d9d9d9; margin: 0 4px; }
+        .tag-select {
+            max-width: 110px;
+            padding: 2px 6px;
+            font-size: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+        .btn-text { font-size: 12px; padding: 2px 8px; }
+        .modal-box.wide { max-width: 720px; }
+        .res-stat-segment {
+            display: inline-flex;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        .res-stat-btn {
+            padding: 4px 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            color: rgba(0, 0, 0, .65);
+            border-right: 1px solid #d9d9d9;
+            white-space: nowrap;
+        }
+        .res-stat-segment .res-stat-btn:last-child { border-right: none; }
+        .res-stat-btn:hover { color: #1890ff; }
+        .res-stat-btn.active { background: #1890ff; color: #fff; font-weight: 500; }
+        .res-stat-btn.active:hover { color: #fff; }
+        .res-search-module { flex-shrink: 0; margin-bottom: 12px; }
+        .res-search-row-primary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .res-search-combo {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: #fff;
+            min-height: 38px;
+        }
+        .res-search-combo-inner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            min-height: 34px;
+        }
+        .res-query-tags-inline {
+            display: contents;
+        }
+        .res-query-tags-inline > .res-query-tag {
+            margin: 2px 0;
+        }
+        .res-main-search-inner {
+            flex: 1 1 160px;
+            min-width: 120px;
+            border: none;
+            outline: none;
+            padding: 4px 6px;
+            font-size: 14px;
+            background: transparent;
+        }
+        .res-main-search-inner::placeholder { color: #bfbfbf; }
+        .res-query-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 4px 4px 10px;
+            background: #f0f8ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            font-size: 13px;
+            color: rgba(0, 0, 0, .85);
+            max-width: 100%;
+        }
+        .res-query-tag--jump {
+            background: #e6f7ff;
+            border-color: #69c0ff;
+        }
+        .res-query-tag--bill {
+            background: #faf5ff;
+            border-color: #d3adf7;
+        }
+        .res-query-tag--adv {
+            background: #f6ffed;
+            border-color: #b7eb8f;
+        }
+        .res-query-tag-key { color: #666; flex-shrink: 0; }
+        .res-query-tag-val {
+            color: #1890ff;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        .res-query-tag-label { word-break: break-all; }
+        .res-query-tag-kvline {
+            color: rgba(0, 0, 0, 0.88);
+            font-weight: 500;
+            word-break: break-all;
+            line-height: 1.45;
+        }
+        .res-query-tag-remove {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            border-radius: 2px;
+        }
+        .res-query-tag-remove:hover { color: #ff4d4f; background: rgba(0, 0, 0, .04); }
+        .res-drawer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            z-index: 1100;
+        }
+        .res-drawer-overlay.on { display: block; }
+        .res-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(400px, 94vw);
+            height: 100%;
+            background: #fff;
+            z-index: 1101;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, .12);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.22s ease;
+        }
+        .res-drawer.on { transform: translateX(0); }
+        .res-drawer-head {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .res-drawer-head h3 { font-size: 16px; font-weight: 600; }
+        .res-drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+        .res-adv-field-stack .field { margin-bottom: 14px; width: 100%; min-width: 0; }
+        .res-adv-field-stack .field label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .res-adv-field-stack .field input,
+        .res-adv-field-stack .field select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .res-drawer-foot {
+            padding: 12px 16px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+        /* 资源明细：左服务分类（服务目录 › 服务分类，无规格簇层级）| 右（统计周期 + 表格） */
+        .res-bill-split {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin: 0 -4px;
+        }
+        .res-service-category-sidebar {
+            width: 200px;
+            min-width: 200px;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px 0 0 8px;
+            padding: 12px 0 16px;
+            overflow-y: auto;
+            min-height: 0;
+            flex-shrink: 0;
+            transition: width 0.22s ease, min-width 0.22s ease, padding 0.22s ease, border-color 0.22s ease;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, .04);
+        }
+        .res-service-category-sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            border-color: transparent;
+            overflow: hidden;
+        }
+        .res-service-category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            padding: 0 14px 10px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .res-service-tree-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 13px;
+        }
+        .res-service-tree-item:hover { background: #f0f8ff; }
+        .res-service-tree-item.active {
+            background: #e6f7ff;
+            color: #1890ff;
+            border-right: 3px solid #1890ff;
+        }
+        .res-service-tree-expand-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 6px;
+            font-size: 11px;
+            color: #999;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .res-service-tree-expand-icon.expanded { transform: rotate(90deg); }
+        .res-service-tree-expand-icon.hidden { visibility: hidden; pointer-events: none; }
+        .res-service-tree-label { flex: 1; }
+        .res-service-tree-children {
+            margin-left: 18px;
+            display: none;
+        }
+        .res-service-tree-children.expanded { display: block; }
+        .res-service-tree-children .res-service-tree-children {
+            margin-left: 12px;
+        }
+        .res-bill-right-col {
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+            position: relative;
+            padding-left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .res-bill-right-col > .muted { flex-shrink: 0; }
+        .res-stack-mod {
+            flex-shrink: 0;
+            padding: 10px 12px;
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+        }
+        .res-stack-mod.res-stack-mod--filter-stat {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .res-stack-mod .res-search-module { margin-bottom: 0; }
+        .res-stat-toolbar-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .res-stat-inline-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            white-space: nowrap;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+        .res-stat-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .res-table-panel {
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .res-stack-mod--filter-stat > .res-table-panel {
+            margin-top: 10px;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .res-table-wrap-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            position: relative;
+        }
+        .res-sidebar-toggle-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) translateX(-100%);
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: 2px;
+            padding: 12px 6px;
+            background: #1890ff;
+            color: #fff;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 5;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, .12);
+        }
+        .res-sidebar-toggle-btn:hover { background: #40a9ff; }
+        .dept-toolbar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .export-wrap { position: relative; }
+        .export-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 4px;
+            min-width: 168px;
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            z-index: 30;
+            padding: 4px 0;
+        }
+        .export-wrap.open .export-menu { display: block; }
+        .export-menu button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 14px;
+            border: none;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.85);
+        }
+        .export-menu button:hover { background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>FinOps财务运营管理平台</h1>
+            <span class="header-sub">账单 · 账单 / 账单明细 / 资源明细</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-head">菜单导航</div>
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
+                <li>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <div class="card bill-global-card">
+                <div class="bill-global-card-head">
+                    <div class="bill-global-bar">
+                        <div class="field">
+                            <label for="globalBillMonth">账期（全局）</label>
+                            <input type="month" id="globalBillMonth" value="" autocomplete="off" aria-describedby="globalBillMonthHint">
+                        </div>
+                    </div>
+                    <div class="bill-global-actions-corner" id="billGlobalActionsCorner">
+                        <button type="button" class="btn btn-default" id="btnRerunCurrentMonthBill" title="按当前「账期（全局）」重新汇总/出具账单（示意）">重跑</button>
+                        <button type="button" class="btn btn-default" id="btnPushBill">推送账单</button>
+                    </div>
+                </div>
+                <p class="muted bill-global-month-hint" id="globalBillMonthHint" role="note">
+                    确认用量后，每月 <strong>10 日 00:00</strong> 出具并发送<strong>上月</strong>正式账单；发送后账单<strong>不可修改</strong>（数据修正须走用量异议或运营侧流程，示意）。
+                    在当前自然月 <strong>10 日 00:00 之前</strong>登录，仅能查看 <strong>N−2 月</strong>及更早账单（N 为当前自然月）；<strong>10 日 00:00（含）起</strong>可查看范围包含<strong>N−1 月</strong>（上月）正式账单。
+                    <strong>一期</strong>已取消「账单确认」机制；<strong>账单 Tab「账单状态」</strong>与月度总览<strong>账期级状态</strong>联动：账期为<strong>出账中</strong>时各行列<strong>统一</strong>显示「出账中」；账期为<strong>未出账</strong>时统一「未出账」；账期为<strong>已出账</strong>时各部门/标签行均为<strong>已出账</strong>。
+                </p>
+            </div>
+
+            <div class="card bill-content-card" style="padding-top: 12px;">
+                <div class="bill-tabs" role="tablist" id="mainTabs">
+                    <button type="button" class="bill-tab active" data-panel="bill" role="tab">账单</button>
+                    <button type="button" class="bill-tab" data-panel="multi" role="tab">账单明细</button>
+                    <button type="button" class="bill-tab" data-panel="resource" role="tab">资源明细</button>
+                </div>
+
+                <div id="panel-bill" class="panel active" role="tabpanel">
+                    <div class="dept-toolbar-row">
+                        <div class="bill-dim-toolbar" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;">
+                            <div class="field" style="margin-bottom:0;">
+                                <label for="billDimSelect">账单维度：</label>
+                                <select id="billDimSelect" aria-label="账单维度">
+                                    <option value="dept" selected>按部门</option>
+                                    <option value="tag">按分账标签（V2.0扩展）</option>
+                                </select>
+                            </div>
+                            <div class="field" id="billAllocTagField" style="margin-bottom:0;display:none;">
+                                <label for="billAllocTagAxisSelect">分账标签（V2.0扩展）：</label>
+                                <select id="billAllocTagAxisSelect" aria-label="分账标签（V2.0扩展）统计列">
+                                    <option value="tag1" selected>分账标签1（V2.0扩展）</option>
+                                    <option value="tag2">分账标签2（V2.0扩展）</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                            <div class="export-wrap" id="deptExportWrap">
+                                <button type="button" class="btn btn-default" id="btnDeptExportToggle" aria-expanded="false" aria-haspopup="true">导出</button>
+                                <div class="export-menu" id="deptExportMenu" role="menu">
+                                    <button type="button" role="menuitem" id="btnDeptExportSelected">导出选中（ZIP）</button>
+                                    <button type="button" role="menuitem" id="btnDeptExportAll">导出全部（ZIP）</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead id="deptBillThead"></thead>
+                            <tbody id="deptBillTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="panel-multi" class="panel" role="tabpanel">
+                    <input type="hidden" id="multiMonth" value="2026-05">
+                    <div id="multiScopeBanner" class="notice-bar" style="display:none;margin-bottom:12px;" role="status"></div>
+                    <div class="dim-pills-row" aria-label="账单明细汇总维度">
+                        <span class="dim-pills-inline-label">汇总维度：</span>
+                        <div class="dim-pills" id="dimPills" role="group" aria-label="切换汇总维度"></div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead id="multiThead"></thead>
+                            <tbody id="multiTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="panel-resource" class="panel res-bill-tab-root" role="tabpanel">
+                    <div class="res-bill-split">
+                        <aside class="res-service-category-sidebar" id="resServiceCategorySidebar" aria-label="服务分类筛选">
+                            <div class="res-service-category-title">服务分类</div>
+                            <div id="resServiceCategoryTree"></div>
+                        </aside>
+                        <div class="res-bill-right-col">
+                            <input type="hidden" id="resMonth" value="2026-05" autocomplete="off">
+                            <button type="button" class="res-sidebar-toggle-btn" id="resServiceSidebarToggle" title="展开/收起服务分类">服务目录</button>
+                            <section class="res-stack-mod res-stack-mod--filter-stat" aria-label="筛选、统计周期与资源明细列表">
+                                <div class="res-search-module">
+                                    <div class="res-search-row-primary">
+                                        <div class="res-search-combo" role="search">
+                                            <div class="res-search-combo-inner" id="resSearchComboInner">
+                                                <span id="resQueryTags" class="res-query-tags-inline" aria-label="当前查询条件"></span>
+                                                <input type="text" id="resMainSearch" class="res-main-search-inner" placeholder="输入实例ID或实例名称关键字" autocomplete="off" aria-label="实例ID或实例名称关键字">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary" id="btnResSearch">搜索</button>
+                                        <button type="button" class="btn btn-default" id="btnResReset">重置</button>
+                                        <button type="button" class="btn btn-default" id="btnResAdvToggle" aria-expanded="false" aria-controls="resAdvDrawer">高级筛选</button>
+                                    </div>
+                                </div>
+                                <div class="res-stat-toolbar-row">
+                                    <span class="res-stat-inline-label">统计周期</span>
+                                    <div class="res-stat-segment" id="resStatSegment" role="group" aria-label="按账期或按天统计">
+                                        <button type="button" class="res-stat-btn active js-res-stat" data-stat="month" id="resStatBtnMonth">按账期</button>
+                                        <button type="button" class="res-stat-btn js-res-stat" data-stat="day" id="resStatBtnDay">按天</button>
+                                    </div>
+                                    <div class="res-stat-actions">
+                                        <button type="button" class="btn btn-default" id="btnColSettings">表头设置</button>
+                                        <button type="button" class="btn btn-default" id="btnResExport">导出</button>
+                                    </div>
+                                </div>
+                                <div class="res-table-panel">
+                                    <div class="table-wrap res-table-wrap-scroll finops-table-vscroll">
+                                        <table id="resTable">
+                                            <thead id="resThead"></thead>
+                                            <tbody id="resTbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="usageModal">
+        <div class="modal-box narrow">
+            <div class="modal-head">
+                <h3>使用率细分（示意）</h3>
+                <button type="button" class="modal-close" id="usageModalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="usageBody"></div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-default" id="usageModalFooterClose">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="colModal">
+        <div class="modal-box medium">
+            <div class="modal-head">
+                <h3>表头设置（显隐与拖动排序）</h3>
+                <button type="button" class="modal-close" id="colModalClose">&times;</button>
+            </div>
+            <div class="modal-body col-check" id="colCheckList"></div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-default" id="colModalCancel">取消</button>
+                <button type="button" class="btn btn-primary" id="colModalApply">应用</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="pushBillModal" role="dialog" aria-modal="true" aria-labelledby="pushBillTitle">
+        <div class="modal-box medium">
+            <div class="modal-head">
+                <h3 id="pushBillTitle">推送账单</h3>
+                <button type="button" class="modal-close" id="pushBillModalClose" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-body finops-modal-push" id="pushBillModalBody">
+                <div class="field">
+                    <span class="label-text">账期</span>
+                    <div id="pushBillMonthDisplay" class="finops-push-period-display">—</div>
+                </div>
+                <div class="field">
+                    <div class="field-inline finops-modal-push-scope">
+                        <span class="label-text" style="width:100%;margin-bottom:0;">推送范围</span>
+                        <label><input type="radio" name="pushBillScope" value="full" checked> 全量推送</label>
+                        <label><input type="radio" name="pushBillScope" value="dept"> 指定部门推送</label>
+                        <label><input type="radio" name="pushBillScope" value="user"> 指定人员</label>
+                    </div>
+                    <div id="pushBillFullHint" style="margin:0 0 10px 0;padding:10px 12px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:4px;font-size:12px;line-height:1.55;color:#333;">
+                        全量时一期规则写死：<strong>按二级部门汇总</strong>生成账单摘要，<strong>邮件</strong>发送至各部门<strong>负责人</strong>，正文附<strong>账单查看地址</strong>（无需配置推送策略）。
+                    </div>
+                    <div id="pushBillDeptPick" style="display:none;">
+                        <div class="field" style="margin-bottom:0;">
+                            <label class="label-text">指定部门（多选）</label>
+                            <div id="pushBillDeptMsContainer" class="finops-ms-wrap">
+                                <div class="finops-ms-trigger" id="pushBillDeptMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="指定部门，点击展开多选">
+                                    <div class="finops-ms-tags" id="pushBillDeptMsTags" aria-label="已选部门"></div>
+                                    <input type="text" class="finops-ms-input" id="pushBillDeptMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
+                                    <span class="finops-ms-arrow">▼</span>
+                                </div>
+                                <div class="finops-ms-dd" id="pushBillDeptMsDd">
+                                    <div class="finops-ms-dd-search">
+                                        <input type="text" id="pushBillDeptMsDdSearch" placeholder="搜索" autocomplete="off">
+                                    </div>
+                                    <div id="pushBillDeptMsOptions"></div>
+                                </div>
+                                <input type="hidden" id="pushBillDeptMsHidden" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="pushBillPersonPick" style="display:none;">
+                        <div class="field" style="margin-bottom:0;">
+                            <label class="label-text">指定人员（多选）</label>
+                            <div id="pushBillUserMsContainer" class="finops-ms-wrap">
+                                <div class="finops-ms-trigger" id="pushBillUserMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="指定人员，点击展开多选">
+                                    <div class="finops-ms-tags" id="pushBillUserMsTags" aria-label="已选人员"></div>
+                                    <input type="text" class="finops-ms-input" id="pushBillUserMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
+                                    <span class="finops-ms-arrow">▼</span>
+                                </div>
+                                <div class="finops-ms-dd" id="pushBillUserMsDd">
+                                    <div class="finops-ms-dd-search">
+                                        <input type="text" id="pushBillUserMsDdSearch" placeholder="搜索" autocomplete="off">
+                                    </div>
+                                    <div id="pushBillUserMsOptions">
+                                        <div class="finops-ms-row" data-value="zhangsan@example.com" data-label="张三（研发中心）"><span>张三（研发中心）</span><span class="finops-ms-check">✓</span></div>
+                                        <div class="finops-ms-row" data-value="lisi@example.com" data-label="李四（运维中心）"><span>李四（运维中心）</span><span class="finops-ms-check">✓</span></div>
+                                        <div class="finops-ms-row" data-value="wangwu@example.com" data-label="王五（职能中心）"><span>王五（职能中心）</span><span class="finops-ms-check">✓</span></div>
+                                        <div class="finops-ms-row" data-value="zhaoliu@example.com" data-label="赵六（产品部）"><span>赵六（产品部）</span><span class="finops-ms-check">✓</span></div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="pushBillUserMsHidden" value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="muted" style="font-size:12px;margin:0;line-height:1.55;">一期<strong>不配置推送策略</strong>；与用量推送一致仅维护账期与范围示意，对接消息网关后按上述规则下发。</p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-default" id="pushBillModalCancel">取消</button>
+                <button type="button" class="btn btn-primary" id="pushBillModalSubmit">立即推送</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="res-drawer-overlay" id="resAdvOverlay" aria-hidden="true"></div>
+    <div class="res-drawer" id="resAdvDrawer" role="dialog" aria-modal="true" aria-labelledby="resAdvDrawerTitle" aria-hidden="true">
+        <div class="res-drawer-head">
+            <h3 id="resAdvDrawerTitle">高级筛选</h3>
+            <button type="button" class="modal-close" id="resAdvDrawerClose" aria-label="关闭">&times;</button>
+        </div>
+        <div class="res-drawer-body">
+            <div class="res-adv-field-stack" id="resAdvDrawerBody"></div>
+        </div>
+        <div class="res-drawer-foot">
+            <button type="button" class="btn btn-default" id="resAdvDrawerReset">清空条件</button>
+            <button type="button" class="btn btn-primary" id="resAdvDrawerApply">应用</button>
+        </div>
+    </div>
+
+    <script src="../js/finops-multiselect.js"></script>
+    <script>
+(function () {
+    'use strict';
+
+    var multiData = {
+        product: [
+            { name: '云主机', amount: 68200.5, ratio: '53.0%', mom: '+2.1%' },
+            { name: '对象存储', amount: 22118, ratio: '17.2%', mom: '−0.8%' },
+            { name: '云数据库 MySQL', amount: 28341.85, ratio: '22.0%', mom: '+5.4%' },
+            { name: '负载均衡', amount: 10000, ratio: '7.8%', mom: '0%' }
+        ],
+        project: [
+            { name: '核心交易系统备案', amount: 45000, ratio: '35%', mom: '+1%' },
+            { name: '营销中台备案', amount: 73660.35, ratio: '57.2%', mom: '+6%' },
+            { name: '数据中台备案', amount: 10000, ratio: '7.8%', mom: '−2%' }
+        ]
+    };
+
+    var tagAllocOptions = {
+        tag1: ['研发中心', '运维中心', '职能中心', '未定'],
+        tag2: ['BU-A', 'BU-B', '未定']
+    };
+    /** 面包屑与下钻状态（部门路径、服务名） */
+    /** 按部门：一 / 二 / 三级组织树（示意数据，对接主数据后替换） */
+    var deptTreeRoot = [
+        {
+            id: 'dept-d1',
+            name: '研发中心',
+            level: 1,
+            amount: 62000,
+            ratio: '48.2%',
+            mom: '+2.1%',
+            children: [
+                {
+                    id: 'dept-d1-1',
+                    name: '基础架构部',
+                    level: 2,
+                    amount: 35000,
+                    ratio: '27.2%',
+                    mom: '+1.2%',
+                    children: [
+                        { id: 'dept-d1-1-a', name: '平台组', level: 3, amount: 18000, ratio: '14.0%', mom: '0%', children: [] },
+                        { id: 'dept-d1-1-b', name: '网络组', level: 3, amount: 17000, ratio: '13.2%', mom: '+2.5%', children: [] }
+                    ]
+                },
+                {
+                    id: 'dept-d1-2',
+                    name: '业务研发部',
+                    level: 2,
+                    amount: 27000,
+                    ratio: '21.0%',
+                    mom: '+5.0%',
+                    children: [
+                        { id: 'dept-d1-2-a', name: '订单交易组', level: 3, amount: 15000, ratio: '11.7%', mom: '+3%', children: [] },
+                        { id: 'dept-d1-2-b', name: '会员营销组', level: 3, amount: 12000, ratio: '9.3%', mom: '+8%', children: [] }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'dept-d2',
+            name: '运维中心',
+            level: 1,
+            amount: 22118,
+            ratio: '17.2%',
+            mom: '0%',
+            children: [
+                {
+                    id: 'dept-d2-1',
+                    name: '系统运维部',
+                    level: 2,
+                    amount: 14118,
+                    ratio: '11.0%',
+                    mom: '−0.5%',
+                    children: [
+                        { id: 'dept-d2-1-a', name: '监控组', level: 3, amount: 8100, ratio: '6.3%', mom: '0%', children: [] },
+                        { id: 'dept-d2-1-b', name: '变更组', level: 3, amount: 6018, ratio: '4.7%', mom: '−1%', children: [] }
+                    ]
+                },
+                {
+                    id: 'dept-d2-2',
+                    name: '数据库运维部',
+                    level: 2,
+                    amount: 8000,
+                    ratio: '6.2%',
+                    mom: '+1.5%',
+                    children: [
+                        { id: 'dept-d2-2-a', name: '关系型组', level: 3, amount: 5200, ratio: '4.0%', mom: '+2%', children: [] },
+                        { id: 'dept-d2-2-b', name: 'NoSQL 组', level: 3, amount: 2800, ratio: '2.2%', mom: '0%', children: [] }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'dept-d3',
+            name: '职能中心',
+            level: 1,
+            amount: 44542.35,
+            ratio: '34.6%',
+            mom: '+8.0%',
+            children: [
+                {
+                    id: 'dept-d3-1',
+                    name: '财务部',
+                    level: 2,
+                    amount: 12000,
+                    ratio: '9.3%',
+                    mom: '+0.2%',
+                    children: [
+                        { id: 'dept-d3-1-a', name: '费用核算组', level: 3, amount: 7200, ratio: '5.6%', mom: '0%', children: [] },
+                        { id: 'dept-d3-1-b', name: '资金组', level: 3, amount: 4800, ratio: '3.7%', mom: '+0.5%', children: [] }
+                    ]
+                },
+                {
+                    id: 'dept-d3-2',
+                    name: '采购与行政部',
+                    level: 2,
+                    amount: 32542.35,
+                    ratio: '25.3%',
+                    mom: '+12%',
+                    children: [
+                        { id: 'dept-d3-2-a', name: '采购组', level: 3, amount: 21000, ratio: '16.3%', mom: '+15%', children: [] },
+                        { id: 'dept-d3-2-b', name: '行政组', level: 3, amount: 11542.35, ratio: '9.0%', mom: '+6%', children: [] }
+                    ]
+                }
+            ]
+        }
+    ];
+    /** 节点是否展开：未设置时默认仅一级部门展开 */
+    var deptExpanded = {};
+
+    function isDeptExpanded(node) {
+        if (deptExpanded.hasOwnProperty(node.id)) return deptExpanded[node.id];
+        return node.level === 1;
+    }
+
+    function collectDeptPaths(nodes, prefix) {
+        var out = [];
+        (nodes || []).forEach(function (n) {
+            var p = prefix ? prefix + '/' + n.name : n.name;
+            out.push(p);
+            if (n.children && n.children.length) {
+                collectDeptPaths(n.children, p).forEach(function (x) { out.push(x); });
+            }
+        });
+        return out;
+    }
+
+    var dimLabels = {
+        product: '服务',
+        project: '备案产品'
+    };
+    var dimPillLabels = {
+        product: '按服务',
+        project: '按备案产品'
+    };
+    var dimensionOrder = ['product', 'project'];
+    var currentDim = 'product';
+    /** 从账单 Tab（按部门）进入账单明细时，限定为这些部门路径（前缀匹配）；null 表示不按部门限定 */
+    var multiDeptScope = null;
+    /** 从账单 Tab（按分账标签（V2.0扩展））进入账单明细时，限定为标签取值；与 multiDeptScope 互斥 */
+    var billListTagFilter = null;
+    /** 账单 Tab 统计维度：dept | tag */
+    var billStatMode = 'dept';
+    /** 按分账标签（V2.0扩展）时聚合列：tag1 | tag2 */
+    var billAllocTagAxis = 'tag1';
+
+    /**
+     * 月度账单总览中的「账期级状态」示意（与 bill-monthly-overview.html 一致）。
+     * 一期取消账单确认与「已关账」：仅保留 未出账 / 出账中 / 已出账；已出账时各部门/标签行均为已出账。
+     * 工具栏：「出账中」或「未出账」隐藏推送；行内推送在出账中或未出账时隐藏。
+     */
+    var MONTHLY_BILL_PERIOD_STATUS = {
+        '2026-05': '未出账',
+        '2026-04': '出账中',
+        '2026-03': '已出账',
+        '2026-02': '已出账',
+        '2026-01': '已出账',
+        '2025-12': '已出账',
+        '2025-11': '已出账',
+        '2025-10': '已出账',
+        '2025-09': '已出账',
+        '2025-08': '已出账',
+        '2025-07': '已出账',
+        '2025-06': '已出账'
+    };
+
+    function getMonthlyBillPeriodStatus(period) {
+        if (!period) return null;
+        return Object.prototype.hasOwnProperty.call(MONTHLY_BILL_PERIOD_STATUS, period)
+            ? MONTHLY_BILL_PERIOD_STATUS[period]
+            : null;
+    }
+
+    function padBillMonthPart(n) {
+        return (n < 10 ? '0' : '') + n;
+    }
+
+    function formatBillMonth(y, m) {
+        return y + '-' + padBillMonthPart(m);
+    }
+
+    /** 自然年月 ±delta 月（delta 可为负），返回 { y, m }，m 为 1–12 */
+    function addCalendarMonths(y, m, delta) {
+        var d = new Date(y, m - 1 + delta, 1);
+        return { y: d.getFullYear(), m: d.getMonth() + 1 };
+    }
+
+    /**
+     * 按「当前自然月 10 日 00:00」规则：此前最晚可看 N−2 月；当日及之后最晚可看 N−1 月（上月正式账单）。
+     * ref 缺省为 new Date()；对接后以服务端为准。
+     */
+    function getLatestViewableBillMonthRef(ref) {
+        var dt = ref || new Date();
+        var y = dt.getFullYear();
+        var mo = dt.getMonth() + 1;
+        var day = dt.getDate();
+        var back = day < 10 ? 2 : 1;
+        var t = addCalendarMonths(y, mo, -back);
+        return formatBillMonth(t.y, t.m);
+    }
+
+    function compareBillMonth(a, b) {
+        if (!a || !b) return 0;
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+    }
+
+    function getEarliestConfiguredBillMonth() {
+        var keys = Object.keys(MONTHLY_BILL_PERIOD_STATUS);
+        keys.sort();
+        return keys.length ? keys[0] : '2025-06';
+    }
+
+    function clampBillMonthToViewPolicy(val, refDate) {
+        var minM = getEarliestConfiguredBillMonth();
+        var maxM = getLatestViewableBillMonthRef(refDate);
+        var v = val;
+        if (compareBillMonth(v, minM) < 0) v = minM;
+        if (compareBillMonth(v, maxM) > 0) v = maxM;
+        return v;
+    }
+
+    /** 为账期控件设置 min/max，并将当前值钳在可查看范围内 */
+    function applyGlobalBillMonthBounds(refDate) {
+        var gel = document.getElementById('globalBillMonth');
+        if (!gel) return;
+        var minM = getEarliestConfiguredBillMonth();
+        var maxM = getLatestViewableBillMonthRef(refDate);
+        if (compareBillMonth(maxM, minM) < 0) maxM = minM;
+        gel.setAttribute('min', minM);
+        gel.setAttribute('max', maxM);
+        var cur = gel.value;
+        if (!cur || !/^\d{4}-\d{2}$/.test(cur)) {
+            gel.value = maxM;
+            return;
+        }
+        var clamped = clampBillMonthToViewPolicy(cur, refDate);
+        if (clamped !== gel.value) gel.value = clamped;
+    }
+
+    /** 一期无「已关账」账期态；保留函数以免调用处改动，恒为 false */
+    function isSelectedMonthlyBillClosed() {
+        return false;
+    }
+
+    /** 当前全局账期在月度总览中是否为「出账中」 */
+    function isSelectedMonthlyBillIssuing() {
+        var el = document.getElementById('globalBillMonth');
+        var sel = el && el.value ? el.value : '';
+        return getMonthlyBillPeriodStatus(sel) === '出账中';
+    }
+
+    /** 当前全局账期在月度总览中是否为「未出账」 */
+    function isSelectedMonthlyBillUnissued() {
+        var el = document.getElementById('globalBillMonth');
+        var sel = el && el.value ? el.value : '';
+        return getMonthlyBillPeriodStatus(sel) === '未出账';
+    }
+
+    /** 账期为未出账或出账中时，账单详情各 Tab 金额类数据展示为 -- */
+    function isBillDetailPeriodDashOnly() {
+        return isSelectedMonthlyBillUnissued() || isSelectedMonthlyBillIssuing();
+    }
+
+    /** 当前全局账期在月度总览中的账期级状态；未在表中配置时为 null */
+    function getSelectedGlobalBillMonthPeriodStatus() {
+        var el = document.getElementById('globalBillMonth');
+        var sel = el && el.value ? el.value : '';
+        return getMonthlyBillPeriodStatus(sel);
+    }
+
+    /**
+     * 账单 Tab 列展示用状态：账期「出账中」→ 统一「出账中」；
+     * 「未出账」→ 统一「未出账」；「已出账」或 null → 行级均为已出账（一期无已关账）。
+     */
+    function billTabRowStatusFromMonthlyPeriod(rowResolvedStatus) {
+        var p = getSelectedGlobalBillMonthPeriodStatus();
+        if (p === '出账中') return '出账中';
+        if (p === '未出账') return '未出账';
+        return rowResolvedStatus;
+    }
+
+    /** 推送账单弹窗：部门多选由组织树路径填充（仅一次），交互与消息推送策略页 finops-ms 一致 */
+    var pushBillDeptMsApi = null;
+    var pushBillUserMsApi = null;
+
+    function fillPushBillDeptMsOptionsFromTreeOnce() {
+        var root = document.getElementById('pushBillDeptMsOptions');
+        if (!root || root.dataset.filledFromTree === '1') return;
+        root.dataset.filledFromTree = '1';
+        root.innerHTML = '';
+        var paths = collectDeptPaths(deptTreeRoot, '');
+        paths.sort().forEach(function (p) {
+            var row = document.createElement('div');
+            row.className = 'finops-ms-row';
+            row.setAttribute('data-value', p);
+            var label = p.split('/').join(' / ');
+            row.setAttribute('data-label', label);
+            var sp = document.createElement('span');
+            sp.textContent = label;
+            var ck = document.createElement('span');
+            ck.className = 'finops-ms-check';
+            ck.textContent = '✓';
+            row.appendChild(sp);
+            row.appendChild(ck);
+            root.appendChild(row);
+        });
+    }
+
+    function ensurePushBillMsInited() {
+        fillPushBillDeptMsOptionsFromTreeOnce();
+        if (typeof FinOpsMultiselect === 'undefined') return;
+        if (!pushBillDeptMsApi) {
+            pushBillDeptMsApi = FinOpsMultiselect.init({
+                tagsId: 'pushBillDeptMsTags',
+                ddId: 'pushBillDeptMsDd',
+                triggerId: 'pushBillDeptMsTrigger',
+                hiddenId: 'pushBillDeptMsHidden',
+                ddSearchId: 'pushBillDeptMsDdSearch',
+                optionsId: 'pushBillDeptMsOptions',
+                searchId: 'pushBillDeptMsSearch',
+                placeholder: '请选择部门'
+            });
+        }
+        if (!pushBillUserMsApi) {
+            pushBillUserMsApi = FinOpsMultiselect.init({
+                tagsId: 'pushBillUserMsTags',
+                ddId: 'pushBillUserMsDd',
+                triggerId: 'pushBillUserMsTrigger',
+                hiddenId: 'pushBillUserMsHidden',
+                ddSearchId: 'pushBillUserMsDdSearch',
+                optionsId: 'pushBillUserMsOptions',
+                searchId: 'pushBillUserMsSearch',
+                placeholder: '请选择人员'
+            });
+        }
+    }
+
+    function syncPushBillScopePickers() {
+        var rad = document.querySelector('#pushBillModal input[name="pushBillScope"]:checked');
+        var v = rad ? rad.value : 'full';
+        var fh = document.getElementById('pushBillFullHint');
+        var dp = document.getElementById('pushBillDeptPick');
+        var pp = document.getElementById('pushBillPersonPick');
+        if (fh) fh.style.display = v === 'full' ? 'block' : 'none';
+        if (dp) dp.style.display = v === 'dept' ? 'block' : 'none';
+        if (pp) pp.style.display = v === 'user' ? 'block' : 'none';
+    }
+
+    function getBillViewPageUrl(month) {
+        try {
+            var u = new URL('bill-monthly-overview.html', window.location.href);
+            u.searchParams.set('bill_month', month);
+            return u.href;
+        } catch (e) {
+            return 'bill-monthly-overview.html?bill_month=' + encodeURIComponent(month);
+        }
+    }
+
+    /** 与 resource-bill-detail.html 详情各区块字段一致，供表头设置勾选与列顺序（必选列除外可隐藏） */
+    var resourceColumns = [
+        { key: 'instanceId', label: '实例 ID', always: true },
+        { key: 'instanceName', label: '实例名称', always: true },
+        { key: 'billMonth', label: '账期', always: true, skipAdv: true },
+        { key: 'specCluster', label: '规格簇', skipAdv: true },
+        { key: 'spec', label: '规格' },
+        { key: 'configAttr', label: '配置属性' },
+        { key: 'env', label: '环境' },
+        { key: 'startTime', label: '开始使用时间' },
+        { key: 'endTime', label: '结束使用时间' },
+        { key: 'payer', label: '费用归属人' },
+        { key: 'consumer', label: '使用人' },
+        { key: 'admin', label: '管理员' },
+        { key: 'deptLevel1', label: '一级部门' },
+        { key: 'deptLevel2', label: '二级部门' },
+        { key: 'projectName', label: '备案产品' },
+        { key: 'unitPrice', label: '单价' },
+        { key: 'priceUnit', label: '单价单位' },
+        { key: 'usage', label: '用量' },
+        { key: 'usageUnit', label: '用量单位' },
+        { key: 'duration', label: '使用时长' },
+        { key: 'durationUnit', label: '时长单位' },
+        { key: 'originPrice', label: '价格' },
+        { key: 'settleTime', label: '账单结算时间' },
+        { key: 'orderId', label: '申购单 ID' },
+        { key: 'relatedDocId', label: '关联单据 ID' },
+        { key: 'relatedInst', label: '关联实例 ID/IP' },
+        { key: 'remark', label: '备注属性' }
+    ];
+    var visibleCols = {};
+    resourceColumns.forEach(function (c) { visibleCols[c.key] = true; });
+    var resourceColumnOrder = resourceColumns.map(function (c) { return c.key; });
+    var colDnDDraggedRow = null;
+
+    var RES_BILL_CTX_KEY = 'finops_resource_bill_context';
+    var RES_DETAIL_KEY = 'finops_resource_bill_detail';
+    /** 从账单明细跳转带入的筛选（null 表示未跳转，展示全部） */
+    var resourceJumpFilter = null;
+    var resInstanceSearchTagSeq = 1;
+    /** 实例 ID / 实例名称关键词标签（多标签之间为「且」） */
+    var resInstanceSearchTags = [];
+    /** 高级筛选「应用」后的条件（列 key → 关键字），列表过滤以此为准 */
+    var resAdvApplied = {};
+
+    /** 服务分类侧栏筛选：一级服务目录 › 二级服务分类（不展示规格簇层级；与定价管理侧栏一致） */
+    var resServiceCategoryFilter = { mode: 'all' };
+    var resServiceCategoryData = {
+        '物理机': {
+            '通算服务器': ['标准通用服务器', '高性能服务器', '存储型服务器'],
+            '智算服务器': ['图形渲染', 'AI推理', 'AI训练'],
+            '硬件存储服务器': ['块存储-SAN']
+        },
+        '虚机化': {
+            '虚拟机': ['通用型-虚拟机', '高性能型-虚拟机']
+        },
+        '容器': {
+            '容器': ['通算型-容器', '智算型-容器']
+        },
+        '存储': {
+            '对象存储': ['对象存储服务 HDD', '对象存储服务 SSD'],
+            '文件存储NAS': ['通用型（NFS）', '高性能型'],
+            '块存储': ['块存储 HDD', '块存储 SSD', '商业存储']
+        },
+        '中间件': {
+            'Kafka': ['经济型', '通用型'],
+            'RocketMQ': ['经济型', '通用型'],
+            'RabbitMQ': ['经济型', '通用型'],
+            'Elasticsearch': ['经济型', '通用型', '高性能型']
+        },
+        '数据库': {
+            'MySQL': ['经济型', '通用型', '高性能型'],
+            'Oracle': ['通用型', '高性能型'],
+            'PostgreSQL': ['经济型', '通用型', '高性能型'],
+            'Redis': ['经济型', '通用型', '高性能型'],
+            'MongoDB': ['经济型', '通用型', '高性能型']
+        },
+        '网络': {
+            '流量': ['互联网出口带宽', '专线接入'],
+            '二级域名': [],
+            '公网DNS': ['域名解析 A 解析', '域名解析 Cname 解析'],
+            '内网DNS': ['域名解析 A 解析', '域名解析 Cname 解析'],
+            '负载均衡': ['负载均衡 Http', '负载均衡 Https', '负载均衡 TCP'],
+            '端口映射': ['公网端口映射'],
+            '域名证书': [],
+            '防火墙策略': ['策略'],
+            '流量管控': ['策略']
+        }
+    };
+
+    var resourceRows = [
+        {
+            id: 'r1',
+            instanceId: 'vm-8f3a2c1e-001',
+            instanceName: 'app-gateway-01',
+            svcCatL1: '虚机化',
+            svcCatL2: '虚拟机',
+            svcCatL3: '通用型-虚拟机',
+            serviceName: '云主机',
+            billMonth: '2026-05',
+            billDate: '2026-03-05',
+            region: '华北-北京',
+            deptLevel1: '研发中心',
+            deptLevel2: '基础架构部',
+            deptPath: '研发中心/基础架构部/平台组',
+            specCluster: '云主机-通用型云主机',
+            spec: '云主机-通用型云主机-通用型云主机（2C/4G）',
+            configAttr: '2 vCPU / 4 GiB / 50GB 系统盘',
+            address: '10.12.0.15',
+            startTime: '2026-03-01 00:00:00',
+            endTime: '2026-03-31 23:59:59',
+            payer: 'acct_settle_001',
+            consumer: 'acct_use_007',
+            admin: 'acct_admin_002',
+            projectName: 'FinOps 试点',
+            chargeMode: '按量计费',
+            unitPrice: '0.42',
+            priceUnit: '元/(GB·天)',
+            usage: '720',
+            usageUnit: 'GB',
+            duration: '31',
+            durationUnit: '天',
+            usageRate: '62%',
+            originPrice: '302.40',
+            coupon: '0.00',
+            payable: '302.40',
+            env: '生产',
+            settleTime: '2026-04-01 19:05:00',
+            tag1: '研发中心',
+            tag2: 'BU-A',
+            orderId: 'ORD-PO-202603-8891',
+            relatedDocId: '—',
+            relatedInst: '—',
+            remark: '生产网关',
+            discountRate: '—（预留）',
+            discountPrice: '—（预留）',
+            priceYuan: '302.40'
+        },
+        {
+            id: 'r2',
+            instanceId: 'cdb-mysql-9921',
+            instanceName: 'order-db',
+            svcCatL1: '数据库',
+            svcCatL2: 'MySQL',
+            svcCatL3: '通用型',
+            serviceName: '云数据库 MySQL',
+            billMonth: '2026-05',
+            billDate: '2026-03-12',
+            region: '华北-北京',
+            deptLevel1: '研发中心',
+            deptLevel2: '业务研发部',
+            deptPath: '研发中心/业务研发部/订单交易组',
+            specCluster: '高可用版',
+            spec: '高可用版-2C4G-100GB',
+            configAttr: '主从 / 100GB SSD',
+            address: '172.16.8.20',
+            startTime: '2026-03-01 00:00:00',
+            endTime: '2026-03-31 23:59:59',
+            payer: 'acct_settle_001',
+            consumer: 'acct_use_007',
+            admin: 'acct_admin_002',
+            projectName: '默认项目',
+            chargeMode: '包年包月',
+            unitPrice: '—',
+            priceUnit: '元/(GB·天)',
+            usage: '128',
+            usageUnit: 'GB',
+            duration: '31',
+            durationUnit: '天',
+            usageRate: '48%',
+            originPrice: '800.00',
+            coupon: '50.00',
+            payable: '750.00',
+            env: '生产',
+            settleTime: '2026-04-01 19:05:00',
+            tag1: '研发中心',
+            tag2: 'BU-A',
+            orderId: 'ORD-PO-202602-1200',
+            relatedDocId: '—',
+            relatedInst: '—',
+            remark: '合同价场景下官网单价默认不展示',
+            discountRate: '—（预留）',
+            discountPrice: '—（预留）',
+            priceYuan: '800.00'
+        },
+        {
+            id: 'r3',
+            instanceId: 'oss-bucket-finops',
+            instanceName: 'finops-metering',
+            svcCatL1: '存储',
+            svcCatL2: '对象存储',
+            svcCatL3: '对象存储服务 HDD',
+            serviceName: '对象存储',
+            billMonth: '2026-05',
+            billDate: '2026-03-05',
+            region: '华东-上海',
+            deptLevel1: '运维中心',
+            deptLevel2: '系统运维部',
+            deptPath: '运维中心/系统运维部/监控组',
+            specCluster: '标准存储',
+            spec: '标准存储-按量',
+            configAttr: '多 AZ',
+            address: '—',
+            startTime: '2026-03-01 00:00:00',
+            endTime: '2026-03-31 23:59:59',
+            payer: 'acct_settle_001',
+            consumer: 'acct_use_012',
+            admin: 'acct_admin_002',
+            projectName: 'FinOps 试点',
+            chargeMode: '按量计费',
+            unitPrice: '0.12',
+            priceUnit: '元/(GB·天)',
+            usage: '420',
+            usageUnit: 'GB',
+            duration: '31',
+            durationUnit: '天',
+            usageRate: '71%',
+            originPrice: '50.40',
+            coupon: '0.00',
+            payable: '50.40',
+            env: '测试',
+            settleTime: '2026-04-01 19:05:00',
+            tag1: '运维中心',
+            tag2: 'BU-B',
+            orderId: '—',
+            relatedDocId: '—',
+            relatedInst: '—',
+            remark: '计量归档桶',
+            discountRate: '—（预留）',
+            discountPrice: '—（预留）',
+            priceYuan: '50.40'
+        },
+        {
+            id: 'r4',
+            instanceId: 'clb-prod-008',
+            instanceName: 'ingress-lb',
+            svcCatL1: '网络',
+            svcCatL2: '负载均衡',
+            svcCatL3: '负载均衡 Https',
+            serviceName: '负载均衡',
+            billMonth: '2026-05',
+            billDate: '2026-03-18',
+            region: '华南-广州',
+            deptLevel1: '职能中心',
+            deptLevel2: '采购与行政部',
+            deptPath: '职能中心/采购与行政部/采购组',
+            specCluster: '应用型',
+            spec: 'CLB-按量',
+            configAttr: '公网 / 50Mbps',
+            address: '—',
+            startTime: '2026-03-01 00:00:00',
+            endTime: '2026-03-31 23:59:59',
+            payer: 'acct_settle_001',
+            consumer: 'acct_use_007',
+            admin: 'acct_admin_002',
+            projectName: 'FinOps 试点',
+            chargeMode: '按量计费',
+            unitPrice: '0.08',
+            priceUnit: '元/(GB·天)',
+            usage: '960',
+            usageUnit: 'GB',
+            duration: '31',
+            durationUnit: '天',
+            usageRate: '55%',
+            originPrice: '120.00',
+            coupon: '0.00',
+            payable: '120.00',
+            env: '生产',
+            settleTime: '2026-04-01 19:05:00',
+            tag1: '职能中心',
+            tag2: 'BU-B',
+            orderId: '—',
+            relatedDocId: '—',
+            relatedInst: '—',
+            remark: '入口负载均衡',
+            discountRate: '—（预留）',
+            discountPrice: '—（预留）',
+            priceYuan: '120.00'
+        }
+    ];
+
+    (function cloneResourceRowsForEarlierBillMonths() {
+        var base = resourceRows.slice();
+        var extraMonths = ['2026-04', '2026-03', '2026-02'];
+        base.forEach(function (r) {
+            extraMonths.forEach(function (bm) {
+                var c = {};
+                for (var k in r) {
+                    if (Object.prototype.hasOwnProperty.call(r, k)) c[k] = r[k];
+                }
+                c.id = r.id + '__' + bm;
+                c.billMonth = bm;
+                resourceRows.push(c);
+            });
+        });
+    })();
+
+    /**
+     * 资源明细 · 高级筛选：固定字段集，控件类型按字段特性区分（text / date / datalist）。
+     * 筛选逻辑仍为行内字段子串匹配（与 rowMatchesAdvDrawer 一致）。
+     */
+    var resAdvFieldDefs = [
+        { key: 'instanceId', label: '实例 ID', control: 'text', placeholder: '模糊匹配，留空忽略' },
+        { key: 'instanceName', label: '实例名称', control: 'text', placeholder: '模糊匹配，留空忽略' },
+        { key: 'deptLevel1', label: '一级部门', control: 'datalist', placeholder: '选择或输入，留空忽略' },
+        { key: 'deptLevel2', label: '二级部门', control: 'datalist', placeholder: '选择或输入，留空忽略' },
+        { key: 'spec', label: '规格', control: 'datalist', placeholder: '选择或输入，留空忽略' },
+        { key: 'startTime', label: '开始使用时间', control: 'date', placeholder: '' },
+        { key: 'endTime', label: '结束使用时间', control: 'date', placeholder: '' },
+        { key: 'payer', label: '费用归属人', control: 'text', placeholder: '模糊匹配，留空忽略' },
+        { key: 'consumer', label: '使用人', control: 'text', placeholder: '模糊匹配，留空忽略' },
+        { key: 'admin', label: '管理员', control: 'text', placeholder: '模糊匹配，留空忽略' },
+        { key: 'projectName', label: '备案产品', control: 'datalist', placeholder: '选择或输入，留空忽略' },
+        { key: 'env', label: '环境', control: 'datalist', placeholder: '选择或输入，留空忽略' },
+        { key: 'orderId', label: '申购单 ID', control: 'text', placeholder: '模糊匹配，留空忽略' },
+        { key: 'relatedDocId', label: '关联单据 ID', control: 'text', placeholder: '模糊匹配，留空忽略' }
+    ];
+
+    function getResAdvDistinctValues(fieldKey) {
+        var seen = {};
+        resourceRows.forEach(function (r) {
+            var v = r[fieldKey];
+            if (v == null) return;
+            var s = String(v).trim();
+            if (!s || s === '—') return;
+            seen[s] = 1;
+        });
+        return Object.keys(seen).sort();
+    }
+
+    function billListRowBillMonthCell() {
+        return document.getElementById('globalBillMonth').value;
+    }
+
+    /** 部门节点账单状态（一期无账单确认，恒为已出账） */
+    function resolveDeptBillRowStatus() {
+        return '已出账';
+    }
+
+    function formatBillStatusHtml(statusText) {
+        var cls = 'bill-status-cell';
+        if (statusText === '出账中') cls += ' bill-status-cell--ing';
+        else if (statusText === '未出账') cls += ' bill-status-cell--none';
+        else cls += ' bill-status-cell--issued';
+        return '<span class="' + cls + '">' + escapeHtml(statusText) + '</span>';
+    }
+
+    /** 表头「账单状态」旁说明标识，悬停 / 键盘聚焦时浮层滑动显示 */
+    function billStatusTheadCellHtml() {
+        return (
+            '<th class="th-bill-status">' +
+            '<span class="th-bill-status-label">账单状态</span>' +
+            '<span class="bill-status-help" tabindex="0" aria-label="账单状态说明，悬停或按 Tab 聚焦查看">' +
+            '<span class="bill-status-help__icon" aria-hidden="true">?</span>' +
+            '<div class="bill-status-help__panel" role="tooltip">' +
+            '<div class="bill-status-help__title">账单状态字段说明</div>' +
+            '<p class="bill-status-help__p">本列与<strong>月度总览账期级状态</strong>联动：账期为<strong>出账中 / 未出账</strong>时，各行<strong>统一</strong>显示对应文案；账期为<strong>已出账</strong>时，各部门/标签行均为<strong>已出账</strong>（一期已取消账单确认与「已关账」态）。</p>' +
+            '<ul class="bill-status-help__ul">' +
+            '<li><strong>已出账</strong>：系统已完成出账，本行金额已定稿。</li>' +
+            '<li><strong>出账中 / 未出账</strong>：与总览该账期状态一致，本表各行<strong>相同</strong>。</li>' +
+            '</ul>' +
+            '</div>' +
+            '</span>' +
+            '</th>'
+        );
+    }
+
+    /** 表头「?」说明用 fixed 定位，避免表格 / flex 父级 overflow 裁剪 */
+    function setupBillStatusHelpOverlay() {
+        var root = document.getElementById('panel-bill');
+        if (!root || root.dataset.billStatusHelpBound === '1') return;
+        root.dataset.billStatusHelpBound = '1';
+
+        function hideAllExcept(keep) {
+            root.querySelectorAll('.bill-status-help--show').forEach(function (w) {
+                if (keep && w === keep) return;
+                w.classList.remove('bill-status-help--show');
+                var p = w.querySelector('.bill-status-help__panel');
+                if (p) {
+                    p.style.left = '';
+                    p.style.top = '';
+                    p.style.width = '';
+                }
+            });
+        }
+
+        function place(wrap) {
+            var panel = wrap.querySelector('.bill-status-help__panel');
+            var icon = wrap.querySelector('.bill-status-help__icon');
+            if (!panel || !icon) return;
+            hideAllExcept(wrap);
+            var r = icon.getBoundingClientRect();
+            var w = Math.min(360, Math.max(200, window.innerWidth - 16));
+            var left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+            panel.style.width = w + 'px';
+            panel.style.left = left + 'px';
+            wrap.classList.add('bill-status-help--show');
+            var preferTop = r.bottom + 8;
+            panel.style.top = preferTop + 'px';
+            requestAnimationFrame(function () {
+                var pr = panel.getBoundingClientRect();
+                if (pr.bottom > window.innerHeight - 8) {
+                    panel.style.top = Math.max(8, r.top - 8 - pr.height) + 'px';
+                }
+                if (parseFloat(panel.style.top) < 8) panel.style.top = '8px';
+            });
+        }
+
+        function hide(wrap) {
+            wrap.classList.remove('bill-status-help--show');
+            var panel = wrap.querySelector('.bill-status-help__panel');
+            if (panel) {
+                panel.style.left = '';
+                panel.style.top = '';
+                panel.style.width = '';
+            }
+        }
+
+        root.addEventListener(
+            'mouseover',
+            function (e) {
+                if (!e.target || !e.target.closest) return;
+                var wrap = e.target.closest('.bill-status-help');
+                if (!wrap || !root.contains(wrap)) return;
+                var from = e.relatedTarget;
+                if (from && wrap.contains(from)) return;
+                place(wrap);
+            },
+            true
+        );
+
+        root.addEventListener('mouseout', function (e) {
+            if (!e.target || !e.target.closest) return;
+            var wrap = e.target.closest('.bill-status-help');
+            if (!wrap || !root.contains(wrap)) return;
+            var toEl = e.relatedTarget;
+            if (toEl && wrap.contains(toEl)) return;
+            hide(wrap);
+        });
+
+        root.addEventListener(
+            'focusin',
+            function (e) {
+                var wrap = e.target && e.target.closest ? e.target.closest('.bill-status-help') : null;
+                if (!wrap || !root.contains(wrap)) return;
+                place(wrap);
+            },
+            true
+        );
+
+        root.addEventListener(
+            'focusout',
+            function (e) {
+                var wrap = e.target && e.target.closest ? e.target.closest('.bill-status-help') : null;
+                if (!wrap || !root.contains(wrap)) return;
+                setTimeout(function () {
+                    if (!wrap.matches(':focus-within')) hide(wrap);
+                }, 0);
+            },
+            true
+        );
+
+        window.addEventListener('resize', function () {
+            hideAllExcept(null);
+        });
+    }
+
+    /** 分账标签行级状态（一期均为已出账） */
+    function billListRowBillStatusForTagRow() {
+        return '已出账';
+    }
+
+    function syncGlobalMonthToHidden() {
+        var m = document.getElementById('globalBillMonth').value;
+        var mu = document.getElementById('multiMonth');
+        var rs = document.getElementById('resMonth');
+        if (mu) mu.value = m;
+        if (rs) rs.value = m;
+    }
+
+    function setBillNav(deptPath, serviceName) {}
+
+    function updateRerunPushBillButtonsVisibility() {
+        var closed = isSelectedMonthlyBillClosed();
+        var issuing = isSelectedMonthlyBillIssuing();
+        var unissued = isSelectedMonthlyBillUnissued();
+        var rerun = document.getElementById('btnRerunCurrentMonthBill');
+        var push = document.getElementById('btnPushBill');
+        var corner = document.getElementById('billGlobalActionsCorner');
+        if (rerun) rerun.style.display = closed ? 'none' : '';
+        if (push) push.style.display = closed || issuing || unissued ? 'none' : '';
+        if (corner) corner.style.display = closed ? 'none' : '';
+    }
+
+    function onGlobalMonthChange() {
+        applyGlobalBillMonthBounds();
+        syncGlobalMonthToHidden();
+        updateRerunPushBillButtonsVisibility();
+        renderBillPanel();
+        renderMultiTable();
+        renderResourceTable();
+    }
+
+    function getFilteredRowsForScope() {
+        var month = document.getElementById('globalBillMonth').value;
+        return resourceRows.filter(function (row) {
+            if (row.billMonth !== month) return false;
+            if (billListTagFilter) {
+                if (billListTagFilter.kind === 'axis1') return row.tag1 === billListTagFilter.v;
+                if (billListTagFilter.kind === 'axis2') return row.tag2 === billListTagFilter.v;
+                if (billListTagFilter.kind === 'pair') {
+                    return row.tag1 === billListTagFilter.tag1 && row.tag2 === billListTagFilter.tag2;
+                }
+                return row.tag1 === billListTagFilter.tag1 && row.tag2 === billListTagFilter.tag2;
+            }
+            if (!multiDeptScope || !multiDeptScope.length) return true;
+            for (var i = 0; i < multiDeptScope.length; i++) {
+                var p = multiDeptScope[i];
+                if (row.deptPath === p || (row.deptPath && row.deptPath.indexOf(p + '/') === 0)) return true;
+            }
+            return false;
+        });
+    }
+
+    function aggregateDimFromScoped(dim) {
+        var rows = getFilteredRowsForScope();
+        var key = dim === 'product' ? 'serviceName' : 'projectName';
+        var map = {};
+        rows.forEach(function (row) {
+            var n = row[key] || '（未填）';
+            if (!map[n]) map[n] = 0;
+            map[n] += parseFloat(row.payable) || 0;
+        });
+        var total = 0;
+        Object.keys(map).forEach(function (k) {
+            total += map[k];
+        });
+        return Object.keys(map)
+            .map(function (k) {
+                var amt = map[k];
+                var ratio = total ? ((amt / total) * 100).toFixed(1) + '%' : '0%';
+                return { name: k, amount: amt, ratio: ratio, mom: '—' };
+            })
+            .sort(function (a, b) {
+                return b.amount - a.amount;
+            });
+    }
+
+    function updateMultiScopeBanner() {
+        var el = document.getElementById('multiScopeBanner');
+        if (!el) return;
+        el.classList.remove('is-on');
+        if (billListTagFilter) {
+            el.style.display = 'flex';
+            el.classList.add('is-on');
+            var label = '分账标签（V2.0扩展）';
+            var val = '';
+            if (billListTagFilter.kind === 'axis1') {
+                label = '分账标签1（V2.0扩展）';
+                val = billListTagFilter.v;
+            } else if (billListTagFilter.kind === 'axis2') {
+                label = '分账标签2（V2.0扩展）';
+                val = billListTagFilter.v;
+            } else {
+                val =
+                    (billListTagFilter.tag1 != null ? String(billListTagFilter.tag1) : '') +
+                    ' / ' +
+                    (billListTagFilter.tag2 != null ? String(billListTagFilter.tag2) : '');
+            }
+            el.innerHTML =
+                '<span class="multi-scope-tag"><span class="multi-scope-tag__text">' +
+                escapeHtml(label) +
+                '：' +
+                escapeHtml(val) +
+                '</span><button type="button" class="multi-scope-tag__clear" id="btnClearMultiScope" aria-label="清除筛选范围">×</button></span>';
+            return;
+        }
+        if (multiDeptScope && multiDeptScope.length) {
+            el.style.display = 'flex';
+            el.classList.add('is-on');
+            var valText =
+                multiDeptScope.length === 1
+                    ? multiDeptScope[0]
+                    : '已选 ' + multiDeptScope.length + ' 个节点';
+            el.innerHTML =
+                '<span class="multi-scope-tag"><span class="multi-scope-tag__text">部门：' +
+                escapeHtml(valText) +
+                '</span><button type="button" class="multi-scope-tag__clear" id="btnClearMultiScope" aria-label="清除筛选范围">×</button></span>';
+            return;
+        }
+        el.style.display = 'none';
+        el.innerHTML = '';
+    }
+
+    function getBillResourceRowsForMonth() {
+        var month = document.getElementById('globalBillMonth').value;
+        return resourceRows.filter(function (row) {
+            return row.billMonth === month;
+        });
+    }
+
+    function aggregateTagBillRows() {
+        var rows = getBillResourceRowsForMonth();
+        var useTag2 = billAllocTagAxis === 'tag2';
+        var map = {};
+        rows.forEach(function (row) {
+            var raw = useTag2
+                ? row.tag2 != null
+                    ? String(row.tag2)
+                    : ''
+                : row.tag1 != null
+                  ? String(row.tag1)
+                  : '';
+            var disp = raw || '（未填）';
+            if (!map[disp]) map[disp] = { displayValue: disp, amount: 0, axis: useTag2 ? 'tag2' : 'tag1' };
+            map[disp].amount += parseFloat(row.payable) || 0;
+        });
+        var list = Object.keys(map).map(function (k) {
+            return map[k];
+        });
+        var total = 0;
+        list.forEach(function (r) {
+            total += r.amount;
+        });
+        list.forEach(function (r) {
+            r.ratio = total ? ((r.amount / total) * 100).toFixed(1) + '%' : '0%';
+            r.mom = '—';
+        });
+        list.sort(function (a, b) {
+            return b.amount - a.amount;
+        });
+        return list;
+    }
+
+    function renderTagBillTable() {
+        var thead = document.getElementById('deptBillThead');
+        var tbody = document.getElementById('deptBillTableBody');
+        if (!thead || !tbody) return;
+        var colLabel = billAllocTagAxis === 'tag2' ? '分账标签2（V2.0扩展）' : '分账标签1（V2.0扩展）';
+        thead.innerHTML =
+            '<tr><th style="width:42px;"><input type="checkbox" id="deptSelectAll" title="全选本页可见行"></th>' +
+            '<th>' +
+            colLabel +
+            '</th><th>费用（元）</th><th>占比</th><th>环比</th><th>账期</th>' +
+            billStatusTheadCellHtml() +
+            '<th>操作</th></tr>';
+        var rows = aggregateTagBillRows();
+        var dash = isBillDetailPeriodDashOnly();
+        tbody.innerHTML = rows
+            .map(function (r, idx) {
+                var dv = r.displayValue;
+                var opsCell = dash
+                    ? '<span class="muted">--</span>'
+                    : '<button type="button" class="link js-tag-to-multi" data-axis="' +
+                      escapeHtml(r.axis) +
+                      '" data-v="' +
+                      escapeHtml(dv) +
+                      '">账单明细</button><span class="op-gap">|</span>' +
+                      '<button type="button" class="link js-tag-to-resource" data-axis="' +
+                      escapeHtml(r.axis) +
+                      '" data-v="' +
+                      escapeHtml(dv) +
+                      '">资源明细</button>';
+                return (
+                    '<tr data-axis="' +
+                    escapeHtml(r.axis) +
+                    '" data-v="' +
+                    escapeHtml(dv) +
+                    '">' +
+                    '<td><input type="checkbox" class="js-tag-check" data-axis="' +
+                    escapeHtml(r.axis) +
+                    '" data-v="' +
+                    escapeHtml(dv) +
+                    '"></td>' +
+                    '<td>' +
+                    escapeHtml(dv) +
+                    '</td><td class="amount">' +
+                    (dash ? '--' : r.amount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })) +
+                    '</td><td>' +
+                    (dash ? '--' : escapeHtml(r.ratio)) +
+                    '</td><td>' +
+                    (dash ? '--' : escapeHtml(r.mom)) +
+                    '</td><td>' +
+                    escapeHtml(billListRowBillMonthCell()) +
+                    '</td><td>' +
+                    formatBillStatusHtml(billTabRowStatusFromMonthlyPeriod(billListRowBillStatusForTagRow())) +
+                    '</td><td class="multi-ops">' +
+                    opsCell +
+                    '</td></tr>'
+                );
+            })
+            .join('');
+    }
+
+    function renderDeptBillTable() {
+        var thead = document.getElementById('deptBillThead');
+        var tbody = document.getElementById('deptBillTableBody');
+        if (!thead || !tbody) return;
+        thead.innerHTML =
+            '<tr><th style="width:42px;"><input type="checkbox" id="deptSelectAll" title="全选本页可见行"></th>' +
+            '<th>部门（组织树）</th><th>层级</th><th>费用（元）</th><th>占比</th><th>环比</th><th>账期</th>' +
+            billStatusTheadCellHtml() +
+            '<th>操作</th></tr>';
+        tbody.innerHTML = renderDeptBillRows(deptTreeRoot, true, '', false);
+    }
+
+    function syncBillDimToolbar() {
+        var dimSel = document.getElementById('billDimSelect');
+        var axisBox = document.getElementById('billAllocTagField');
+        var axisSel = document.getElementById('billAllocTagAxisSelect');
+        if (dimSel) dimSel.value = billStatMode === 'tag' ? 'tag' : 'dept';
+        if (axisBox) axisBox.style.display = billStatMode === 'tag' ? '' : 'none';
+        if (axisSel) axisSel.value = billAllocTagAxis;
+    }
+
+    function renderBillPanel() {
+        syncBillDimToolbar();
+        if (billStatMode === 'tag') renderTagBillTable();
+        else renderDeptBillTable();
+    }
+
+    function billListTagFilterToTagRestrict(f) {
+        if (!f) return null;
+        if (f.kind === 'axis1') return { tag1: f.v };
+        if (f.kind === 'axis2') return { tag2: f.v };
+        if (f.kind === 'pair') return { tag1: f.tag1, tag2: f.tag2 };
+        if (f.tag1 != null && f.tag2 != null) return { tag1: f.tag1, tag2: f.tag2 };
+        return null;
+    }
+
+    function billListTagFilterJumpSuffix(f) {
+        if (!f) return '';
+        if (f.kind === 'axis1') return ' · 分账标签1（V2.0扩展）「' + f.v + '」';
+        if (f.kind === 'axis2') return ' · 分账标签2（V2.0扩展）「' + f.v + '」';
+        if (f.kind === 'pair' || (f.tag1 != null && f.tag2 != null)) {
+            return ' · 分账标签（V2.0扩展）「' + f.tag1 + ' / ' + f.tag2 + '」';
+        }
+        return '';
+    }
+
+    function buildResourceBillQuerySummary() {
+        var parts = [];
+        var monthEl = document.getElementById('globalBillMonth');
+        parts.push('账期「' + (monthEl && monthEl.value ? monthEl.value : '—') + '」');
+        if (multiDeptScope && multiDeptScope.length) {
+            parts.push('账单部门「已选 ' + multiDeptScope.length + ' 条路径」');
+        }
+        if (billListTagFilter) {
+            var sx = billListTagFilterJumpSuffix(billListTagFilter).replace(/^ ·\s*/, '');
+            if (sx) parts.push(sx);
+        }
+        return parts.join(' · ');
+    }
+
+    function enrichResourceCtxQueries(ctx) {
+        if (!ctx) return;
+        if (!ctx.billQuerySummary) ctx.billQuerySummary = buildResourceBillQuerySummary();
+        if (ctx.detailQuerySummary == null || ctx.detailQuerySummary === '') {
+            ctx.detailQuerySummary = ctx.jumpLabel ? ctx.jumpLabel : '';
+        }
+    }
+
+    function applyResCategoryFromProductService(serviceName) {
+        if (!serviceName) return;
+        var found = null;
+        for (var ri = 0; ri < resourceRows.length; ri++) {
+            if (resourceRows[ri].serviceName === serviceName) {
+                found = resourceRows[ri];
+                break;
+            }
+        }
+        if (!found || !found.svcCatL1 || !found.svcCatL2) return;
+        resServiceCategoryFilter = { mode: 'l2', l1: found.svcCatL1, l2: found.svcCatL2 };
+        renderResServiceCategoryTree();
+        var sb = document.getElementById('resServiceCategorySidebar');
+        if (sb) sb.classList.remove('collapsed');
+        var tree = document.getElementById('resServiceCategoryTree');
+        if (tree) {
+            tree.querySelectorAll('.res-service-tree-item[data-sel="l1"]').forEach(function (el) {
+                if (el.getAttribute('data-l1') !== found.svcCatL1) return;
+                var childId = el.getAttribute('data-children-id');
+                var ch = childId ? document.getElementById(childId) : null;
+                var icon = el.querySelector('.res-service-tree-expand-icon');
+                if (ch && icon && !ch.classList.contains('expanded')) {
+                    icon.classList.add('expanded');
+                    ch.classList.add('expanded');
+                }
+            });
+        }
+        updateResCatTreeActiveState();
+    }
+
+    function renderDeptBillRows(nodes, parentExpanded, pathPrefix, ancestorDeptConfirmed) {
+        var html = '';
+        var dash = isBillDetailPeriodDashOnly();
+        (nodes || []).forEach(function (node) {
+            if (!parentExpanded) return;
+            var deptPathStr = pathPrefix ? pathPrefix + '/' + node.name : node.name;
+            var children = node.children || [];
+            var hasChildren = children.length > 0;
+            var expanded = isDeptExpanded(node);
+            var rowCls = 'dept-row-l' + node.level;
+            var nextAncestorClosed = false;
+            var billStatusText = billTabRowStatusFromMonthlyPeriod(resolveDeptBillRowStatus());
+            var toggle = hasChildren
+                ? '<button type="button" class="dept-toggle js-dept-toggle" data-id="' +
+                  escapeHtml(node.id) +
+                  '" data-level="' +
+                  node.level +
+                  '" aria-expanded="' +
+                  expanded +
+                  '">' +
+                  (expanded ? '▼' : '▶') +
+                  '</button>'
+                : '<span class="dept-toggle spacer" aria-hidden="true"> </span>';
+            var indent = (node.level - 1) * 18;
+            html +=
+                '<tr class="' +
+                rowCls +
+                '" data-dept-id="' +
+                escapeHtml(node.id) +
+                '" data-jump-dept-path="' +
+                escapeHtml(deptPathStr) +
+                '">' +
+                '<td><input type="checkbox" class="js-dept-check" data-dept-path="' +
+                escapeHtml(deptPathStr) +
+                '"></td>' +
+                '<td><div class="dept-cell" style="padding-left:' +
+                indent +
+                'px">' +
+                toggle +
+                '<span class="dept-name">' +
+                escapeHtml(node.name) +
+                '</span></div></td>' +
+                '<td><span class="level-tag">' +
+                deptLevelLabel(node.level) +
+                '</span></td>' +
+                '<td class="amount">' +
+                (dash ? '--' : node.amount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })) +
+                '</td><td>' +
+                (dash ? '--' : escapeHtml(node.ratio)) +
+                '</td><td>' +
+                (dash ? '--' : escapeHtml(node.mom)) +
+                '</td><td>' +
+                escapeHtml(billListRowBillMonthCell()) +
+                '</td><td>' +
+                formatBillStatusHtml(billStatusText) +
+                '</td><td class="multi-ops">' +
+                (dash
+                    ? '<span class="muted">--</span>'
+                    : '<button type="button" class="link js-dept-to-multi" data-dept-path="' +
+                      escapeHtml(deptPathStr) +
+                      '">账单明细</button><span class="op-gap">|</span>' +
+                      '<button type="button" class="link js-dept-to-resource" data-dept-path="' +
+                      escapeHtml(deptPathStr) +
+                      '">资源明细</button>') +
+                '</td></tr>';
+            if (hasChildren && expanded) html += renderDeptBillRows(children, true, deptPathStr, nextAncestorClosed);
+        });
+        return html;
+    }
+
+    function getCheckedDeptPaths() {
+        var out = [];
+        document.querySelectorAll('#deptBillTableBody .js-dept-check:checked').forEach(function (cb) {
+            out.push(cb.getAttribute('data-dept-path') || '');
+        });
+        return out.filter(Boolean);
+    }
+
+    function getCheckedTagBillRows() {
+        var out = [];
+        document.querySelectorAll('#deptBillTableBody .js-tag-check:checked').forEach(function (cb) {
+            out.push({
+                axis: cb.getAttribute('data-axis') || billAllocTagAxis,
+                v: cb.getAttribute('data-v') || ''
+            });
+        });
+        return out;
+    }
+
+    function zipExportHint(mode) {
+        var month = document.getElementById('globalBillMonth').value;
+        var n;
+        var unit;
+        if (billStatMode === 'tag') {
+            unit = '标签取值行数';
+            n = mode === 'selected' ? getCheckedTagBillRows().length : '全部';
+        } else {
+            unit = '部门节点数';
+            n = mode === 'selected' ? getCheckedDeptPaths().length : '全部';
+        }
+        alert(
+            '【ZIP 导出 · 原型】\n模式：' +
+                (mode === 'selected' ? '导出选中' : '导出全部') +
+                '\n统计视图：' +
+                (billStatMode === 'tag' ? '按分账标签（V2.0扩展）（' + (billAllocTagAxis === 'tag2' ? '标签2' : '标签1') + '）' : '按部门') +
+                '\n账期：' +
+                month +
+                '\n' +
+                unit +
+                '：' +
+                n +
+                '\n\n对接后端后将下载 ZIP（内含各部门或标签维度账单文件等）。'
+        );
+    }
+
+    function exportPdfHint(title) {
+        var month = document.getElementById('globalBillMonth').value;
+        alert(
+            '【PDF 导出 · 原型】\n' +
+                title +
+                '\n账期：' +
+                month +
+                '\n\n对接后端后将下载正式 PDF 文件（含生成时间、版式与印章区）。\n本环境不提供 CSV/Excel 账单导出。'
+        );
+    }
+
+    function switchTab(panel) {
+        document.querySelectorAll('#mainTabs .bill-tab').forEach(function (t) {
+            t.classList.toggle('active', t.getAttribute('data-panel') === panel);
+        });
+        document.querySelectorAll('.panel').forEach(function (p) {
+            p.classList.toggle('active', p.id === 'panel-' + panel);
+        });
+        if (panel === 'bill') renderBillPanel();
+        if (panel === 'multi') {
+            updateMultiScopeBanner();
+            renderMultiTable();
+        }
+        if (panel === 'resource') {
+            consumeResourceBillContext();
+            renderResourceTable();
+        }
+    }
+
+    function renderDimPills() {
+        var el = document.getElementById('dimPills');
+        el.innerHTML = dimensionOrder.map(function (d) {
+            return '<button type="button" class="dim-pill' + (d === currentDim ? ' active' : '') + '" data-dim="' + d + '">' + dimPillLabels[d] + '</button>';
+        }).join('');
+    }
+
+    function setResStatMode(mode) {
+        document.querySelectorAll('#resStatSegment .js-res-stat').forEach(function (btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-stat') === mode);
+        });
+    }
+
+    function deptLevelLabel(level) {
+        if (level === 1) return '一级部门';
+        if (level === 2) return '二级部门';
+        return '三级部门';
+    }
+
+    function renderMultiTheadFlat() {
+        document.getElementById('multiThead').innerHTML =
+            '<tr>' +
+            '<th id="multiDimCol">' +
+            escapeHtml(dimLabels[currentDim]) +
+            '</th>' +
+            '<th>费用（元）</th><th>占比</th><th>环比</th><th>账期</th><th>操作</th></tr>';
+    }
+
+    function renderMultiTable() {
+        updateMultiScopeBanner();
+        renderMultiTheadFlat();
+        var rows =
+            (multiDeptScope && multiDeptScope.length) || billListTagFilter
+                ? aggregateDimFromScoped(currentDim)
+                : multiData[currentDim] || [];
+        var dimAttr = escapeHtml(currentDim);
+        var bm = billListRowBillMonthCell();
+        var dash = isBillDetailPeriodDashOnly();
+        document.getElementById('multiTableBody').innerHTML = rows
+            .map(function (r) {
+                var amt = dash ? '--' : r.amount.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
+                var rat = dash ? '--' : escapeHtml(r.ratio);
+                var mom = dash ? '--' : escapeHtml(r.mom);
+                var opCell = dash
+                    ? '<span class="muted">--</span>'
+                    : '<button type="button" class="link js-to-resource">资源明细</button>';
+                return (
+                    '<tr data-jump-dim="' +
+                    dimAttr +
+                    '" data-jump-value="' +
+                    escapeHtml(r.name) +
+                    '"><td>' +
+                    escapeHtml(r.name) +
+                    '</td><td class="amount">' +
+                    amt +
+                    '</td><td>' +
+                    rat +
+                    '</td><td>' +
+                    mom +
+                    '</td><td>' +
+                    escapeHtml(bm) +
+                    '</td><td>' +
+                    opCell +
+                    '</td></tr>'
+                );
+            })
+            .join('');
+    }
+
+    function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function renderResServiceCategoryTree() {
+        var treeData = resServiceCategoryData;
+        var box = document.getElementById('resServiceCategoryTree');
+        if (!box) return;
+        var parts = [];
+        var allActive = resServiceCategoryFilter.mode === 'all';
+        parts.push('<div class="res-service-tree-node"><div class="res-service-tree-item' + (allActive ? ' active' : '') + '" data-sel="all" role="button" tabindex="0"><span class="res-service-tree-expand-icon hidden">▶</span><span class="res-service-tree-label">全部</span></div></div>');
+        var idx = 0;
+        Object.keys(treeData).forEach(function (level1) {
+            var childId = 'resCatCh' + idx;
+            idx += 1;
+            var l1Active = resServiceCategoryFilter.mode === 'l1' && resServiceCategoryFilter.l1 === level1;
+            parts.push('<div class="res-service-tree-node">');
+            parts.push('<div class="res-service-tree-item' + (l1Active ? ' active' : '') + '" data-sel="l1" data-l1="' + escapeHtml(level1) + '" data-children-id="' + childId + '" role="button" tabindex="0">');
+            parts.push('<span class="res-service-tree-expand-icon" data-res-expand="1" role="presentation" title="展开/收起">▶</span>');
+            parts.push('<span class="res-service-tree-label">' + escapeHtml(level1) + '</span></div>');
+            parts.push('<div class="res-service-tree-children" id="' + childId + '">');
+            Object.keys(treeData[level1]).forEach(function (level2) {
+                var l2Active =
+                    resServiceCategoryFilter.mode === 'l2' &&
+                    resServiceCategoryFilter.l1 === level1 &&
+                    resServiceCategoryFilter.l2 === level2;
+                parts.push('<div class="res-service-tree-node">');
+                parts.push(
+                    '<div class="res-service-tree-item' +
+                        (l2Active ? ' active' : '') +
+                        '" data-sel="l2" data-l1="' +
+                        escapeHtml(level1) +
+                        '" data-l2="' +
+                        escapeHtml(level2) +
+                        '" role="button" tabindex="0">'
+                );
+                parts.push('<span class="res-service-tree-expand-icon hidden" data-res-expand="1" role="presentation">▶</span>');
+                parts.push('<span class="res-service-tree-label">' + escapeHtml(level2) + '</span></div>');
+                parts.push('</div>');
+            });
+            parts.push('</div></div>');
+        });
+        box.innerHTML = parts.join('');
+    }
+
+    function toggleResCatExpandFromIcon(iconEl) {
+        var item = iconEl.closest('.res-service-tree-item');
+        if (!item) return;
+        var childId = item.getAttribute('data-children-id');
+        var ch = childId ? document.getElementById(childId) : null;
+        if (!ch) return;
+        iconEl.classList.toggle('expanded');
+        ch.classList.toggle('expanded');
+    }
+
+    function rowMatchesResServiceCategory(row) {
+        var f = resServiceCategoryFilter;
+        if (!f || f.mode === 'all') return true;
+        if (f.mode === 'l1') return row.svcCatL1 === f.l1;
+        if (f.mode === 'l2') return row.svcCatL1 === f.l1 && row.svcCatL2 === f.l2;
+        return true;
+    }
+
+    function updateResCatTreeActiveState() {
+        var f = resServiceCategoryFilter;
+        var box = document.getElementById('resServiceCategoryTree');
+        if (!box) return;
+        box.querySelectorAll('.res-service-tree-item').forEach(function (el) {
+            el.classList.remove('active');
+            var sel = el.getAttribute('data-sel');
+            if (sel === 'all' && f.mode === 'all') el.classList.add('active');
+            if (sel === 'l1' && f.mode === 'l1' && el.getAttribute('data-l1') === f.l1) el.classList.add('active');
+            if (sel === 'l2' && f.mode === 'l2' && el.getAttribute('data-l1') === f.l1 && el.getAttribute('data-l2') === f.l2) el.classList.add('active');
+        });
+    }
+
+    function buildJumpLabel(dim, value, deptPath, serviceName) {
+        if (dim === 'dept') {
+            if (serviceName) return '部门「' + deptPath + '」· 服务「' + serviceName + '」';
+            return '按部门路径「' + deptPath + '」';
+        }
+        var map = {
+            product: '按服务',
+            project: '按备案产品',
+            region: '按地域',
+            env: '按环境',
+            charge: '按计费模式',
+            tag: '按标签',
+            billTag1: '分账标签1（V2.0扩展）',
+            billTag2: '分账标签2（V2.0扩展）'
+        };
+        return (map[dim] || dim) + '「' + value + '」';
+    }
+
+    function persistAndOpenResourceTab(ctx) {
+        enrichResourceCtxQueries(ctx);
+        try {
+            sessionStorage.setItem(RES_BILL_CTX_KEY, JSON.stringify(ctx));
+        } catch (err) {}
+        switchTab('resource');
+        var tabBtn = document.querySelector('[data-panel="resource"]');
+        if (tabBtn) tabBtn.focus();
+    }
+
+    function onMultiJumpToResource(e) {
+        var btn = e.target.closest('.js-to-resource');
+        if (!btn) return;
+        var tr = btn.closest('tr');
+        if (!tr) return;
+        var dim = tr.getAttribute('data-jump-dim');
+        if (!dim) return;
+        var periodMonth = document.getElementById('globalBillMonth').value;
+        var ctx = { dim: dim, periodMonth: periodMonth, serviceName: '', deptPaths: null };
+        ctx.billQuerySummary = buildResourceBillQuerySummary();
+        if (dim === 'dept') {
+            ctx.deptPath = tr.getAttribute('data-jump-dept-path') || '';
+            ctx.value = '';
+            ctx.detailQuerySummary = buildJumpLabel('dept', '', ctx.deptPath, '');
+            ctx.jumpLabel = ctx.detailQuerySummary;
+            if (billListTagFilter) {
+                ctx.tagRestrict = billListTagFilterToTagRestrict(billListTagFilter);
+            }
+            setBillNav(ctx.deptPath, '');
+        } else {
+            ctx.deptPath = '';
+            ctx.value = tr.getAttribute('data-jump-value') || '';
+            ctx.detailQuerySummary = buildJumpLabel(dim, ctx.value, '', '');
+            ctx.jumpLabel = ctx.detailQuerySummary;
+            if (multiDeptScope && multiDeptScope.length) {
+                ctx.deptPaths = multiDeptScope.slice();
+                ctx.detailQuerySummary += ' · 已选部门 ' + ctx.deptPaths.length + ' 项';
+                ctx.jumpLabel = ctx.detailQuerySummary;
+            }
+            if (billListTagFilter) {
+                ctx.tagRestrict = billListTagFilterToTagRestrict(billListTagFilter);
+            }
+            setBillNav('', '');
+        }
+        persistAndOpenResourceTab(ctx);
+    }
+
+    function consumeResourceBillContext() {
+        try {
+            var raw = sessionStorage.getItem(RES_BILL_CTX_KEY);
+            if (!raw) return;
+            sessionStorage.removeItem(RES_BILL_CTX_KEY);
+            var ctx = JSON.parse(raw);
+            resourceJumpFilter = {
+                dim: ctx.dim,
+                value: ctx.value || '',
+                deptPath: ctx.deptPath || '',
+                deptPaths: ctx.deptPaths && ctx.deptPaths.length ? ctx.deptPaths : null,
+                serviceName: ctx.serviceName || '',
+                tag1: ctx.tag1,
+                tag2: ctx.tag2,
+                tagRestrict: ctx.tagRestrict || null,
+                billQuerySummary: ctx.billQuerySummary || buildResourceBillQuerySummary(),
+                detailQuerySummary:
+                    ctx.detailQuerySummary != null && ctx.detailQuerySummary !== ''
+                        ? ctx.detailQuerySummary
+                        : ctx.jumpLabel ||
+                          buildJumpLabel(ctx.dim, ctx.value || '', ctx.deptPath || '', ctx.serviceName || ''),
+                jumpLabel:
+                    ctx.detailQuerySummary ||
+                    ctx.jumpLabel ||
+                    buildJumpLabel(ctx.dim, ctx.value || '', ctx.deptPath || '', ctx.serviceName || '')
+            };
+            if (!resourceJumpFilter.tagRestrict && ctx.dim === 'allocTag' && ctx.tag1 != null && ctx.tag2 != null) {
+                resourceJumpFilter.tagRestrict = { tag1: ctx.tag1, tag2: ctx.tag2 };
+            }
+            if (!resourceJumpFilter.tagRestrict && ctx.dim === 'billTag1' && ctx.value != null && ctx.value !== '') {
+                resourceJumpFilter.tagRestrict = { tag1: ctx.value };
+            }
+            if (!resourceJumpFilter.tagRestrict && ctx.dim === 'billTag2' && ctx.value != null && ctx.value !== '') {
+                resourceJumpFilter.tagRestrict = { tag2: ctx.value };
+            }
+            if (ctx.dim === 'product' && ctx.value) {
+                applyResCategoryFromProductService(ctx.value);
+            } else {
+                resServiceCategoryFilter = { mode: 'all' };
+                renderResServiceCategoryTree();
+                updateResCatTreeActiveState();
+            }
+            var ms = document.getElementById('resMainSearch');
+            if (ms) ms.value = '';
+            setResStatMode('month');
+            if (ctx.periodMonth) document.getElementById('resMonth').value = ctx.periodMonth;
+            renderResQueryTags();
+        } catch (e) {
+            resourceJumpFilter = null;
+            resServiceCategoryFilter = { mode: 'all' };
+            renderResServiceCategoryTree();
+            updateResCatTreeActiveState();
+            renderResQueryTags();
+        }
+    }
+
+    function buildResourceJumpFilterDisplayLine(f) {
+        if (!f) return '';
+        var segs = [];
+        var deptHead = '';
+        if (f.deptPaths && f.deptPaths.length) {
+            var p0 = f.deptPaths[0] || '';
+            var ix = p0.indexOf('/');
+            deptHead = ix < 0 ? p0 : p0.slice(0, ix);
+            if (f.deptPaths.length > 1) {
+                segs.push('部门：' + (deptHead || '已选') + '等' + f.deptPaths.length + '条');
+            } else if (deptHead) {
+                segs.push('部门：' + deptHead);
+            }
+        } else if (f.deptPath) {
+            var dp = f.deptPath;
+            var iy = dp.indexOf('/');
+            deptHead = iy < 0 ? dp : dp.slice(0, iy);
+            if (deptHead) segs.push('部门：' + deptHead);
+        }
+        if (f.tagRestrict) {
+            if (f.tagRestrict.tag1 != null && f.tagRestrict.tag1 !== '') {
+                segs.push('分账标签1（V2.0扩展）：' + f.tagRestrict.tag1);
+            }
+            if (f.tagRestrict.tag2 != null && f.tagRestrict.tag2 !== '') {
+                segs.push('分账标签2（V2.0扩展）：' + f.tagRestrict.tag2);
+            }
+        }
+        if (f.dim === 'product' && f.value) {
+            var svcL2 = '';
+            for (var ri = 0; ri < resourceRows.length; ri++) {
+                if (resourceRows[ri].serviceName === f.value) {
+                    svcL2 = resourceRows[ri].svcCatL2 || '';
+                    break;
+                }
+            }
+            segs.push('服务：' + (svcL2 || f.value));
+        } else if (f.dim === 'project' && f.value) {
+            segs.push('项目：' + f.value);
+        } else if (f.dim === 'region' && f.value) {
+            segs.push('地域：' + f.value);
+        } else if (f.dim === 'env' && f.value) {
+            segs.push('环境：' + f.value);
+        } else if (f.dim === 'charge' && f.value) {
+            segs.push('计费模式：' + f.value);
+        }
+        return segs.join('   ');
+    }
+
+    function renderResQueryTags() {
+        var box = document.getElementById('resQueryTags');
+        if (!box) return;
+        var parts = [];
+        if (resourceJumpFilter) {
+            var kvLine = buildResourceJumpFilterDisplayLine(resourceJumpFilter);
+            if (kvLine) {
+                parts.push(
+                    '<span class="res-query-tag res-query-tag--jump" title="从账单 / 账单明细带入的筛选条件">' +
+                    '<span class="res-query-tag-kvline">' +
+                    escapeHtml(kvLine) +
+                    '</span>' +
+                    '<button type="button" class="res-query-tag-remove" data-remove-jump="1" aria-label="删除带入的筛选条件">×</button></span>'
+                );
+            }
+        }
+        resInstanceSearchTags.forEach(function (t) {
+            parts.push(
+                '<span class="res-query-tag">' +
+                '<span class="res-query-tag-key">实例</span>' +
+                '<span class="res-query-tag-val">' + escapeHtml(t.text) + '</span>' +
+                '<button type="button" class="res-query-tag-remove" data-remove-tag-id="' + escapeHtml(t.id) + '" aria-label="删除该搜索条件">×</button></span>'
+            );
+        });
+        resAdvFieldDefs.forEach(function (c) {
+            var v = resAdvApplied[c.key];
+            if (!v) return;
+            parts.push(
+                '<span class="res-query-tag res-query-tag--adv" title="高级筛选">' +
+                '<span class="res-query-tag-key">' + escapeHtml(c.label) + '</span>' +
+                '<span class="res-query-tag-val">' + escapeHtml(v) + '</span>' +
+                '<button type="button" class="res-query-tag-remove" data-remove-adv-key="' + escapeHtml(c.key) + '" aria-label="删除该筛选条件">×</button></span>'
+            );
+        });
+        box.innerHTML = parts.join('');
+    }
+
+    function syncResAdvAppliedFromDrawer() {
+        resAdvApplied = {};
+        document.querySelectorAll('#resAdvDrawerBody [data-adv-col]').forEach(function (inp) {
+            var key = inp.getAttribute('data-adv-col');
+            var raw = inp.value.trim();
+            if (raw) resAdvApplied[key] = raw;
+        });
+    }
+
+    function applyResAdvToDrawerInputs() {
+        document.querySelectorAll('#resAdvDrawerBody [data-adv-col]').forEach(function (inp) {
+            var k = inp.getAttribute('data-adv-col');
+            inp.value = resAdvApplied[k] != null ? resAdvApplied[k] : '';
+        });
+    }
+
+    function rowMatchesInstanceSearchTags(row) {
+        if (!resInstanceSearchTags.length) return true;
+        for (var i = 0; i < resInstanceSearchTags.length; i++) {
+            var q = resInstanceSearchTags[i].text.toLowerCase();
+            var idok = String(row.instanceId || '').toLowerCase().indexOf(q) >= 0;
+            var nmok = String(row.instanceName || '').toLowerCase().indexOf(q) >= 0;
+            if (!idok && !nmok) return false;
+        }
+        return true;
+    }
+
+    function addResInstanceSearchTagFromInput() {
+        var inp = document.getElementById('resMainSearch');
+        if (!inp) return;
+        var v = inp.value.trim();
+        if (!v) return;
+        var dup = resInstanceSearchTags.some(function (t) { return t.text === v; });
+        if (!dup) {
+            resInstanceSearchTags.push({ id: 'st' + resInstanceSearchTagSeq++, text: v });
+        }
+        inp.value = '';
+        renderResQueryTags();
+        renderResourceTable();
+    }
+
+    function rowMatchesDimFilter(row, f) {
+        if (!f) return true;
+        if (f.tagRestrict) {
+            var tr = f.tagRestrict;
+            if (tr.tag1 != null && row.tag1 !== tr.tag1) return false;
+            if (tr.tag2 != null && row.tag2 !== tr.tag2) return false;
+        }
+        if (f.deptPaths && f.deptPaths.length) {
+            if (!row.deptPath) return false;
+            var okDp = false;
+            for (var dpi = 0; dpi < f.deptPaths.length; dpi++) {
+                var pr = f.deptPaths[dpi];
+                if (row.deptPath === pr || row.deptPath.indexOf(pr + '/') === 0) {
+                    okDp = true;
+                    break;
+                }
+            }
+            if (!okDp) return false;
+        }
+        switch (f.dim) {
+            case 'product':
+                return row.serviceName === f.value;
+            case 'project':
+                return row.projectName === f.value;
+            case 'region':
+                return row.region === f.value;
+            case 'env':
+                return row.env === f.value;
+            case 'charge':
+                return row.chargeMode === f.value;
+            case 'allocTag':
+                return row.tag1 === f.tag1 && row.tag2 === f.tag2;
+            case 'billTag1':
+                return row.tag1 === f.value;
+            case 'billTag2':
+                return row.tag2 === f.value;
+            case 'tag': {
+                var idx = f.value.indexOf('=');
+                if (idx < 0) return (row.tag1 + row.tag2).indexOf(f.value) >= 0;
+                var k = f.value.slice(0, idx).trim();
+                var v = f.value.slice(idx + 1).trim();
+                if (k === 'BU') return row.tag2 === v;
+                if (k === '部门') return row.tag1 === v || (row.deptPath && row.deptPath.indexOf(v + '/') === 0) || row.deptPath === v;
+                return row.tag1 === v || String(row.tag1).indexOf(v) >= 0;
+            }
+            case 'dept': {
+                if (!row.deptPath) return false;
+                if ((!f.deptPaths || !f.deptPaths.length) && f.deptPath) {
+                    if (!(row.deptPath === f.deptPath || row.deptPath.indexOf(f.deptPath + '/') === 0)) return false;
+                }
+                if (f.serviceName) return row.serviceName === f.serviceName;
+                return true;
+            }
+            default:
+                return true;
+        }
+    }
+
+    function rowMatchesResourceJump(row) {
+        if (!resourceJumpFilter) return true;
+        return rowMatchesDimFilter(row, resourceJumpFilter);
+    }
+
+    function buildAdvDrawerFields() {
+        var box = document.getElementById('resAdvDrawerBody');
+        if (!box) return;
+        var chunks = [];
+        resAdvFieldDefs.forEach(function (def) {
+            var fid = 'adv-inp-' + def.key;
+            var listId = 'adv-dl-' + def.key;
+            var ph = def.placeholder != null ? def.placeholder : '';
+            if (def.control === 'datalist') {
+                var opts = getResAdvDistinctValues(def.key)
+                    .map(function (v) {
+                        return '<option value="' + escapeHtml(v) + '"></option>';
+                    })
+                    .join('');
+                chunks.push(
+                    '<div class="field"><label for="' +
+                        escapeHtml(fid) +
+                        '">' +
+                        escapeHtml(def.label) +
+                        '</label><datalist id="' +
+                        escapeHtml(listId) +
+                        '">' +
+                        opts +
+                        '</datalist><input id="' +
+                        escapeHtml(fid) +
+                        '" type="text" data-adv-col="' +
+                        escapeHtml(def.key) +
+                        '" list="' +
+                        escapeHtml(listId) +
+                        '" placeholder="' +
+                        escapeHtml(ph) +
+                        '" autocomplete="off"></div>'
+                );
+            } else if (def.control === 'date') {
+                chunks.push(
+                    '<div class="field"><label for="' +
+                        escapeHtml(fid) +
+                        '">' +
+                        escapeHtml(def.label) +
+                        '</label><input id="' +
+                        escapeHtml(fid) +
+                        '" type="date" data-adv-col="' +
+                        escapeHtml(def.key) +
+                        '" title="按自然日匹配行内时间（子串）"' +
+                        (ph ? ' placeholder="' + escapeHtml(ph) + '"' : '') +
+                        ' autocomplete="off"></div>'
+                );
+            } else {
+                chunks.push(
+                    '<div class="field"><label for="' +
+                        escapeHtml(fid) +
+                        '">' +
+                        escapeHtml(def.label) +
+                        '</label><input id="' +
+                        escapeHtml(fid) +
+                        '" type="text" data-adv-col="' +
+                        escapeHtml(def.key) +
+                        '" placeholder="' +
+                        escapeHtml(ph) +
+                        '" autocomplete="off"></div>'
+                );
+            }
+        });
+        box.innerHTML = chunks.join('');
+    }
+
+    function clearAdvDrawerInputs() {
+        document.querySelectorAll('#resAdvDrawerBody [data-adv-col]').forEach(function (inp) {
+            inp.value = '';
+        });
+    }
+
+    function rowMatchesAdvDrawer(row) {
+        var keys = Object.keys(resAdvApplied);
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var raw = resAdvApplied[key];
+            if (!raw) continue;
+            var cell = row[key];
+            if (cell === undefined || cell === null) return false;
+            if (String(cell).toLowerCase().indexOf(String(raw).toLowerCase()) === -1) return false;
+        }
+        return true;
+    }
+
+    function openResAdvDrawer() {
+        applyResAdvToDrawerInputs();
+        document.getElementById('resAdvOverlay').classList.add('on');
+        document.getElementById('resAdvDrawer').classList.add('on');
+        document.getElementById('resAdvDrawer').setAttribute('aria-hidden', 'false');
+        document.getElementById('resAdvOverlay').setAttribute('aria-hidden', 'false');
+        var tgl = document.getElementById('btnResAdvToggle');
+        tgl.setAttribute('aria-expanded', 'true');
+        tgl.textContent = '收起高级筛选';
+    }
+
+    function closeResAdvDrawer() {
+        document.getElementById('resAdvOverlay').classList.remove('on');
+        document.getElementById('resAdvDrawer').classList.remove('on');
+        document.getElementById('resAdvDrawer').setAttribute('aria-hidden', 'true');
+        document.getElementById('resAdvOverlay').setAttribute('aria-hidden', 'true');
+        var tgl = document.getElementById('btnResAdvToggle');
+        tgl.setAttribute('aria-expanded', 'false');
+        tgl.textContent = '高级筛选';
+    }
+
+    function buildTagSelect(rowId, key, current) {
+        var opts = (tagAllocOptions[key] || []).map(function (t) {
+            return '<option value="' + escapeHtml(t) + '"' + (t === current ? ' selected' : '') + '>' + escapeHtml(t) + '</option>';
+        });
+        return (
+            '<select class="tag-select js-alloc-tag" data-row="' +
+            escapeHtml(rowId) +
+            '" data-col="' +
+            escapeHtml(key) +
+            '" aria-label="' +
+            escapeHtml(key) +
+            '">' +
+            opts.join('') +
+            '</select>'
+        );
+    }
+
+    function ensureResourceColumnOrder() {
+        var valid = {};
+        resourceColumns.forEach(function (c) {
+            valid[c.key] = true;
+        });
+        Object.keys(visibleCols).forEach(function (k) {
+            if (!valid[k]) delete visibleCols[k];
+        });
+        resourceColumnOrder = resourceColumnOrder.filter(function (k) {
+            return valid[k];
+        });
+        resourceColumns.forEach(function (c) {
+            if (resourceColumnOrder.indexOf(c.key) < 0) resourceColumnOrder.push(c.key);
+        });
+    }
+
+    function getOrderedVisibleResourceColumns() {
+        ensureResourceColumnOrder();
+        var out = [];
+        resourceColumnOrder.forEach(function (k) {
+            for (var i = 0; i < resourceColumns.length; i++) {
+                if (resourceColumns[i].key === k) {
+                    var c = resourceColumns[i];
+                    if (visibleCols[c.key]) out.push(c);
+                    break;
+                }
+            }
+        });
+        return out;
+    }
+
+    function renderResourceTable() {
+        var thead = document.getElementById('resThead');
+        var cols = getOrderedVisibleResourceColumns();
+        thead.innerHTML = '<tr>' + cols.map(function (c) { return '<th>' + escapeHtml(c.label) + '</th>'; }).join('') + '<th>操作</th></tr>';
+        if (isBillDetailPeriodDashOnly()) {
+            var emptyTds = cols.map(function () {
+                return '<td>--</td>';
+            }).join('');
+            document.getElementById('resTbody').innerHTML =
+                '<tr>' + emptyTds + '<td><span class="muted">--</span></td></tr>';
+            return;
+        }
+        var monthVal = document.getElementById('resMonth').value;
+        var filtered = resourceRows.filter(function (row) {
+            if (monthVal && row.billMonth !== monthVal) return false;
+            if (!rowMatchesResServiceCategory(row)) return false;
+            if (!rowMatchesResourceJump(row)) return false;
+            if (!rowMatchesInstanceSearchTags(row)) return false;
+            if (!rowMatchesAdvDrawer(row)) return false;
+            return true;
+        });
+        document.getElementById('resTbody').innerHTML = filtered.map(function (row) {
+            var tds = cols.map(function (c) {
+                var raw = row[c.key];
+                var cls = c.key === 'originPrice' ? ' class="amount"' : '';
+                var inner = raw == null || raw === '' ? '—' : escapeHtml(String(raw));
+                return '<td' + cls + '>' + inner + '</td>';
+            }).join('');
+            var hasTagCol = cols.some(function (c) {
+                return c.key === 'tag1' || c.key === 'tag2';
+            });
+            var saveBtn = !hasTagCol ? '' : ' · <button type="button" class="link js-save-tags" data-id="' + row.id + '">保存标签</button>';
+            return (
+                '<tr data-row-id="' +
+                escapeHtml(row.id) +
+                '">' +
+                tds +
+                '<td><button type="button" class="link js-detail" data-id="' +
+                row.id +
+                '">详情</button>' +
+                saveBtn +
+                '</td></tr>'
+            );
+        }).join('');
+    }
+
+    function goResourceDetailPage(id) {
+        var row = resourceRows.find(function (r) { return r.id === id; });
+        if (!row) return;
+        try {
+            var payload = JSON.parse(JSON.stringify(row));
+            payload._billContext = {
+                billMonth: document.getElementById('globalBillMonth').value
+            };
+            sessionStorage.setItem(RES_DETAIL_KEY, JSON.stringify(payload));
+        } catch (err) {}
+        location.href = 'resource-bill-detail.html?id=' + encodeURIComponent(id);
+    }
+
+    function openUsageModal(id) {
+        var row = resourceRows.find(function (r) { return r.id === id; });
+        document.getElementById('usageBody').innerHTML =
+            '<p style="margin-bottom:12px;">实例 <strong>' + escapeHtml(row ? row.instanceId : id) + '</strong> 使用率聚合示意（<strong>聚合规则待业务确定</strong>）：</p>' +
+            '<ul style="padding-left:20px;line-height:2;"><li>CPU 利用率：58%</li><li>内存利用率：64%</li><li>磁盘利用率：72%</li></ul>';
+        document.getElementById('usageModal').classList.add('on');
+    }
+
+    function openColSettings() {
+        ensureResourceColumnOrder();
+        var box = document.getElementById('colCheckList');
+        box.innerHTML = resourceColumnOrder
+            .map(function (key) {
+                var c = resourceColumns.find(function (x) {
+                    return x.key === key;
+                });
+                if (!c) return '';
+                var dis = c.always ? ' disabled' : '';
+                var chk = visibleCols[c.key] ? ' checked' : '';
+                return (
+                    '<div class="col-settings-row" data-col-key="' +
+                    escapeHtml(c.key) +
+                    '"><span class="col-drag-handle" draggable="true" title="拖动调整顺序" aria-label="拖动调整顺序">⋮⋮</span><label><input type="checkbox" class="check js-col" data-col="' +
+                    escapeHtml(c.key) +
+                    '"' +
+                    chk +
+                    dis +
+                    '> ' +
+                    escapeHtml(c.label) +
+                    (c.always ? '（必选）' : '') +
+                    '</label></div>'
+                );
+            })
+            .filter(Boolean)
+            .join('');
+        document.getElementById('colModal').classList.add('on');
+    }
+
+    function applyColSettings() {
+        var newOrder = [];
+        document.querySelectorAll('#colCheckList .col-settings-row').forEach(function (row) {
+            var key = row.getAttribute('data-col-key');
+            if (!key) return;
+            newOrder.push(key);
+            var inp = row.querySelector('.js-col');
+            if (inp) visibleCols[key] = inp.checked;
+        });
+        if (newOrder.length) resourceColumnOrder = newOrder;
+        ensureResourceColumnOrder();
+        resourceColumns.forEach(function (c) {
+            if (c.always) visibleCols[c.key] = true;
+        });
+        document.getElementById('colModal').classList.remove('on');
+        renderResourceTable();
+    }
+
+    document.getElementById('mainTabs').addEventListener('click', function (e) {
+        var tab = e.target.closest('.bill-tab');
+        if (!tab) return;
+        switchTab(tab.getAttribute('data-panel'));
+    });
+
+    document.getElementById('dimPills').addEventListener('click', function (e) {
+        var pill = e.target.closest('.dim-pill');
+        if (!pill || !document.getElementById('dimPills').contains(pill)) return;
+        currentDim = pill.getAttribute('data-dim');
+        renderDimPills();
+        renderMultiTable();
+    });
+
+    document.getElementById('resStatSegment').addEventListener('click', function (e) {
+        var btn = e.target.closest('.js-res-stat');
+        if (!btn) return;
+        setResStatMode(btn.getAttribute('data-stat'));
+        renderResourceTable();
+    });
+
+    document.getElementById('resServiceCategoryTree').addEventListener('click', function (e) {
+        var icon = e.target.closest('.res-service-tree-expand-icon[data-res-expand]');
+        if (icon && !icon.classList.contains('hidden')) {
+            e.stopPropagation();
+            toggleResCatExpandFromIcon(icon);
+            return;
+        }
+        var item = e.target.closest('.res-service-tree-item');
+        if (!item) return;
+        var sel = item.getAttribute('data-sel');
+        if (sel === 'all') resServiceCategoryFilter = { mode: 'all' };
+        else if (sel === 'l1') resServiceCategoryFilter = { mode: 'l1', l1: item.getAttribute('data-l1') };
+        else if (sel === 'l2') resServiceCategoryFilter = { mode: 'l2', l1: item.getAttribute('data-l1'), l2: item.getAttribute('data-l2') };
+        updateResCatTreeActiveState();
+        renderResourceTable();
+    });
+    document.getElementById('resServiceSidebarToggle').addEventListener('click', function () {
+        document.getElementById('resServiceCategorySidebar').classList.toggle('collapsed');
+    });
+
+    document.getElementById('btnResAdvToggle').addEventListener('click', function () {
+        if (document.getElementById('resAdvDrawer').classList.contains('on')) closeResAdvDrawer();
+        else openResAdvDrawer();
+    });
+    document.getElementById('resAdvDrawerClose').addEventListener('click', closeResAdvDrawer);
+    document.getElementById('resAdvOverlay').addEventListener('click', closeResAdvDrawer);
+    document.getElementById('resAdvDrawerApply').addEventListener('click', function () {
+        syncResAdvAppliedFromDrawer();
+        closeResAdvDrawer();
+        renderResQueryTags();
+        renderResourceTable();
+    });
+    document.getElementById('resAdvDrawerReset').addEventListener('click', function () {
+        clearAdvDrawerInputs();
+        resAdvApplied = {};
+        renderResQueryTags();
+        renderResourceTable();
+    });
+
+    document.getElementById('globalBillMonth').addEventListener('change', onGlobalMonthChange);
+
+    document.getElementById('multiTableBody').addEventListener('click', function (e) {
+        if (e.target.closest('.js-to-resource')) onMultiJumpToResource(e);
+    });
+
+    document.getElementById('panel-multi').addEventListener('click', function (e) {
+        if (e.target.closest('#btnClearMultiScope')) {
+            multiDeptScope = null;
+            billListTagFilter = null;
+            updateMultiScopeBanner();
+            renderMultiTable();
+        }
+    });
+
+    document.querySelector('.bill-content-card').addEventListener('change', function (e) {
+        if (e.target.id === 'deptSelectAll') {
+            var checked = e.target.checked;
+            document.querySelectorAll('#deptBillTableBody .js-dept-check').forEach(function (cb) {
+                cb.checked = checked;
+            });
+            document.querySelectorAll('#deptBillTableBody .js-tag-check').forEach(function (cb) {
+                cb.checked = checked;
+            });
+        }
+    });
+
+    document.getElementById('billDimSelect').addEventListener('change', function () {
+        var v = this.value;
+        billStatMode = v === 'tag' ? 'tag' : 'dept';
+        multiDeptScope = null;
+        billListTagFilter = null;
+        updateMultiScopeBanner();
+        renderMultiTable();
+        renderBillPanel();
+    });
+    document.getElementById('billAllocTagAxisSelect').addEventListener('change', function () {
+        billAllocTagAxis = this.value === 'tag2' ? 'tag2' : 'tag1';
+        renderBillPanel();
+    });
+
+    document.getElementById('deptBillTableBody').addEventListener('click', function (e) {
+        var tgl = e.target.closest('.js-dept-toggle');
+        if (tgl) {
+            e.preventDefault();
+            var id = tgl.getAttribute('data-id');
+            deptExpanded[id] = !isDeptExpanded({ id: id, level: parseInt(tgl.getAttribute('data-level'), 10) });
+            renderBillPanel();
+            var sa = document.getElementById('deptSelectAll');
+            if (sa) sa.checked = false;
+            return;
+        }
+        var toMulti = e.target.closest('.js-dept-to-multi');
+        if (toMulti) {
+            e.preventDefault();
+            billListTagFilter = null;
+            var paths = getCheckedDeptPaths();
+            if (!paths.length) paths = [toMulti.getAttribute('data-dept-path') || ''];
+            multiDeptScope = paths;
+            switchTab('multi');
+            return;
+        }
+        var toRes = e.target.closest('.js-dept-to-resource');
+        if (toRes) {
+            e.preventDefault();
+            billListTagFilter = null;
+            var pathsR = getCheckedDeptPaths();
+            if (!pathsR.length) pathsR = [toRes.getAttribute('data-dept-path') || ''];
+            var periodMonth = document.getElementById('globalBillMonth').value;
+            var jl =
+                pathsR.length > 1 ? '多部门（' + pathsR.length + '）' : '按部门路径「' + pathsR[0] + '」';
+            persistAndOpenResourceTab({
+                dim: 'dept',
+                deptPaths: pathsR,
+                deptPath: '',
+                serviceName: '',
+                value: '',
+                periodMonth: periodMonth,
+                jumpLabel: jl
+            });
+            setBillNav(pathsR.length === 1 ? pathsR[0] : '', '');
+            return;
+        }
+        var toTagMulti = e.target.closest('.js-tag-to-multi');
+        if (toTagMulti) {
+            e.preventDefault();
+            multiDeptScope = null;
+            var chkTags = getCheckedTagBillRows();
+            if (chkTags.length > 1) {
+                alert('示意：进入账单明细时，请仅勾选一个标签取值，或使用未勾选时的当前行。');
+                return;
+            }
+            var ax = chkTags.length === 1 ? chkTags[0].axis : toTagMulti.getAttribute('data-axis') || 'tag1';
+            var val = chkTags.length === 1 ? chkTags[0].v : toTagMulti.getAttribute('data-v') || '';
+            billListTagFilter =
+                ax === 'tag2' ? { kind: 'axis2', v: val } : { kind: 'axis1', v: val };
+            switchTab('multi');
+            return;
+        }
+        var toTagRes = e.target.closest('.js-tag-to-resource');
+        if (toTagRes) {
+            e.preventDefault();
+            var rowsChk = getCheckedTagBillRows();
+            if (rowsChk.length > 1) {
+                alert('示意：请仅勾选一个标签取值再查看资源明细，或使用未勾选时的当前行。');
+                return;
+            }
+            var axR = rowsChk.length === 1 ? rowsChk[0].axis : toTagRes.getAttribute('data-axis') || 'tag1';
+            var valR = rowsChk.length === 1 ? rowsChk[0].v : toTagRes.getAttribute('data-v') || '';
+            var periodMonthT = document.getElementById('globalBillMonth').value;
+            var dimJump = axR === 'tag2' ? 'billTag2' : 'billTag1';
+            var jl =
+                axR === 'tag2' ? '分账标签2（V2.0扩展）「' + valR + '」' : '分账标签1（V2.0扩展）「' + valR + '」';
+            persistAndOpenResourceTab({
+                dim: dimJump,
+                value: valR,
+                tagRestrict: axR === 'tag2' ? { tag2: valR } : { tag1: valR },
+                deptPaths: null,
+                deptPath: '',
+                serviceName: '',
+                periodMonth: periodMonthT,
+                jumpLabel: jl
+            });
+            setBillNav('', '');
+        }
+    });
+
+    function openPushBillModal(preset) {
+        preset = preset || {};
+        document.getElementById('deptExportWrap').classList.remove('open');
+        ensurePushBillMsInited();
+        var month = document.getElementById('globalBillMonth').value;
+        var disp = document.getElementById('pushBillMonthDisplay');
+        if (disp) disp.textContent = month ? month : '—';
+
+        var fullRb = document.querySelector('#pushBillModal input[name="pushBillScope"][value="full"]');
+        var deptRb = document.querySelector('#pushBillModal input[name="pushBillScope"][value="dept"]');
+        var userRb = document.querySelector('#pushBillModal input[name="pushBillScope"][value="user"]');
+        if (fullRb) fullRb.checked = true;
+        if (deptRb) deptRb.checked = false;
+        if (userRb) userRb.checked = false;
+
+        if (pushBillDeptMsApi) pushBillDeptMsApi.setValues([]);
+        if (pushBillUserMsApi) pushBillUserMsApi.setValues([]);
+
+        var selectAll = document.getElementById('deptSelectAll');
+
+        if (preset.fromTagRow) {
+            if (fullRb) fullRb.checked = true;
+            document.querySelectorAll('#deptBillTableBody .js-tag-check').forEach(function (cb) {
+                cb.checked = cb.getAttribute('data-axis') === preset.axis && cb.getAttribute('data-v') === preset.v;
+            });
+            document.querySelectorAll('#deptBillTableBody .js-dept-check').forEach(function (cb) {
+                cb.checked = false;
+            });
+            if (selectAll) selectAll.checked = false;
+        } else if (preset.fromDeptRow) {
+            if (deptRb) deptRb.checked = true;
+            var path = preset.deptPath || '';
+            if (pushBillDeptMsApi && path) {
+                pushBillDeptMsApi.setValues([path]);
+            }
+            document.querySelectorAll('#deptBillTableBody .js-dept-check').forEach(function (cb) {
+                cb.checked = (cb.getAttribute('data-dept-path') || '') === path;
+            });
+            document.querySelectorAll('#deptBillTableBody .js-tag-check').forEach(function (cb) {
+                cb.checked = false;
+            });
+            if (selectAll) selectAll.checked = false;
+        } else {
+            if (selectAll) selectAll.checked = false;
+        }
+
+        syncPushBillScopePickers();
+        document.getElementById('pushBillModal').classList.add('on');
+    }
+
+    function closePushBillModal() {
+        document.getElementById('pushBillModal').classList.remove('on');
+    }
+
+    function submitPushBill() {
+        var scopeEl = document.querySelector('#pushBillModal input[name="pushBillScope"]:checked');
+        var mode = scopeEl ? scopeEl.value : 'full';
+        var month = document.getElementById('globalBillMonth').value;
+        if (!month) {
+            alert('请先选择账期。');
+            return;
+        }
+        if (mode === 'dept') {
+            var dsel = pushBillDeptMsApi ? pushBillDeptMsApi.getValues() : [];
+            if (!dsel.length) {
+                alert('请选择至少一条部门路径。');
+                return;
+            }
+        } else if (mode === 'user') {
+            var psel = pushBillUserMsApi ? pushBillUserMsApi.getValues() : [];
+            if (!psel.length) {
+                alert('请选择至少一名收件人。');
+                return;
+            }
+        }
+        var billUrl = getBillViewPageUrl(month);
+        var scopeLabel = mode === 'full' ? '全量推送（按二级部门汇总 → 部门负责人）' : mode === 'dept' ? '指定部门推送' : '指定人员';
+        closePushBillModal();
+        alert(
+            '【推送账单 · 原型】\n账期：' +
+                month +
+                '\n推送范围：' +
+                scopeLabel +
+                '\n一期规则：邮件发送账单摘要，附账单查看地址：\n' +
+                billUrl +
+                '\n\n对接邮件网关后生效。'
+        );
+    }
+
+    document.getElementById('btnPushBill').addEventListener('click', function () {
+        openPushBillModal();
+    });
+    document.getElementById('btnRerunCurrentMonthBill').addEventListener('click', function () {
+        var monthEl = document.getElementById('globalBillMonth');
+        var month = monthEl && monthEl.value ? monthEl.value : '—';
+        if (!confirm('确认对账期「' + month + '」发起账单重跑？\n重跑将重新汇总计费数据（示意；对接调度后生效）。')) return;
+        alert('【重跑账单 · 原型】已提交账期「' + month + '」的重跑任务。对接后端与任务调度后执行；当前页为静态示意数据。');
+        renderBillPanel();
+    });
+    document.getElementById('pushBillModalBody').addEventListener('change', function (e) {
+        if (e.target && e.target.name === 'pushBillScope') syncPushBillScopePickers();
+    });
+
+    document.getElementById('btnDeptExportToggle').addEventListener('click', function (e) {
+        e.stopPropagation();
+        document.getElementById('deptExportWrap').classList.toggle('open');
+        var exp = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', exp ? 'false' : 'true');
+    });
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('#deptExportWrap')) document.getElementById('deptExportWrap').classList.remove('open');
+    });
+    document.getElementById('btnDeptExportSelected').addEventListener('click', function () {
+        document.getElementById('deptExportWrap').classList.remove('open');
+        zipExportHint('selected');
+    });
+    document.getElementById('btnDeptExportAll').addEventListener('click', function () {
+        document.getElementById('deptExportWrap').classList.remove('open');
+        zipExportHint('all');
+    });
+
+    document.getElementById('resTbody').addEventListener('click', function (e) {
+        var st = e.target.closest('.js-save-tags');
+        if (st) {
+            var rid = st.getAttribute('data-id');
+            var tr = st.closest('tr');
+            if (!tr || !rid) return;
+            tr.querySelectorAll('.js-alloc-tag').forEach(function (sel) {
+                var col = sel.getAttribute('data-col');
+                var row = resourceRows.find(function (r) { return r.id === rid; });
+                if (row && col) row[col] = sel.value;
+            });
+            alert('分账标签（V2.0扩展）已保存（示意；不修改应付金额）。');
+            return;
+        }
+        var d = e.target.closest('.js-detail');
+        if (d) { goResourceDetailPage(d.getAttribute('data-id')); return; }
+        var u = e.target.closest('.js-usage');
+        if (u) { openUsageModal(u.getAttribute('data-id')); return; }
+    });
+
+    document.getElementById('btnResSearch').addEventListener('click', addResInstanceSearchTagFromInput);
+    document.getElementById('resMainSearch').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addResInstanceSearchTagFromInput();
+        }
+    });
+    document.getElementById('btnResReset').addEventListener('click', function () {
+        var ms = document.getElementById('resMainSearch');
+        if (ms) ms.value = '';
+        resInstanceSearchTags = [];
+        resAdvApplied = {};
+        clearAdvDrawerInputs();
+        closeResAdvDrawer();
+        resourceJumpFilter = null;
+        resServiceCategoryFilter = { mode: 'all' };
+        setBillNav('', '');
+        renderResServiceCategoryTree();
+        setResStatMode('month');
+        renderResQueryTags();
+        renderResourceTable();
+    });
+    document.getElementById('resSearchComboInner').addEventListener('click', function (e) {
+        var rmJump = e.target.closest('[data-remove-jump]');
+        if (rmJump) {
+            resourceJumpFilter = null;
+            resServiceCategoryFilter = { mode: 'all' };
+            renderResServiceCategoryTree();
+            updateResCatTreeActiveState();
+            renderResQueryTags();
+            renderResourceTable();
+            return;
+        }
+        var rmAdv = e.target.closest('[data-remove-adv-key]');
+        if (rmAdv) {
+            var advKey = rmAdv.getAttribute('data-remove-adv-key');
+            delete resAdvApplied[advKey];
+            var advInp = document.querySelector('#resAdvDrawerBody [data-adv-col="' + advKey + '"]');
+            if (advInp) advInp.value = '';
+            renderResQueryTags();
+            renderResourceTable();
+            return;
+        }
+        var rm = e.target.closest('[data-remove-tag-id]');
+        if (!rm) return;
+        var tid = rm.getAttribute('data-remove-tag-id');
+        resInstanceSearchTags = resInstanceSearchTags.filter(function (t) { return t.id !== tid; });
+        renderResQueryTags();
+        renderResourceTable();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && document.getElementById('resAdvDrawer').classList.contains('on')) closeResAdvDrawer();
+        if (e.key === 'Escape') {
+            document.getElementById('deptExportWrap').classList.remove('open');
+            if (document.getElementById('pushBillModal').classList.contains('on')) closePushBillModal();
+        }
+    });
+    document.getElementById('btnColSettings').addEventListener('click', openColSettings);
+    document.getElementById('btnResExport').addEventListener('click', function () {
+        exportPdfHint('资源明细 PDF（当前筛选与表头设置将写入 PDF）');
+    });
+
+    document.getElementById('usageModalClose').addEventListener('click', function () { document.getElementById('usageModal').classList.remove('on'); });
+    document.getElementById('usageModalFooterClose').addEventListener('click', function () { document.getElementById('usageModal').classList.remove('on'); });
+    document.getElementById('colModalClose').addEventListener('click', function () { document.getElementById('colModal').classList.remove('on'); });
+    document.getElementById('colModalCancel').addEventListener('click', function () { document.getElementById('colModal').classList.remove('on'); });
+    document.getElementById('colModalApply').addEventListener('click', applyColSettings);
+    (function bindColCheckListDnD() {
+        var list = document.getElementById('colCheckList');
+        list.addEventListener('dragstart', function (e) {
+            var h = e.target.closest('.col-drag-handle');
+            if (!h || !list.contains(h)) return;
+            colDnDDraggedRow = h.closest('.col-settings-row');
+            if (!colDnDDraggedRow) return;
+            colDnDDraggedRow.classList.add('dragging');
+            try {
+                e.dataTransfer.setData('text/plain', colDnDDraggedRow.getAttribute('data-col-key') || '');
+            } catch (err) {}
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        list.addEventListener('dragend', function () {
+            if (colDnDDraggedRow) colDnDDraggedRow.classList.remove('dragging');
+            colDnDDraggedRow = null;
+        });
+        list.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (!colDnDDraggedRow) return;
+            var y = e.clientY;
+            var rows = [].slice.call(list.querySelectorAll('.col-settings-row')).filter(function (el) {
+                return el !== colDnDDraggedRow;
+            });
+            var insertBeforeEl = null;
+            for (var i = 0; i < rows.length; i++) {
+                var rect = rows[i].getBoundingClientRect();
+                if (y < rect.top + rect.height / 2) {
+                    insertBeforeEl = rows[i];
+                    break;
+                }
+            }
+            if (insertBeforeEl == null) list.appendChild(colDnDDraggedRow);
+            else list.insertBefore(colDnDDraggedRow, insertBeforeEl);
+        });
+        list.addEventListener('drop', function (e) {
+            e.preventDefault();
+        });
+    })();
+
+    document.getElementById('pushBillModalClose').addEventListener('click', closePushBillModal);
+    document.getElementById('pushBillModalCancel').addEventListener('click', closePushBillModal);
+    document.getElementById('pushBillModalSubmit').addEventListener('click', submitPushBill);
+
+    (function initBillMonthFromQuery() {
+        try {
+            var sp = new URLSearchParams(window.location.search);
+            var bm = sp.get('bill_month');
+            if (bm && /^\d{4}-\d{2}$/.test(bm)) {
+                var gel = document.getElementById('globalBillMonth');
+                if (gel) gel.value = bm;
+            }
+        } catch (err) {}
+    })();
+
+    applyGlobalBillMonthBounds();
+
+    syncGlobalMonthToHidden();
+    updateRerunPushBillButtonsVisibility();
+
+    setupBillStatusHelpOverlay();
+    renderDimPills();
+    renderBillPanel();
+    updateMultiScopeBanner();
+    renderMultiTable();
+    buildAdvDrawerFields();
+    renderResServiceCategoryTree();
+    renderResQueryTags();
+    var ih = (location.hash || '').replace(/^#/, '');
+    if (ih === 'resource') switchTab('resource');
+    else if (ih === 'multi') switchTab('multi');
+    else switchTab('bill');
+})();
+    </script>
+    <script src="../js/finops-session-header.js" defer></script>
+    <script src="../js/finops-table-ui.js" defer></script>
+    <script src="../js/finops-nav-active.js" defer></script>
+</body>
+</html>
