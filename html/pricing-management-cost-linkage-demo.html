@@ -7,6 +7,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>FinOps财务运营管理平台 - 定价管理（成本关联校验 Demo）</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * {
             margin: 0;
@@ -502,7 +504,8 @@
         }
 
         .bottom-section {
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr;
             gap: 20px;
             flex: 1;
             min-width: 0;
@@ -900,10 +903,6 @@
         table th:nth-child(16),
         table td:nth-child(16) {
             width: 100px;
-            position: sticky;
-            right: 0;
-            background-color: white;
-            z-index: 10;
         }
 
         /* 支持手动调整列宽 */
@@ -1250,78 +1249,43 @@
             <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
                 菜单导航
             </div>
-            <ul style="list-style: none; padding: 0; margin: 0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
-                    <a href="asset-ledger-management.html" class="menu-item">
-                        <span>B类资产管理</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="cost-overview.html" class="menu-item">
-                        <span>成本管理</span>
-                    </a>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
                     <ul class="sub-menu">
-                        <li>
-                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
-                        </li>
-                        <li>
-                            <a href="cost-pool-management.html" class="sub-menu-item">成本池管理</a>
-                        </li>
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
                     </ul>
                 </li>
-
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
                 <li>
-                    <a href="pricing-management.html" class="menu-item">定价管理</a>
-                </li>
-                <li>
-                    <a href="pricing-management-cost-linkage-demo.html" class="menu-item active">
-                        <span>定价管理（成本关联校验 Demo）</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="usage-management.html" class="menu-item">
-                        <span>用量管理</span>
-                    </a>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
                     <ul class="sub-menu">
-                        <li><a href="usage-management.html" class="sub-menu-item">用量明细</a></li>
-                        <li><a href="usage-confirm-view-pc.html?bill_period=2026-04" class="sub-menu-item">PC 用量确认</a></li>
-                        <li><a href="usage-confirm-view-mobile.html?bill_period=2026-04" class="sub-menu-item">移动用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
                 <li>
-                    <a href="pricing-pending-todos-demo.html" class="menu-item">
-                        <span>待办管理</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="bill-overview.html" class="menu-item">
-                        <span>账单管理</span>
-                    </a>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
                     <ul class="sub-menu">
-                        <li><a href="bill-monthly-overview.html" class="sub-menu-item">月度账单总览</a></li>
-                        <li><a href="bill-management.html" class="sub-menu-item">账单详情</a></li>
-                        <li><a href="bill-overview.html" class="sub-menu-item">账单分析</a></li>
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
                 <li>
-                    <a href="usage-push-strategy-management.html" class="menu-item">
-                        <span>消息推送</span>
-                    </a>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
                     <ul class="sub-menu">
-                        <li><a href="usage-push-strategy-management.html" class="sub-menu-item">消息推送</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
                 </li>
-                <li>
-                    <a href="allocation-management.html" class="menu-item">
-                        <span>分账管理</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="system-management.html" class="menu-item">
-                        <span>系统管理</span>
-                    </a>
-                </li>
-
             </ul>
         </div>
 
@@ -4096,70 +4060,7 @@
             }
         }
 
-        // 手动调整列宽功能
-        document.addEventListener('DOMContentLoaded', function() {
-            const table = document.querySelector('table');
-            const thElements = table.querySelectorAll('th');
-            let resizing = false;
-            let currentTh = null;
-            let startX = 0;
-            let startWidth = 0;
-
-            thElements.forEach(th => {
-                th.addEventListener('mousedown', function(e) {
-                    // 只有在鼠标靠近列边缘时才开始调整
-                    const rect = th.getBoundingClientRect();
-                    if (e.clientX > rect.right - 10) {
-                        resizing = true;
-                        currentTh = th;
-                        startX = e.clientX;
-                        startWidth = th.offsetWidth;
-                        document.body.style.cursor = 'col-resize';
-                        e.preventDefault();
-                    }
-                });
-            });
-
-            document.addEventListener('mousemove', function(e) {
-                if (resizing && currentTh) {
-                    const width = startWidth + (e.clientX - startX);
-                    currentTh.style.width = width + 'px';
-                    
-                    // 同时调整对应td的宽度
-                    const index = Array.from(currentTh.parentNode.children).indexOf(currentTh);
-                    const tbody = table.querySelector('tbody');
-                    const rows = tbody.querySelectorAll('tr');
-                    rows.forEach(row => {
-                        const td = row.children[index];
-                        if (td) {
-                            td.style.width = width + 'px';
-                        }
-                    });
-                } else {
-                    // 鼠标悬停时显示调整光标
-                    let hoveredTh = null;
-                    thElements.forEach(th => {
-                        const rect = th.getBoundingClientRect();
-                        if (e.clientX > rect.right - 10 && e.clientX < rect.right) {
-                            hoveredTh = th;
-                        }
-                    });
-                    if (hoveredTh) {
-                        document.body.style.cursor = 'col-resize';
-                    } else {
-                        document.body.style.cursor = '';
-                    }
-                }
-            });
-
-            document.addEventListener('mouseup', function() {
-                if (resizing) {
-                    resizing = false;
-                    currentTh = null;
-                    document.body.style.cursor = '';
-                }
-            });
-        });
+        // 列表列宽拖拽与「操作」列冻结由 finops-table-ui.js 统一处理
 
         // 从私有云服务目录.xlsx获取的服务分类结构
         const serviceCategoryData = {
@@ -4363,5 +4264,7 @@
         });
     </script>
     <script src="../js/finops-session-header.js" defer></script>
+    <script src="../js/finops-table-ui.js" defer></script>
+    <script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

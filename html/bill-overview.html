@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>FinOps财务运营管理平台 - 账单分析</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow-x: hidden; }
@@ -467,7 +469,7 @@
     <div class="container">
         <aside class="sidebar">
             <div class="sidebar-head">菜单导航</div>
-            <ul style="list-style:none;padding:0;margin:0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
                 <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
                     <a class="menu-item" href="cost-overview.html">成本管理</a>
@@ -480,6 +482,7 @@
                 <li>
                     <a class="menu-item" href="usage-management.html">用量管理</a>
                     <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
                         <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
                         <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
                         <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
@@ -487,21 +490,22 @@
                 </li>
                 <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
                 <li>
-                    <a class="menu-item active" href="bill-overview.html">账单管理</a>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
                     <ul class="sub-menu">
                         <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
                         <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
-                        <li><a class="sub-menu-item active" href="bill-overview.html">账单分析</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
-                <li>
-                    <a class="menu-item" href="usage-push-strategy-management.html">消息推送</a>
-                    <ul class="sub-menu">
-                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
-                    </ul>
-                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
                 <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
-                <li><a class="menu-item" href="system-management.html">系统管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
+                    </ul>
+                </li>
             </ul>
         </aside>
 
@@ -565,9 +569,7 @@
     var DIMENSION_OPTIONS = [
         { value: 'department', label: '按部门' },
         { value: 'service', label: '按服务' },
-        { value: 'product', label: '按备案产品' },
-        { value: 'region', label: '按地域' },
-        { value: 'env', label: '按环境' }
+        { value: 'product', label: '按备案产品' }
     ];
 
     /** 费用趋势分析专用：在通用维度上增加「按总费用」（不用于费用构成环形图） */
@@ -576,9 +578,7 @@
     var BASE_DIMENSION_ITEMS = {
         department: ['研发中心', '运维中心', '大数据部', '安全合规部'],
         service: ['云主机 ECS', '对象存储 OSS', '云数据库 RDS', '负载均衡 SLB', 'CDN'],
-        product: ['核心交易系统备案', '营销中台备案', '数据中台备案', '日志与审计备案'],
-        region: ['华东-上海', '华北-北京', '华南-广州', '西南-成都'],
-        env: ['测试', '生产']
+        product: ['核心交易系统备案', '营销中台备案', '数据中台备案', '日志与审计备案']
     };
 
     function getEffectiveDimensionItems(dim) {
@@ -610,16 +610,6 @@
             { name: '营销中台备案', pct: 25 },
             { name: '数据中台备案', pct: 20 },
             { name: '日志与审计备案', pct: 15 }
-        ],
-        region: [
-            { name: '华东-上海', pct: 42 },
-            { name: '华北-北京', pct: 30 },
-            { name: '华南-广州', pct: 18 },
-            { name: '西南-成都', pct: 10 }
-        ],
-        env: [
-            { name: '生产', pct: 78 },
-            { name: '测试', pct: 22 }
         ]
     };
 
@@ -1064,5 +1054,7 @@
 })();
     </script>
     <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

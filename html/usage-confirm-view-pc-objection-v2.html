@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>用量确认（PC）— FinOps</title>
+    <title>【v2 副本】用量确认（PC）— FinOps</title>
     <link rel="stylesheet" href="../css/finops-ui-consistency.css">
 
     <style>
@@ -200,7 +200,7 @@
 
     <div class="wrap">
         <div class="banner" role="region">
-            <div>请在 <strong id="displayDeadline">2026-05-09 24:00</strong> 前完成操作。请<strong>勾选实例</strong>后使用「确认」或「异议」：确认仅作用于已选且仍为待确认的实例；「异议」仅需填写异议说明（无需选择类型或实例），由运维处理。已提交异议的实例灰显且不可再选。</div>
+            <div>请在 <strong id="displayDeadline">2026-05-09 24:00</strong> 前完成操作。请<strong>勾选实例</strong>后使用「确认」；「异议」仅需填写说明，<strong>一次提交一条异议</strong>（不选实例、不选类型）。</div>
         </div>
         <div id="groupRoot"></div>
         <p class="muted" style="margin-top:8px;">起止时间为该实例在本账期的计量统计区间（示意）。</p>
@@ -215,8 +215,8 @@
         <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="objModalTitle">
             <div class="modal-hd" id="objModalTitle">提交异议</div>
             <div class="modal-bd">
-                <p class="muted" id="objInstHint" style="margin-bottom:10px;line-height:1.5;">请填写异议说明；无需选择异议类型或实例，提交后由运维管理员根据说明添加修正数据。</p>
-                <label for="objReason" id="objReasonLabel" style="font-size:13px;font-weight:600;margin-top:12px;display:block;">异议说明 *</label>
+                <p class="muted" id="objInstHint" style="margin-bottom:10px;line-height:1.5;">请描述本期用量异议，一次提交生成一条异议申请。</p>
+                <label for="objReason" id="objReasonLabel" style="font-size:13px;font-weight:600;display:block;">异议说明 *</label>
                 <textarea id="objReason" placeholder="请详细描述异议原因及依据"></textarea>
             </div>
             <div class="modal-ft">
@@ -401,6 +401,7 @@
         }
         var preIds = selectedListInstanceIds();
         renderObjModal();
+        
         document.getElementById('objReason').value = '';
         document.querySelectorAll('.obj-chk').forEach(function (c) {
             c.checked = preIds.indexOf(c.value) >= 0;
@@ -457,10 +458,8 @@
             alert('请填写异议说明。');
             return;
         }
-        counts();
-        renderMain();
         closeObjModal();
-        alert('【原型】异议已提交（仅说明）。已提醒运维管理员处理，请留意通知。');
+        alert('【原型 · v2】已提交一条异议申请（仅说明）。已提醒运维管理员处理。');
     });
 
     syncPeriod();

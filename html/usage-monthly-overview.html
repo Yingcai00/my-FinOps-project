@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>FinOps财务运营管理平台 - 月度用量总览</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow-x: hidden; }
@@ -186,7 +188,7 @@
     <div class="container">
         <aside class="sidebar">
             <div class="sidebar-head">菜单导航</div>
-            <ul style="list-style:none;padding:0;margin:0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
                 <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
                     <a class="menu-item" href="cost-overview.html">成本管理</a>
@@ -197,9 +199,9 @@
                 </li>
                 <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
                 <li>
-                    <a class="menu-item active" href="usage-monthly-overview.html">用量管理</a>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
                     <ul class="sub-menu">
-                        <li><a class="sub-menu-item active" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
                         <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
                         <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
                         <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
@@ -207,28 +209,29 @@
                 </li>
                 <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
                 <li>
-                    <a class="menu-item" href="bill-monthly-overview.html">账单管理</a>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
                     <ul class="sub-menu">
                         <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
                         <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
                         <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
                 <li>
-                    <a class="menu-item" href="usage-push-strategy-management.html">消息推送</a>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
                     <ul class="sub-menu">
-                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
                 </li>
-                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
-                <li><a class="menu-item" href="system-management.html">系统管理</a></li>
             </ul>
         </aside>
 
         <main class="content">
             <div class="card">
                 <h2 class="page-title">月度用量总览</h2>
-                <p class="page-desc">按自然账期汇总各月<strong>实例数</strong>、<strong>待确认/异议中</strong>规模与<strong>当月用量状态</strong>（示意数据）。布局对齐「月度账单总览」，<strong>不含费用金额</strong>。状态说明：<strong>采集中</strong>时尚未锁定实例用量；<strong>确认中</strong>开放费用归属人确认与异议；<strong>已确认</strong>表示本账期用量已确认定版，可参与后续出账与追溯。</p>
+                <p class="page-desc">按自然账期汇总各月<strong>待确认/异议中</strong>规模与<strong>当月用量状态</strong>（示意数据）。布局对齐「月度账单总览」，<strong>不含费用金额</strong>。状态说明：<strong>采集中</strong>时尚未锁定实例用量；<strong>确认中</strong>开放费用归属人确认与异议；<strong>已确认</strong>表示本账期用量已确认定版，可参与后续出账与追溯。</p>
                 <div class="filter-bar" role="search" aria-label="月度用量筛选">
                     <div class="filter-item">
                         <label for="filterPeriod">账期</label>
@@ -252,7 +255,6 @@
                         <thead>
                             <tr>
                                 <th>账期</th>
-                                <th class="num">实例数</th>
                                 <th class="num">待确认</th>
                                 <th class="num">异议中</th>
                                 <th>当月用量状态</th>
@@ -279,18 +281,18 @@
     };
 
     var allRows = [
-        { period: '2026-05', instances: null, pending: null, dispute: null, status: '采集中', pushTime: '' },
-        { period: '2026-04', instances: 1284, pending: 8, dispute: 3, status: '确认中', pushTime: '' },
-        { period: '2026-03', instances: 1196, pending: 0, dispute: 0, status: '已确认', pushTime: '2026-04-10 18:32' },
-        { period: '2026-02', instances: 1102, pending: 0, dispute: 0, status: '已确认', pushTime: '2026-03-10 16:40' },
-        { period: '2026-01', instances: 1150, pending: 0, dispute: 0, status: '已确认', pushTime: '2026-02-10 08:45' },
-        { period: '2025-12', instances: 1088, pending: 0, dispute: 0, status: '已确认', pushTime: '2026-01-09 11:00' },
-        { period: '2025-11', instances: 1062, pending: 0, dispute: 0, status: '已确认', pushTime: '2025-12-10 09:05' },
-        { period: '2025-10', instances: 1040, pending: 0, dispute: 0, status: '已确认', pushTime: '2025-11-10 08:55' },
-        { period: '2025-09', instances: 1012, pending: 0, dispute: 0, status: '已确认', pushTime: '2025-10-10 09:00' },
-        { period: '2025-08', instances: 998, pending: 0, dispute: 0, status: '已确认', pushTime: '2025-09-10 08:40' },
-        { period: '2025-07', instances: 982, pending: 0, dispute: 0, status: '已确认', pushTime: '2025-08-10 08:50' },
-        { period: '2025-06', instances: 960, pending: 0, dispute: 0, status: '已确认', pushTime: '2025-07-10 09:10' }
+        { period: '2026-05', pending: null, dispute: null, status: '采集中', pushTime: '' },
+        { period: '2026-04', pending: 8, dispute: 3, status: '确认中', pushTime: '' },
+        { period: '2026-03', pending: 0, dispute: 0, status: '已确认', pushTime: '2026-04-10 18:32' },
+        { period: '2026-02', pending: 0, dispute: 0, status: '已确认', pushTime: '2026-03-10 16:40' },
+        { period: '2026-01', pending: 0, dispute: 0, status: '已确认', pushTime: '2026-02-10 08:45' },
+        { period: '2025-12', pending: 0, dispute: 0, status: '已确认', pushTime: '2026-01-09 11:00' },
+        { period: '2025-11', pending: 0, dispute: 0, status: '已确认', pushTime: '2025-12-10 09:05' },
+        { period: '2025-10', pending: 0, dispute: 0, status: '已确认', pushTime: '2025-11-10 08:55' },
+        { period: '2025-09', pending: 0, dispute: 0, status: '已确认', pushTime: '2025-10-10 09:00' },
+        { period: '2025-08', pending: 0, dispute: 0, status: '已确认', pushTime: '2025-09-10 08:40' },
+        { period: '2025-07', pending: 0, dispute: 0, status: '已确认', pushTime: '2025-08-10 08:50' },
+        { period: '2025-06', pending: 0, dispute: 0, status: '已确认', pushTime: '2025-07-10 09:10' }
     ];
 
     function formatInt(n) {
@@ -350,7 +352,7 @@
         var rows = getFilteredRows();
         document.getElementById('filterRowCount').textContent = String(rows.length);
         if (!rows.length) {
-            tb.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">暂无符合条件的数据</td></tr>';
+            tb.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;padding:24px;">暂无符合条件的数据</td></tr>';
             return;
         }
         tb.innerHTML = rows.map(function (r) {
@@ -359,22 +361,20 @@
             var q = '?bill_month=' + encodeURIComponent(r.period);
             var collecting = r.status === '采集中';
             var dash = '--';
-            var instCell = collecting ? dash : formatInt(r.instances);
             var pendCell = collecting ? dash : formatInt(r.pending);
             var dispCell = collecting ? dash : formatInt(r.dispute);
-            var pushRecHref = 'bill-push-records.html?period=' + encodeURIComponent(r.period);
+            var pushRecHref = 'bill-push-records.html?period=' + encodeURIComponent(r.period) + '&kind=usage';
             var pushCell = collecting ? dash : (r.pushTime ? String(r.pushTime) : '');
             var viewLink = collecting
                 ? '<span style="color:#bfbfbf;" title="采集中时不可进入用量工作台">--</span>'
                 : '<a class="link" href="' + href + q + '">查看</a>';
             var pushRec = collecting
                 ? ''
-                : ' · <a class="link" href="' + pushRecHref + '" title="仅查看该账期的推送流水">推送记录</a>';
+                : ' · <a class="link" href="' + pushRecHref + '" title="仅查看该账期的用量推送记录">推送记录</a>';
             var opCell = viewLink + pushRec;
             return (
                 '<tr>' +
                 '<td><strong>' + r.period + '</strong></td>' +
-                '<td class="num">' + instCell + '</td>' +
                 '<td class="num">' + pendCell + '</td>' +
                 '<td class="num">' + dispCell + '</td>' +
                 '<td><span class="' + stClass + '">' + r.status + '</span></td>' +
@@ -393,5 +393,7 @@
 })();
     </script>
     <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

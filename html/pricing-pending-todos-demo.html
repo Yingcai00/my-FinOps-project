@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinOps财务运营管理平台 - 定价待办（Demo）</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow-x: hidden; }
@@ -85,7 +87,7 @@
         }
         .mini-table-scroll .mini-table { min-width: 640px; }
         .mini-table-scroll.wide .mini-table { min-width: 980px; }
-        .mini-table-scroll.usage-unconfirmed-mini .mini-table { min-width: 1680px; }
+        .mini-table-scroll.usage-unconfirmed-mini .mini-table { min-width: 1580px; }
         .usage-tag-pending { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
         .usage-tag-inst { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
 
@@ -109,7 +111,7 @@
     <div class="container">
         <aside class="sidebar" aria-label="主导航">
             <div class="sidebar-head">菜单导航</div>
-            <ul style="list-style:none;padding:0;margin:0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
                 <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
                     <a class="menu-item" href="cost-overview.html">成本管理</a>
@@ -128,7 +130,7 @@
                         <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
                     </ul>
                 </li>
-                <li><a class="menu-item active" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
                 <li>
                     <a class="menu-item" href="bill-overview.html">账单管理</a>
                     <ul class="sub-menu">
@@ -137,14 +139,15 @@
                         <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
                 <li>
-                    <a class="menu-item" href="usage-push-strategy-management.html">消息推送</a>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
                     <ul class="sub-menu">
-                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
                 </li>
-                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
-                <li><a class="menu-item" href="system-management.html">系统管理</a></li>
             </ul>
         </aside>
 
@@ -265,11 +268,14 @@
         const DEMO_PENDING_USAGE_DISPUTES = [
             { id: 'DIS-2026-0211', type: '多算实例', billPeriod: '2026-02', dept: '研发中心', applicant: '张明', status: '待处理', submittedAt: '2026-03-02 10:12', summary: '停机窗口内仍按在运计费，申请核减用量。' },
             { id: 'DIS-2026-0212', type: '实例信息错误', billPeriod: '2026-02', dept: '产品部', applicant: '李华', status: '处理中', submittedAt: '2026-03-03 14:40', summary: '费用归属与系统记录不一致。' },
-            { id: 'DIS-2026-0410', type: '少算实例', billPeriod: '2026-04', dept: '运维中心', applicant: '王磊', status: '待处理', submittedAt: '2026-05-01 09:05', summary: '补充说明中描述待补录资源。' }
+            { id: 'DIS-2026-0043', type: '少算实例', billPeriod: '2026-04', dept: '运营部', applicant: '李晓芸', status: '待处理', submittedAt: '2026-05-10 09:00', summary: 'API 网关未入账，处理入口：新增实例补录。' },
+            { id: 'DIS-2026-0046', type: '少算实例', billPeriod: '2026-04', dept: '研发中心', applicant: '张明', status: '待处理', submittedAt: '2026-05-11 14:20', summary: '批量说明 3 台待补录（batch-worker×2、Redis）。' },
+            { id: 'DIS-2026-0047', type: '少算实例', billPeriod: '2026-04', dept: '研发中心', applicant: '张明', status: '待处理', submittedAt: '2026-05-12 08:45', summary: '对象存储桶 finops-backup-04 未入账（并行少算单）。' },
+            { id: 'DIS-2026-0042', type: '—', billPeriod: '2026-04', dept: '研发中心', applicant: '张明', status: '处理中', submittedAt: '2026-05-03 09:21', summary: '停机核减（类型待认定，关联 prod-web-02）。' }
         ];
 
         /**
-         * 未确认用量明细 Tab：字段与「用量管理 › 用量明细」表头一致（示意数据，按账单月筛选）。
+         * 未确认用量明细 Tab：字段与「用量管理 › 用量明细」表头一致（无操作列；示意数据，按账单月筛选）。
          * 对接后由待办中心返回与用量明细同一套字段。
          */
         const DEMO_UNCONFIRMED_USAGE_TODO_ROWS = [
@@ -977,10 +983,9 @@
                 '<thead><tr>' +
                 '<th>账期</th><th>实例ID</th><th>实例名称</th><th>服务分类</th><th>部门</th>' +
                 '<th>规格簇</th><th>规格</th><th>配置</th><th>备案产品</th><th>费用归属人</th><th>管理员</th><th>使用人</th><th>环境</th>' +
-                '<th>开始使用时间</th><th>结束使用时间</th><th>确认状态</th><th>实例状态</th><th>操作</th>' +
+                '<th>开始使用时间</th><th>结束使用时间</th><th>确认状态</th><th>实例状态</th>' +
                 '</tr></thead>';
             const rows = list.map(function (row) {
-                const href = 'usage-management.html?bill_month=' + encodeURIComponent(row.billMonth) + '&tab=detail';
                 const dash = '—';
                 return (
                     '<tr>' +
@@ -1001,7 +1006,6 @@
                     '<td>' + escapeHtml(row.endTime || dash) + '</td>' +
                     '<td><span class="usage-tag-pending">待确认</span></td>' +
                     '<td><span class="usage-tag-inst">' + escapeHtml(row.instState || '正常') + '</span></td>' +
-                    '<td><a class="btn btn-primary" style="padding:2px 10px;font-size:12px;" href="' + href + '">去确认</a></td>' +
                     '</tr>'
                 );
             }).join('');
@@ -1016,9 +1020,34 @@
                 return;
             }
             const rows = list.map(function (d) {
-                return '<tr><td>' + escapeHtml(d.id) + '</td><td>' + escapeHtml(d.type) + '</td><td>' + escapeHtml(d.billPeriod) + '</td><td>' + escapeHtml(d.dept) + '</td><td>' + escapeHtml(d.applicant) + '</td><td>' + escapeHtml(d.status) + '</td><td>' + escapeHtml(d.submittedAt) + '</td><td>' + escapeHtml(d.summary) + '</td></tr>';
+                const href =
+                    'usage-management.html?tab=dispute&bill_month=' + encodeURIComponent(trimStr(d.billPeriod));
+                return (
+                    '<tr><td>' +
+                    escapeHtml(d.id) +
+                    '</td><td>' +
+                    escapeHtml(d.type) +
+                    '</td><td>' +
+                    escapeHtml(d.billPeriod) +
+                    '</td><td>' +
+                    escapeHtml(d.dept) +
+                    '</td><td>' +
+                    escapeHtml(d.applicant) +
+                    '</td><td>' +
+                    escapeHtml(d.status) +
+                    '</td><td>' +
+                    escapeHtml(d.submittedAt) +
+                    '</td><td>' +
+                    escapeHtml(d.summary) +
+                    '</td><td><a class="btn btn-primary" style="padding:2px 10px;font-size:12px;" href="' +
+                    href +
+                    '">处理</a></td></tr>'
+                );
             }).join('');
-            el.innerHTML = '<div class="mini-table-scroll wide"><table class="mini-table"><thead><tr><th>异议单号</th><th>类型</th><th>账期</th><th>部门</th><th>申请人</th><th>状态</th><th>提交时间</th><th>摘要</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+            el.innerHTML =
+                '<div class="mini-table-scroll wide"><table class="mini-table"><thead><tr><th>异议单号</th><th>类型</th><th>账期</th><th>部门</th><th>申请人</th><th>状态</th><th>提交时间</th><th>摘要</th><th>操作</th></tr></thead><tbody>' +
+                rows +
+                '</tbody></table></div>';
         }
 
         function renderPanels(r, month) {
@@ -1081,5 +1110,7 @@
         initMonthFromUrl();
         refreshAll();
     </script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

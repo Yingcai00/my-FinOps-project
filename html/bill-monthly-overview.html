@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>FinOps财务运营管理平台 - 月度账单总览</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow-x: hidden; }
@@ -186,7 +188,7 @@
     <div class="container">
         <aside class="sidebar">
             <div class="sidebar-head">菜单导航</div>
-            <ul style="list-style:none;padding:0;margin:0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
                 <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
                     <a class="menu-item" href="cost-overview.html">成本管理</a>
@@ -207,28 +209,29 @@
                 </li>
                 <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
                 <li>
-                    <a class="menu-item active" href="bill-monthly-overview.html">账单管理</a>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
                     <ul class="sub-menu">
-                        <li><a class="sub-menu-item active" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
                         <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
                         <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
                 <li>
-                    <a class="menu-item" href="usage-push-strategy-management.html">消息推送</a>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
                     <ul class="sub-menu">
-                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
                 </li>
-                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
-                <li><a class="menu-item" href="system-management.html">系统管理</a></li>
             </ul>
         </aside>
 
         <main class="content">
             <div class="card">
                 <h2 class="page-title">月度账单总览</h2>
-                <p class="page-desc">按自然账期汇总各月账单总费用与<strong>账期级</strong>流程状态（示意数据）：未出账、出账中、已出账、已关账。账单详情 Tab 中：账期为出账中/未出账/已关账时各行状态与账期一致；账期为已出账时各部门/标签可并存已出账与已关账。<strong>未出账、出账中</strong>账期不产生推送流水；<strong>已出账、已关账</strong>行可从操作列进入「推送记录」（不在侧栏菜单展示）。</p>
+                <p class="page-desc">按自然账期汇总各月账单总费用与<strong>账期级</strong>流程状态（示意数据）：<strong>未出账、出账中、已出账</strong>（一期已取消「已关账」与账单确认）。账单详情中：账期为出账中或未出账时各行状态与账期一致；账期为已出账时各部门/标签均为<strong>已出账</strong>。<strong>未出账、出账中</strong>账期不产生推送流水；<strong>已出账</strong>行可从操作列进入「推送记录」（不在侧栏菜单展示）。</p>
                 <div class="filter-bar" role="search" aria-label="月度账单筛选">
                     <div class="filter-item">
                         <label for="filterPeriod">账期</label>
@@ -241,7 +244,6 @@
                             <option value="未出账">未出账</option>
                             <option value="出账中">出账中</option>
                             <option value="已出账">已出账</option>
-                            <option value="已关账">已关账</option>
                         </select>
                     </div>
                     <div class="filter-item muted" style="padding-bottom:2px;">
@@ -270,27 +272,26 @@
 (function () {
     'use strict';
 
-    /** 状态：未出账 | 出账中 | 已出账 | 已关账 */
+    /** 状态：未出账 | 出账中 | 已出账 */
     var STATUS_CLASS = {
         '未出账': 'st st--none',
         '出账中': 'st st--ing',
-        '已出账': 'st st--issued',
-        '已关账': 'st st--closed'
+        '已出账': 'st st--issued'
     };
 
     var allRows = [
         { period: '2026-05', total: null, status: '未出账', pushTime: '' },
         { period: '2026-04', total: 122350.8, status: '出账中', pushTime: '' },
         { period: '2026-03', total: 115280.5, status: '已出账', pushTime: '2026-04-10 08:00' },
-        { period: '2026-02', total: 98520.3, status: '已关账', pushTime: '2026-03-11 09:12' },
-        { period: '2026-01', total: 118920.0, status: '已关账', pushTime: '2026-02-10 08:45' },
-        { period: '2025-12', total: 112400.0, status: '已关账', pushTime: '2026-01-10 08:30' },
-        { period: '2025-11', total: 108760.25, status: '已关账', pushTime: '2025-12-10 09:05' },
-        { period: '2025-10', total: 105320.0, status: '已关账', pushTime: '2025-11-10 08:55' },
-        { period: '2025-09', total: 101890.5, status: '已关账', pushTime: '2025-10-10 09:00' },
-        { period: '2025-08', total: 99850.0, status: '已关账', pushTime: '2025-09-10 08:40' },
-        { period: '2025-07', total: 97210.3, status: '已关账', pushTime: '2025-08-10 08:50' },
-        { period: '2025-06', total: 95400.0, status: '已关账', pushTime: '2025-07-10 09:10' }
+        { period: '2026-02', total: 98520.3, status: '已出账', pushTime: '2026-03-11 09:12' },
+        { period: '2026-01', total: 118920.0, status: '已出账', pushTime: '2026-02-10 08:45' },
+        { period: '2025-12', total: 112400.0, status: '已出账', pushTime: '2026-01-10 08:30' },
+        { period: '2025-11', total: 108760.25, status: '已出账', pushTime: '2025-12-10 09:05' },
+        { period: '2025-10', total: 105320.0, status: '已出账', pushTime: '2025-11-10 08:55' },
+        { period: '2025-09', total: 101890.5, status: '已出账', pushTime: '2025-10-10 09:00' },
+        { period: '2025-08', total: 99850.0, status: '已出账', pushTime: '2025-09-10 08:40' },
+        { period: '2025-07', total: 97210.3, status: '已出账', pushTime: '2025-08-10 08:50' },
+        { period: '2025-06', total: 95400.0, status: '已出账', pushTime: '2025-07-10 09:10' }
     ];
 
     function formatMoney(n) {
@@ -367,7 +368,7 @@
                 : '<a class="link" href="' + href + q + '">查看</a>';
             var pushRec = noView
                 ? ''
-                : ' · <a class="link" href="bill-push-records.html?period=' + encodeURIComponent(r.period) + '" title="按该账期筛选推送流水">推送记录</a>';
+                : ' · <a class="link" href="bill-push-records.html?period=' + encodeURIComponent(r.period) + '&kind=bill" title="按该账期查看账单推送记录">推送记录</a>';
             var opCell = viewLink + pushRec;
             return (
                 '<tr>' +
@@ -389,5 +390,7 @@
 })();
     </script>
     <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

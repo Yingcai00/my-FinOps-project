@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>FinOps财务运营管理平台 - 推送记录</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow-x: hidden; }
@@ -189,14 +191,14 @@
     <div class="header">
         <div class="header-content">
             <h1>FinOps财务运营管理平台</h1>
-            <span class="header-sub">账单管理 · 推送记录</span>
+            <span class="header-sub" id="headerSub">账单管理 · 推送记录</span>
         </div>
     </div>
 
     <div class="container">
         <aside class="sidebar">
             <div class="sidebar-head">菜单导航</div>
-            <ul style="list-style:none;padding:0;margin:0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
                 <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
                     <a class="menu-item" href="cost-overview.html">成本管理</a>
@@ -217,28 +219,29 @@
                 </li>
                 <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
                 <li>
-                    <a class="menu-item active" href="bill-monthly-overview.html">账单管理</a>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
                     <ul class="sub-menu">
                         <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
                         <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
                         <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
                 <li>
-                    <a class="menu-item" href="usage-push-strategy-management.html">消息推送</a>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
                     <ul class="sub-menu">
-                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
                 </li>
-                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
-                <li><a class="menu-item" href="system-management.html">系统管理</a></li>
             </ul>
         </aside>
 
         <main class="content">
             <div class="card">
-                <h2 class="page-title">推送记录</h2>
-                <p class="page-desc">按自然账期汇总<strong>账单推送</strong>与<strong>用量推送</strong>的操作留痕（示意数据）。<strong>未出账、出账中</strong>账期不产生推送流水，本列表不包含。入口：<strong>月度账单总览</strong>中已出账/已关账行的「推送记录」，或<strong>月度用量总览</strong>操作列中的「推送记录」（按所选账期筛选）。侧栏不提供本页菜单。对接消息网关与审计后，以服务端落库为准。</p>
+                <h2 class="page-title" id="pageTitle">推送记录</h2>
+                <p class="page-desc" id="pageDesc">按自然账期汇总<strong>账单推送</strong>与<strong>用量推送</strong>的操作留痕（示意数据）。<strong>未出账、出账中</strong>账期不产生推送流水，本列表不包含。入口：<strong>月度账单总览</strong> / <strong>月度用量总览</strong>已出账或允许查看行中的「推送记录」会分别只展示对应类型的流水。侧栏不提供本页菜单。对接消息网关与审计后，以服务端落库为准。</p>
                 <p id="entryHint" class="muted" style="display:none;margin-top:-6px;margin-bottom:12px;"></p>
 
                 <div class="filter-bar" role="search" aria-label="推送记录筛选">
@@ -253,22 +256,10 @@
 
                 <div class="data-table-wrap">
                     <table class="push-records-table" aria-label="推送记录列表">
-                        <thead>
-                            <tr>
-                                <th>推送时间</th>
-                                <th>账期</th>
-                                <th>推送类型</th>
-                                <th>操作人</th>
-                                <th>推送范围</th>
-                                <th>消息推送策略</th>
-                                <th>触达条数</th>
-                                <th>状态</th>
-                            </tr>
-                        </thead>
+                        <thead id="pushRecordsThead"></thead>
                         <tbody id="pushRecordsBody"></tbody>
                     </table>
                 </div>
-                <p class="muted" style="margin-top:12px;margin-bottom:0;">「触达条数」为示意统计；失败原因可在对接后展开行或跳转运维日志查看。</p>
             </div>
         </main>
     </div>
@@ -277,19 +268,26 @@
 (function () {
     'use strict';
 
-    /** 示意：各账期推送流水（时间倒序展示） */
+    /** 示意：各账期推送流水（时间倒序展示）；不含策略名与触达条数列 */
     var records = [
-        { time: '2026-04-11 09:12', period: '2026-03', type: '账单推送', operator: 'admin', scope: '按部门 · 三级 · 仅勾选行（6）', strategy: '默认 · 用量确认', reach: 6, status: '成功' },
-        { time: '2026-04-10 18:32', period: '2026-03', type: '用量推送', operator: 'zhangsan', scope: '仅已勾选（12）', strategy: 'GPU 资源线 · 加急', reach: 11, status: '部分成功' },
-        { time: '2026-04-10 08:00', period: '2026-03', type: '账单推送', operator: 'admin', scope: '按部门 · 一级 · 当前列表全部', strategy: '默认 · 用量确认', reach: 18, status: '成功' },
-        { time: '2026-03-11 09:12', period: '2026-02', type: '账单推送', operator: 'admin', scope: '按分账标签 · 标签1 · 当前列表全部', strategy: '默认 · 用量确认', reach: 9, status: '成功' },
-        { time: '2026-03-10 16:40', period: '2026-02', type: '用量推送', operator: 'admin', scope: '当前列表全部', strategy: '默认 · 用量确认', reach: 35, status: '成功' },
-        { time: '2026-02-10 08:45', period: '2026-01', type: '账单推送', operator: 'admin', scope: '按部门 · 三级 · 当前列表全部', strategy: '默认 · 用量确认', reach: 20, status: '成功' },
-        { time: '2026-01-10 08:30', period: '2025-12', type: '账单推送', operator: 'admin', scope: '按部门 · 二级 · 当前列表全部', strategy: '默认 · 用量确认', reach: 0, status: '失败' },
-        { time: '2026-01-09 11:00', period: '2025-12', type: '账单推送', operator: 'admin', scope: '按部门 · 二级 · 当前列表全部', strategy: '默认 · 用量确认', reach: 19, status: '成功' },
-        { time: '2025-12-10 09:05', period: '2025-11', type: '账单推送', operator: 'admin', scope: '按部门 · 三级 · 当前列表全部', strategy: '默认 · 用量确认', reach: 17, status: '成功' },
-        { time: '2025-11-10 08:55', period: '2025-10', type: '账单推送', operator: 'lisi', scope: '按部门 · 三级 · 仅勾选行（3）', strategy: '默认 · 用量确认', reach: 3, status: '成功' }
+        { time: '2026-04-11 09:12', period: '2026-03', type: '账单推送', operator: 'admin', scope: '按部门 · 三级 · 仅勾选行（6）', status: '成功' },
+        { time: '2026-04-10 18:32', period: '2026-03', type: '用量推送', operator: 'zhangsan', scope: '仅已勾选（12）', status: '部分成功' },
+        { time: '2026-04-10 08:00', period: '2026-03', type: '账单推送', operator: 'admin', scope: '按部门 · 一级 · 当前列表全部', status: '成功' },
+        { time: '2026-03-11 09:12', period: '2026-02', type: '账单推送', operator: 'admin', scope: '按分账标签 · 标签1 · 当前列表全部', status: '成功' },
+        { time: '2026-03-10 16:40', period: '2026-02', type: '用量推送', operator: 'admin', scope: '当前列表全部', status: '成功' },
+        { time: '2026-02-10 08:45', period: '2026-01', type: '账单推送', operator: 'admin', scope: '按部门 · 三级 · 当前列表全部', status: '成功' },
+        { time: '2026-01-10 08:30', period: '2025-12', type: '账单推送', operator: 'admin', scope: '按部门 · 二级 · 当前列表全部', status: '失败' },
+        { time: '2026-01-09 11:00', period: '2025-12', type: '账单推送', operator: 'admin', scope: '按部门 · 二级 · 当前列表全部', status: '成功' },
+        { time: '2025-12-10 09:05', period: '2025-11', type: '账单推送', operator: 'admin', scope: '按部门 · 三级 · 当前列表全部', status: '成功' },
+        { time: '2025-11-10 08:55', period: '2025-10', type: '账单推送', operator: 'lisi', scope: '按部门 · 三级 · 仅勾选行（3）', status: '成功' }
     ];
+
+    var PUSH_KIND = null;
+    try {
+        var _sp = new URLSearchParams(window.location.search);
+        var _k = (_sp.get('kind') || '').toLowerCase();
+        if (_k === 'bill' || _k === 'usage') PUSH_KIND = _k;
+    } catch (e0) { /* noop */ }
 
     var STATUS_CLASS = {
         '成功': 'st-push st-push--ok',
@@ -301,6 +299,55 @@
         '账单推送': 'tag-type tag-type--bill',
         '用量推送': 'tag-type tag-type--usage'
     };
+
+    function recordMatchesKind(r) {
+        if (!PUSH_KIND) return true;
+        if (PUSH_KIND === 'bill') return r.type === '账单推送';
+        return r.type === '用量推送';
+    }
+
+    function colCount() {
+        return PUSH_KIND ? 5 : 6;
+    }
+
+    function applyPageContext() {
+        var title = document.getElementById('pageTitle');
+        var desc = document.getElementById('pageDesc');
+        var sub = document.getElementById('headerSub');
+        if (PUSH_KIND === 'bill') {
+            document.title = 'FinOps财务运营管理平台 - 账单推送记录';
+            if (title) title.textContent = '账单推送记录';
+            if (sub) sub.textContent = '账单管理 · 账单推送记录';
+            if (desc) {
+                desc.innerHTML = '从<strong>月度账单总览</strong>进入时，仅展示<strong>账单推送</strong>流水（示意）。可按账期筛选；未出账、出账中账期不产生流水时本表为空。对接消息网关与审计后，以服务端落库为准。';
+            }
+        } else if (PUSH_KIND === 'usage') {
+            document.title = 'FinOps财务运营管理平台 - 用量推送记录';
+            if (title) title.textContent = '用量推送记录';
+            if (sub) sub.textContent = '用量管理 · 用量推送记录';
+            if (desc) {
+                desc.innerHTML = '从<strong>月度用量总览</strong>进入时，仅展示<strong>用量推送</strong>流水（示意）。可按账期筛选；未出账、出账中账期不产生流水时本表为空。对接消息网关与审计后，以服务端落库为准。';
+            }
+        } else {
+            document.title = 'FinOps财务运营管理平台 - 推送记录';
+            if (title) title.textContent = '推送记录';
+            if (sub) sub.textContent = '账单管理 · 推送记录';
+            if (desc) {
+                desc.innerHTML = '按自然账期汇总<strong>账单推送</strong>与<strong>用量推送</strong>的操作留痕（示意数据）。<strong>未出账、出账中</strong>账期不产生推送流水，本列表不包含。入口：<strong>月度账单总览</strong>（<code>kind=bill</code>）与<strong>月度用量总览</strong>（<code>kind=usage</code>）会分别只展示对应类型；未带参数时可查看全部类型。侧栏不提供本页菜单。对接消息网关与审计后，以服务端落库为准。';
+            }
+        }
+    }
+
+    function renderThead() {
+        var thead = document.getElementById('pushRecordsThead');
+        if (!thead) return;
+        var labels = ['推送时间', '账期'];
+        if (!PUSH_KIND) labels.push('推送类型');
+        labels.push('操作人', '推送范围', '状态');
+        thead.innerHTML = '<tr>' + labels.map(function (lab) {
+            return '<th>' + lab + '</th>';
+        }).join('') + '</tr>';
+    }
 
     function escapeHtml(s) {
         if (s == null) return '';
@@ -334,16 +381,20 @@
         if (q) sel.value = q;
     }
 
-    /** 从月度总览等入口带 period / bill_month 时提示仅展示该账期 */
+    /** 从月度总览等入口带 period / bill_month 时提示筛选范围 */
     function applyQueryDefaults() {
         var hint = document.getElementById('entryHint');
         if (!hint) return;
         try {
             var params = new URLSearchParams(window.location.search);
             var p = params.get('period') || params.get('bill_month');
-            if (p) {
+            var bits = [];
+            if (PUSH_KIND === 'bill') bits.push('仅账单推送');
+            else if (PUSH_KIND === 'usage') bits.push('仅用量推送');
+            if (p) bits.push('账期「' + p + '」');
+            if (bits.length) {
                 hint.style.display = 'block';
-                hint.textContent = '当前仅展示账期「' + p + '」的推送记录；可在上方「账期」中切换或选择「全部账期」。';
+                hint.textContent = '当前展示：' + bits.join('，') + '。可在上方「账期」中切换或选择「全部账期」。';
             }
         } catch (e2) { /* noop */ }
     }
@@ -352,32 +403,37 @@
         var period = document.getElementById('filterPeriod').value;
         var list = records.filter(function (r) {
             if (period && r.period !== period) return false;
+            if (!recordMatchesKind(r)) return false;
             return true;
         });
         document.getElementById('recordCount').textContent = String(list.length);
         var tb = document.getElementById('pushRecordsBody');
+        var nCol = colCount();
         if (!list.length) {
-            tb.innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">暂无符合条件的推送记录</td></tr>';
+            tb.innerHTML = '<tr><td colspan="' + nCol + '" class="muted" style="text-align:center;padding:24px;">暂无符合条件的推送记录</td></tr>';
             return;
         }
         tb.innerHTML = list.map(function (r) {
             var st = STATUS_CLASS[r.status] || 'st-push st-push--ok';
             var tc = TYPE_CLASS[r.type] || 'tag-type';
-            return (
-                '<tr>' +
-                '<td>' + escapeHtml(r.time) + '</td>' +
-                '<td><strong>' + escapeHtml(r.period) + '</strong></td>' +
-                '<td><span class="' + tc + '">' + escapeHtml(r.type) + '</span></td>' +
-                '<td>' + escapeHtml(r.operator) + '</td>' +
-                '<td class="scope-cell">' + escapeHtml(r.scope) + '</td>' +
-                '<td>' + escapeHtml(r.strategy) + '</td>' +
-                '<td class="num">' + (r.reach != null ? escapeHtml(String(r.reach)) : '—') + '</td>' +
-                '<td><span class="' + st + '">' + escapeHtml(r.status) + '</span></td>' +
-                '</tr>'
+            var cells = [
+                '<td>' + escapeHtml(r.time) + '</td>',
+                '<td><strong>' + escapeHtml(r.period) + '</strong></td>'
+            ];
+            if (!PUSH_KIND) {
+                cells.push('<td><span class="' + tc + '">' + escapeHtml(r.type) + '</span></td>');
+            }
+            cells.push(
+                '<td>' + escapeHtml(r.operator) + '</td>',
+                '<td class="scope-cell">' + escapeHtml(r.scope) + '</td>',
+                '<td><span class="' + st + '">' + escapeHtml(r.status) + '</span></td>'
             );
+            return '<tr>' + cells.join('') + '</tr>';
         }).join('');
     }
 
+    applyPageContext();
+    renderThead();
     fillPeriodSelect();
     applyQueryDefaults();
     document.getElementById('filterPeriod').addEventListener('change', function () {
@@ -385,9 +441,18 @@
         if (hint) {
             if (this.value) {
                 hint.style.display = 'block';
-                hint.textContent = '当前仅展示账期「' + this.value + '」的推送记录；可在上方「账期」中切换或选择「全部账期」。';
+                var bits = [];
+                if (PUSH_KIND === 'bill') bits.push('仅账单推送');
+                else if (PUSH_KIND === 'usage') bits.push('仅用量推送');
+                bits.push('账期「' + this.value + '」');
+                hint.textContent = '当前展示：' + bits.join('，') + '。可在上方「账期」中切换或选择「全部账期」。';
             } else {
-                hint.style.display = 'none';
+                if (PUSH_KIND) {
+                    hint.style.display = 'block';
+                    hint.textContent = '当前展示：' + (PUSH_KIND === 'bill' ? '仅账单推送' : '仅用量推送') + '，全部账期。';
+                } else {
+                    hint.style.display = 'none';
+                }
             }
         }
         render();
@@ -396,5 +461,7 @@
 })();
     </script>
     <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

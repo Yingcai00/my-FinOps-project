@@ -7,6 +7,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>FinOps财务运营管理平台 - B类资产管理</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * {
             margin: 0;
@@ -352,8 +354,6 @@
             background-color: #fafafa;
             font-weight: 600;
             color: #333;
-            position: sticky;
-            top: 0;
         }
 
         tr:hover {
@@ -835,9 +835,9 @@
             <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
                 菜单导航
             </div>
-            <ul style="list-style: none; padding: 0; margin: 0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
                 <li>
-                    <a href="asset-ledger-management.html" class="menu-item active">
+                    <a href="asset-ledger-management.html" class="menu-item">
                         <span>B类资产管理</span>
                     </a>
                     <ul class="sub-menu">
@@ -853,66 +853,39 @@
                     </ul>
                 </li>
                 <li>
-                    <a href="cost-overview.html" class="menu-item">
-                        <span>成本管理</span>
-                    </a>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
                     <ul class="sub-menu">
-                        <li>
-                            <a href="cost-overview.html" class="sub-menu-item">成本总览</a>
-                        </li>
-                        <li>
-                            <a href="cost-pool-management.html" class="sub-menu-item">成本池管理</a>
-                        </li>
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
                     </ul>
                 </li>
-
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
                 <li>
-                    <a href="pricing-management.html" class="menu-item">
-                        <span>定价管理</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="usage-management.html" class="menu-item">
-                        <span>用量管理</span>
-                    </a>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
                     <ul class="sub-menu">
-                        <li><a href="usage-management.html" class="sub-menu-item">用量明细</a></li>
-                        <li><a href="usage-confirm-view-pc.html?bill_period=2026-04" class="sub-menu-item">PC 用量确认</a></li>
-                        <li><a href="usage-confirm-view-mobile.html?bill_period=2026-04" class="sub-menu-item">移动用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
                 <li>
-                    <a href="pricing-pending-todos-demo.html" class="menu-item">
-                        <span>待办管理</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="bill-overview.html" class="menu-item">
-                        <span>账单管理</span>
-                    </a>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
                     <ul class="sub-menu">
-                        <li><a href="bill-monthly-overview.html" class="sub-menu-item">月度账单总览</a></li>
-                        <li><a href="bill-management.html" class="sub-menu-item">账单详情</a></li>
-                        <li><a href="bill-overview.html" class="sub-menu-item">账单分析</a></li>
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
                 <li>
-                    <a href="usage-push-strategy-management.html" class="menu-item">
-                        <span>消息推送</span>
-                    </a>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
                     <ul class="sub-menu">
-                        <li><a href="usage-push-strategy-management.html" class="sub-menu-item">消息推送</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
-                </li>
-                <li>
-                    <a href="allocation-management.html" class="menu-item">
-                        <span>分账管理</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="system-management.html" class="menu-item">
-                        <span>系统管理</span>
-                    </a>
                 </li>
             </ul>
         </div>
@@ -950,15 +923,15 @@
                             </div>
                             <div class="filter-item">
                                 <label>资产细分</label>
-                                <div style="position: relative;">
-                                    <div class="custom-select" style="width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; padding: 4px 12px; min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; cursor: pointer; background-color: white;">
-                                        <div id="assetSubdivideTags" style="display: flex; flex-wrap: wrap; gap: 6px; flex: 1;"></div>
-                                        <input type="text" id="assetSubdivideSearch" placeholder="请选择资产细分" style="border: none; outline: none; flex: 1; min-width: 150px; font-size: 14px; padding: 4px 0;">
-                                        <span class="select-arrow" style="margin-left: 4px; color: #999;">▼</span>
+                                <div class="finops-filter-anchor">
+                                    <div class="custom-select">
+                                        <div id="assetSubdivideTags"></div>
+                                        <input type="text" id="assetSubdivideSearch" placeholder="请选择资产细分">
+                                        <span class="select-arrow">▼</span>
                                     </div>
-                                    <div id="assetSubdivideDropdown" class="select-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; max-height: 300px; overflow-y: auto; border: 1px solid #d9d9d9; border-radius: 4px; background-color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 100; display: none;">
-                                        <div style="padding: 8px; border-bottom: 1px solid #f0f0f0;">
-                                            <input type="text" id="assetSubdivideDropdownSearch" placeholder="搜索资产细分" style="width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                                    <div id="assetSubdivideDropdown" class="select-dropdown" style="display: none;">
+                                        <div>
+                                            <input type="text" id="assetSubdivideDropdownSearch" placeholder="搜索资产细分">
                                         </div>
                                         <div id="assetSubdivideOptions" style="padding: 4px 0;"></div>
                                     </div>
@@ -1032,15 +1005,15 @@
                             </div>
                             <div class="filter-item">
                                 <label>资产细分</label>
-                                <div style="position: relative;">
-                                    <div class="custom-select" style="width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; padding: 4px 12px; min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; cursor: pointer; background-color: white;">
-                                        <div id="specSubdivideTags" style="display: flex; flex-wrap: wrap; gap: 6px; flex: 1;"></div>
-                                        <input type="text" id="specSubdivideSearch" placeholder="请选择资产细分" style="border: none; outline: none; flex: 1; min-width: 150px; font-size: 14px; padding: 4px 0;">
-                                        <span class="select-arrow" style="margin-left: 4px; color: #999;">▼</span>
+                                <div class="finops-filter-anchor">
+                                    <div class="custom-select">
+                                        <div id="specSubdivideTags"></div>
+                                        <input type="text" id="specSubdivideSearch" placeholder="请选择资产细分">
+                                        <span class="select-arrow">▼</span>
                                     </div>
-                                    <div id="specSubdivideDropdown" class="select-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; max-height: 300px; overflow-y: auto; border: 1px solid #d9d9d9; border-radius: 4px; background-color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 100; display: none;">
-                                        <div style="padding: 8px; border-bottom: 1px solid #f0f0f0;">
-                                            <input type="text" id="specSubdivideDropdownSearch" placeholder="搜索资产细分" style="width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                                    <div id="specSubdivideDropdown" class="select-dropdown" style="display: none;">
+                                        <div>
+                                            <input type="text" id="specSubdivideDropdownSearch" placeholder="搜索资产细分">
                                         </div>
                                         <div id="specSubdivideOptions" style="padding: 4px 0;"></div>
                                     </div>
@@ -1109,15 +1082,15 @@
                         <div style="display: flex; flex-wrap: wrap; gap: 20px;">
                             <div class="filter-item">
                                 <label>资产细分</label>
-                                <div style="position: relative;">
-                                    <div class="custom-select" style="width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; padding: 4px 12px; min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; cursor: pointer; background-color: white;">
-                                        <div id="subdivideTags" style="display: flex; flex-wrap: wrap; gap: 6px; flex: 1;"></div>
-                                        <input type="text" id="subdivideSearch" placeholder="请选择资产细分" style="border: none; outline: none; flex: 1; min-width: 150px; font-size: 14px; padding: 4px 0;">
-                                        <span class="select-arrow" style="margin-left: 4px; color: #999;">▼</span>
+                                <div class="finops-filter-anchor">
+                                    <div class="custom-select">
+                                        <div id="subdivideTags"></div>
+                                        <input type="text" id="subdivideSearch" placeholder="请选择资产细分">
+                                        <span class="select-arrow">▼</span>
                                     </div>
-                                    <div id="subdivideDropdown" class="select-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; max-height: 300px; overflow-y: auto; border: 1px solid #d9d9d9; border-radius: 4px; background-color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 100; display: none;">
-                                        <div style="padding: 8px; border-bottom: 1px solid #f0f0f0;">
-                                            <input type="text" id="subdivideDropdownSearch" placeholder="搜索资产细分" style="width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;">
+                                    <div id="subdivideDropdown" class="select-dropdown" style="display: none;">
+                                        <div>
+                                            <input type="text" id="subdivideDropdownSearch" placeholder="搜索资产细分">
                                         </div>
                                         <div id="subdivideOptions" style="padding: 4px 0;"></div>
                                     </div>
@@ -11130,14 +11103,7 @@
                 tagsContainer.innerHTML = '';
                 getSelectedValues().forEach(option => {
                     const tag = document.createElement('span');
-                    tag.style.display = 'inline-flex';
-                    tag.style.alignItems = 'center';
-                    tag.style.padding = '4px 12px';
-                    tag.style.backgroundColor = '#e6f7ff';
-                    tag.style.color = '#1890ff';
-                    tag.style.borderRadius = '12px';
-                    tag.style.fontSize = '12px';
-                    tag.style.gap = '4px';
+                    tag.className = 'tag';
                     tag.innerHTML = `
                         ${option}
                         <span style="cursor: pointer; font-size: 14px;">×</span>
@@ -13024,5 +12990,7 @@
         </div>
     </div>
     <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

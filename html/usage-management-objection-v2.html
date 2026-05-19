@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>FinOps财务运营管理平台 - 用量管理</title>
+    <title>FinOps财务运营管理平台 - 用量管理（异议流程 v2 副本）</title>
     <link rel="stylesheet" href="../css/finops-ui-consistency.css">
 
     <style>
@@ -1048,6 +1048,7 @@
                 </div>
             </div>
             <!-- 通知栏：置于账期模块内（直接跟随账期选择器） -->
+                        <div class="notice-bar" style="margin:0 0 12px;background:#e6f7ff;border:1px solid #91d5ff;color:#0050b3;"><strong>【副本 · 异议流程 v2】</strong>用户仅填异议说明提交；运维逐条添加修正数据后完结；详情页展示基本信息、异议说明、运维处理数据与处理记录。</div>
             <div class="notice-bar" id="noticeBar" style="margin-top:10px;">
                 <span id="noticeText">系统于<span style="color:#1890ff;font-weight:600;">每月1日 10:00</span>发送确认通知，当前账期 <strong>2026年4月</strong> 处于「<strong>用量确认阶段</strong>」（次月初 ~ 7个工作日后 24:00），共 <strong id="pendingCount">8</strong> 条用量待确认，截止：<strong>2026-05-12 24:00</strong>（超时自动确认）。</span>
             </div>
@@ -1132,6 +1133,7 @@
                                                 <th>结束使用时间</th>
                                                 <th>确认状态</th>
                                                 <th>实例状态</th>
+                                                <th>操作</th>
                                             </tr>
                                         </thead>
                                         <tbody id="detailTableBody"></tbody>
@@ -1159,7 +1161,7 @@
             <div class="panel" id="panel-dispute" style="padding:20px;">
                 
                 <div class="notice-bar" id="adminDisputeNotice" style="margin-bottom:16px;display:none;">
-                    <strong>管理员视图：</strong>您可以处理异议申请：根据用户说明逐条添加修正数据（修改用量信息须关联实例，或新增实例补录）。
+                    <strong>管理员视图：</strong>处理异议时可逐条添加修正数据（修正实例用量 / 新增实例），无需用户预先选择异议类型。
                 </div>
 
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -1172,10 +1174,6 @@
                         <div class="field" style="min-width:140px;">
                             <label>申请单号</label>
                             <input type="text" id="filterDisputeId" placeholder="如 DIS-2026-">
-                        </div>
-                        <div class="field" style="min-width:160px;">
-                            <label>实例ID/实例名称</label>
-                            <input type="text" id="filterDisputeKw" placeholder="关键词">
                         </div>
                         <div class="field" style="min-width:120px;">
                             <label>处理状态</label>
@@ -1199,8 +1197,6 @@
                         <thead>
                             <tr>
                                 <th>申请单号</th>
-                                <th>实例ID</th>
-                                <th>实例名称</th>
                                 <th>申请部门</th>
                                 <th>申请人</th>
                                 <th>申请时间</th>
@@ -1254,57 +1250,25 @@
         </div>
         <div class="modal-body">
             <div class="notice-bar warn" style="margin-bottom:16px;">
-                <strong>提示：</strong>请填写<strong>异议说明</strong>即可提交；<strong>无需选择异议类型或实例</strong>。运维管理员处理时将逐条添加修正数据（修改用量信息 / 新增实例）。
+                <strong>提示：</strong>请描述本期用量异议情况。<strong>一次提交生成一条异议申请</strong>，无需选择具体实例或异议类型。
             </div>
             <div class="card-title-sm" style="margin-bottom:12px;">异议申请</div>
-            <div class="card-title-sm" style="margin:16px 0 4px;">基本信息区</div>
-            <p class="muted" style="font-size:12px;margin-bottom:12px;">以下由系统根据<strong>当前登录用户</strong>与页面顶部<strong>账期（全局）</strong>自动带出，不可修改。</p>
+            <p class="muted" style="font-size:12px;margin-bottom:12px;">申请部门、申请人、账期由系统自动带出。</p>
             <div class="form-row">
-                <div class="form-item">
-                    <label>申请部门</label>
+                <div class="form-item"><label>申请部门</label>
                     <select id="disputeDept"><option>研发中心</option><option>运营部</option><option>产品部</option><option>基础架构组</option><option>财务部</option></select>
                 </div>
-                <div class="form-item">
-                    <label>申请人</label>
+                <div class="form-item"><label>申请人</label>
                     <input type="text" id="disputeApplicant" value="张明" autocomplete="off">
                 </div>
             </div>
-            <div class="form-row full">
-                <div class="form-item">
-                    <label>账期</label>
+            <div class="form-row full"><div class="form-item"><label>账期</label>
                     <input type="month" value="2026-04" id="disputePeriod" autocomplete="off">
-                </div>
-            </div>
-            <div id="disputeInstanceBlock" style="display:none;" aria-hidden="true">
-                <div class="card-title-sm" style="margin:16px 0 8px;">异议实例</div>
-                <p class="muted" style="font-size:13px;margin-bottom:10px;">从当前用量明细中选择本次异议针对的实例，可多选（也可在用量明细行点击「异议」自动带入该实例）。<strong>实例与异议说明至少填写一项</strong>；选择多个实例时将分别生成异议单。</p>
-                <div class="form-row full">
-                    <div class="form-item">
-                        <label>选择实例（可多选）</label>
-                        <div id="disputeResMsContainer" class="finops-ms-wrap">
-                            <div class="finops-ms-trigger" id="disputeResMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="选择异议实例，点击展开多选">
-                                <div class="finops-ms-tags" id="disputeResMsTags" aria-label="已选实例"></div>
-                                <input type="text" class="finops-ms-input" id="disputeResMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
-                                <span class="finops-ms-arrow">▼</span>
-                            </div>
-                            <div class="finops-ms-dd" id="disputeResMsDd">
-                                <div class="finops-ms-dd-search">
-                                    <input type="text" id="disputeResMsDdSearch" placeholder="搜索实例" autocomplete="off">
-                                </div>
-                                <div id="disputeResMsOptions"></div>
-                            </div>
-                            <input type="hidden" id="disputeResMsHidden" value="">
-                        </div>
-                    </div>
-                </div>
-            </div>
+                </div></div>
             <div class="card-title-sm" style="margin:16px 0 12px;">异议说明 *</div>
-            <div class="form-row full">
-                <div class="form-item">
-                    <label>异议说明</label>
-                    <textarea id="disputeRemark" placeholder="请详细描述异议原因及依据（如涉及归属、配置、使用时长或拟补录资源，请分别说明实际情况与系统记录差异）。"></textarea>
-                </div>
-            </div>
+            <div class="form-row full"><div class="form-item"><label>异议说明</label>
+                    <textarea id="disputeRemark" placeholder="请详细描述异议原因及依据（如涉及具体实例、归属、配置或拟补录资源，请一并说明）。"></textarea>
+                </div></div>
         </div>
         <div class="modal-foot">
             <button class="btn btn-warning" onclick="submitDispute()">提交异议申请</button>
@@ -1317,7 +1281,7 @@
 <div class="modal" id="usageCorrectionModal">
     <div class="modal-box wide">
         <div class="modal-head">
-            <h3 id="usageCorrectionTitle">实例用量修正</h3>
+            <h3 id="usageCorrectionTitle">异议处理</h3>
             <button class="modal-close" onclick="closeModal('usageCorrectionModal')">×</button>
         </div>
         <div class="modal-body" id="usageCorrectionBody"></div>
@@ -1774,119 +1738,23 @@ function buildUsageAdvDrawerFields() {
 }
 
 let disputeData = [
-    { id:'DIS-2026-0042', resid:'i-09f3ab22', name:'prod-web-02', type:'', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-03 09:21', remark:'该实例于2026-04-10至04-15处于维护停机状态（共120小时），期间未承载业务，系统仍按在运计费，请核减停机期间用量。', postNoteLabel:'处理说明', postNote:'—', sysUsage:'CPU 480h', newUsage:'CPU 360h', status:'processing',
+    { id:'DIS-2026-0042', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-03 09:21', remark:'该实例于2026-04-10至04-15处于维护停机状态（共120小时），期间未承载业务，系统仍按在运计费，请核减停机期间用量。', postNoteLabel:'处理说明', postNote:'—', status:'processing',
         processLog: [
-            { time: '2026-05-03 09:21', content: '用户提交异议申请（仅说明），待运维添加修正数据', warn: false },
+            { time: '2026-05-03 09:21', content: '用户提交异议申请', warn: false },
             { time: '2026-05-04 10:00', content: '运维管理员 admin 已受理，核查中…', warn: true }
         ] },
-    /** 【测试】少算实例 · 待处理 · 单台补录（无关联用量行，处理时展示「新增实例」） */
-    { id:'DIS-2026-0043', resid:'—', name:'少算·API 网关未入账', type:'少算实例', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-10 09:00', remark:'4 月已部署 API 网关 demo-api-gw（ecs.c6.large，2 vCPU/4 GB，生产，归属运营部/李晓芸），用量表无记录，请补录 2026-04-01～04-30 全账期。', postNoteLabel:'处理说明', postNote:'—', sysUsage:'无记录', newUsage:'—', status:'processing',
-        undercountTasks: [
-            { seq: 1, desc: 'demo-api-gw · ecs.c6.large · 运营部/李晓芸', status: 'pending_add' }
-        ],
+    { id:'DIS-2026-0043', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-10 09:00', remark:'4 月已部署 API 网关 demo-api-gw，用量表无记录，请按说明补录 2026-04 全账期。', postNoteLabel:'处理说明', postNote:'—', status:'processing',
+        processLog: [{ time: '2026-05-10 09:00', content: '用户提交异议申请', warn: false }] },
+    { id:'DIS-2026-0041', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-02 14:35', remark:'卷扩容在4月30日完成，扩容前全月1024GB，系统错误按2048GB计费。', postNoteLabel:'处理说明', postNote:'—', status:'processing', processLog: [] },
+    { id:'DIS-2026-0039', dept:'产品部', user:'王磊', period:'2026-04', time:'2026-04-29 11:08', remark:'费用归属应为研发中心，申请调整。', postNoteLabel:'处理说明', postNote:'已修正费用归属并完结。', status:'closed',
         processLog: [
-            { time: '2026-05-10 09:00', content: '用户提交少算实例异议（类型：少算实例），等待运维管理员补录。', warn: false }
+            { time: '2026-04-29 11:08', content: '用户提交异议申请', warn: false },
+            { time: '2026-05-03 10:42', content: '运维管理员 admin 已填写处理说明并完结。', warn: false }
         ] },
-    /** 【测试】少算实例 · 待处理 · 说明内批量描述多台待补录（运维需多次「确认新增」或后续按任务行处理） */
-    { id:'DIS-2026-0046', resid:'—', name:'少算·批量 3 台待补录', type:'少算实例', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-11 14:20', remark:'以下资源 4 月已使用但未入账，请逐台补录：\n1）batch-worker-01 · 虚机 ecs.g6.xlarge · 4 vCPU/16 GB · 生产 · 归属张明\n2）batch-worker-02 · 同上规格 · 生产 · 归属张明\n3）redis-cache-sidecar · 中间件 Redis 2 GB · 测试环境 · 归属研发中心公共账号', postNoteLabel:'处理说明', postNote:'—', sysUsage:'无记录', newUsage:'—', status:'processing',
-        undercountTasks: [
-            { seq: 1, desc: 'batch-worker-01 · ecs.g6.xlarge', status: 'pending_add' },
-            { seq: 2, desc: 'batch-worker-02 · ecs.g6.xlarge', status: 'pending_add' },
-            { seq: 3, desc: 'redis-cache-sidecar · Redis 2GB', status: 'pending_add' }
-        ],
-        processLog: [
-            { time: '2026-05-11 14:20', content: '用户提交少算实例异议（批量说明 3 台），等待运维管理员补录。', warn: false }
-        ] },
-    /** 【测试】少算实例 · 待处理 · 同一申请人账期内第二张并行少算单（A2：可多张未结案） */
-    { id:'DIS-2026-0047', resid:'—', name:'少算·对象存储桶未入账', type:'少算实例', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-12 08:45', remark:'备份桶 finops-backup-04（标准存储 5 TB，运营部共用、费用归属张明）4 月整月有写入，用量表缺失，请补录。', postNoteLabel:'处理说明', postNote:'—', sysUsage:'无记录', newUsage:'—', status:'processing',
-        undercountTasks: [
-            { seq: 1, desc: 'finops-backup-04 · oss.standard · 5 TB', status: 'pending_add' }
-        ],
-        processLog: [
-            { time: '2026-05-12 08:45', content: '用户再次提交少算实例异议（与 DIS-2026-0046 并行未结案），等待运维处理。', warn: false }
-        ] },
-    { id:'DIS-2026-0041', resid:'vol-0a8f2b11', name:'backup-vol-001', type:'实例信息错误（归属、配置、使用时长）', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-02 14:35', remark:'卷扩容操作在4月30日23:50完成，扩容前全月容量为1024GB，系统错误按整月2048GB计算（使用时长/容量口径）。', postNoteLabel:'处理说明', postNote:'实例信息错误 → 修正实例计量数据后提交', sysUsage:'存储 2048 GB', newUsage:'存储 1024 GB', status:'processing', processLog: [],
-        instanceSnapshotBefore: {
-            instanceId: 'vol-0a8f2b11',
-            instanceName: 'backup-vol-001',
-            billPeriod: '2026年4月（2026-04）',
-            svcSpec: '标准存储 · oss.standard · 2048 GB 桶容量',
-            owner: '孙静',
-            usageDuration: '2026-04-01 ~ 2026-04-30',
-            quota: '2048 GB',
-            instState: '正常',
-            instanceStateInfo: '已挂载；异议：扩容后容量口径',
-        } },
-    { id:'DIS-2026-0039', resid:'db-mysql-07', name:'order-db-prod', type:'实例信息错误（归属、配置、使用时长）', dept:'产品部', user:'王磊', period:'2026-04', time:'2026-04-29 11:08', remark:'系统记录费用归属为产品部，实际应由研发中心承担，申请调整归属。', originalDept:'产品部', postNoteLabel:'处理说明', postNote:'管理员已修正费用归属部门为「研发中心」并同步调整费用归属人，异议单已完结。', sysUsage:'—', newUsage:'—', status:'closed',
-        instanceSnapshotBefore: {
-            instanceId: 'db-mysql-07',
-            instanceName: 'order-db-prod',
-            billPeriod: '2026年4月（2026-04）',
-            svcSpec: '高可用版 · mysql.2c16g · 主备 / 500GB 存储',
-            owner: '陈思远',
-            usageDuration: '—',
-            quota: '2 vCPU / 16 GB / 500 GB',
-            instState: '正常',
-            instanceStateInfo: '—',
-        },
-        instanceSnapshotAfter: {
-            instanceId: 'db-mysql-07',
-            instanceName: 'order-db-prod',
-            billPeriod: '2026年4月（2026-04）',
-            svcSpec: '高可用版 · mysql.2c16g · 主备 / 500GB 存储',
-            owner: '张明',
-            usageDuration: '—',
-            quota: '2 vCPU / 16 GB / 500 GB',
-            instState: '正常',
-            instanceStateInfo: '费用归属部门已调整为研发中心（系统口径同步）',
-        },
-        processLog: [
-            { time: '2026-04-29 11:08', content: '用户提交异议申请（仅说明），待运维添加修正数据', warn: false },
-            { time: '2026-05-03 10:42', content: '运维管理员 admin 核查通过，已修正费用归属部门为「研发中心」并同步调整费用归属人为「张明」，用量行已恢复为「已确认」；异议单已完结。', warn: false }
-        ] },
-    { id:'DIS-2026-0040', resid:'vol-001aaa', name:'data-disk-01', type:'多算实例', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-05 10:00', remark:'演示：块存储按挂载点重复计量，申请合并为单盘计费。', postNoteLabel:'处理说明', postNote:'已按单盘口径核减，异议单已完结。', sysUsage:'500 GB', newUsage:'400 GB', status:'closed',
-        instanceSnapshotBefore: {
-            instanceId: 'vol-001aaa',
-            instanceName: 'data-disk-01',
-            billPeriod: '2026年4月（2026-04）',
-            svcSpec: '高性能云盘 · ESSD PL1 · 500 GB / 单盘挂载',
-            owner: '张明',
-            usageDuration: '—',
-            quota: '500 GB',
-            instState: '正常',
-            instanceStateInfo: '—',
-        },
-        instanceSnapshotAfter: {
-            instanceId: 'vol-001aaa',
-            instanceName: 'data-disk-01',
-            billPeriod: '2026年4月（2026-04）',
-            svcSpec: '高性能云盘 · ESSD PL1 · 400 GB / 单盘挂载',
-            owner: '张明',
-            usageDuration: '—',
-            quota: '400 GB',
-            instState: '正常',
-            instanceStateInfo: '—',
-        },
+    { id:'DIS-2026-0040', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-05 10:00', remark:'块存储重复计量，申请合并为单盘计费。', postNoteLabel:'处理说明', postNote:'已按单盘口径核减并完结。', status:'closed',
         processLog: [
             { time: '2026-05-05 10:00', content: '用户提交异议申请', warn: false },
-            { time: '2026-05-06 14:00', content: '运维已调整计量，异议单已完结。', warn: false }
-        ] },
-    { id:'DIS-2026-0037', resid:'i-new-app-01', name:'new-app-server', type:'少算实例', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-01 16:30', remark:'该实例于4月15日已创建并投入使用，但系统中无相关计费记录，属于少算实例。', postNoteLabel:'处理说明', postNote:'少算实例 → 已补录实例记录，异议单已完结。', sysUsage:'无记录', newUsage:'2 vCPU / 4 GB', status:'closed',
-        instanceSnapshotBefore: { _emptyLabel: '系统中无该实例计费记录（少算补录）' },
-        instanceSnapshotAfter: {
-            instanceId: 'i-new-app-01',
-            instanceName: 'new-app-server',
-            billPeriod: '2026年4月（2026-04）',
-            svcSpec: '通用型 g6 · ecs.g6.large · 2 vCPU / 4 GB',
-            owner: '张明',
-            usageDuration: '—',
-            quota: '2 vCPU / 4 GB',
-            instState: '正常',
-            instanceStateInfo: '—',
-        },
-        processLog: [
-            { time: '2026-05-01 16:30', content: '用户提交少算实例异议申请，等待运维管理员处理。', warn: false },
-            { time: '2026-05-08 11:20', content: '运维管理员 admin 已完成实例补录并提交；异议单已完结，对应用量行已标记为「已确认」。', warn: false },
+            { time: '2026-05-06 14:00', content: '运维管理员 admin 已填写处理说明并完结。', warn: false }
         ] },
 ];
 
@@ -2512,15 +2380,13 @@ function renderDisputeCorrectionEntriesSection(raw) {
 function buildDisputeDetailBody(raw) {
     if (!raw) return '<p class="muted">未找到异议记录。</p>';
     const billMonth = formatBillMonthLabel(raw.period);
-    const origRow = raw.originalDept
-        ? `<dt>原归属</dt><dd>${escHtmlText(raw.originalDept)}</dd>`
-        : '';
+    const postNote = raw.postNote && raw.postNote !== '—' ? raw.postNote : '—';
     const postRow =
-        raw.postNoteLabel && raw.postNote
-            ? `<dt>${escHtmlText(raw.postNoteLabel)}</dt><dd>${escHtmlText(raw.postNote)}</dd>`
+        raw.status !== 'processing'
+            ? `<dt>${escHtmlText(raw.postNoteLabel || '处理说明')}</dt><dd style="white-space:pre-wrap;">${escHtmlText(postNote)}</dd>`
             : '';
     return `
-<div class="card-title-sm" style="margin-bottom:10px;">基本信息区</div>
+<div class="card-title-sm" style="margin-bottom:10px;">基本信息</div>
 <dl class="dl-grid" style="margin-bottom:16px;">
   <dt>申请单号</dt><dd>${escHtmlText(raw.id)}</dd>
   <dt>申请状态</dt><dd>${statusLabelMap[raw.status] || escHtmlText(raw.status)}</dd>
@@ -2532,7 +2398,6 @@ function buildDisputeDetailBody(raw) {
 <div class="card-title-sm" style="margin:16px 0 10px;">异议说明</div>
 <dl class="dl-grid" style="margin-bottom:16px;">
   <dt>异议说明</dt><dd style="white-space:pre-wrap;">${escHtmlText(raw.remark || '—')}</dd>
-  ${origRow}
   ${postRow}
 </dl>
 ${renderDisputeInstanceDiffSection(raw)}
@@ -2976,6 +2841,7 @@ function applyUsageFormFilters(rows) {
 
 function renderFilteredTable(data) {
     const sorted = sortDetailRowsByCreatedAt(data);
+    const isAdmin = currentView === 'admin';
     document.getElementById('detailTableBody').innerHTML = sorted.map((r) => `
         <tr>
             <td><input type="checkbox" class="js-usage-row-check" data-row-id="${r.id}" ${currentView === 'user' ? (r.status !== 'pending' ? 'disabled' : '') : (r.status === 'voided' ? 'disabled' : '')}></td>
@@ -2996,9 +2862,9 @@ function renderFilteredTable(data) {
             <td>${r.endTime || '—'}</td>
             <td>${statusMap[r.status]}</td>
             <td>${formatInstStateHtml(r)}</td>
+            ${isAdmin ? `<td><button type="button" class="btn btn-sm btn-default" onclick="openEditInstanceModal('${r.id}')">编辑</button></td>` : '<td>—</td>'}
         </tr>
     `).join('');
-    
     document.getElementById('pageTotal').textContent = sorted.length;
     updateStats();
 }
@@ -3054,13 +2920,13 @@ function openUsageDetail(id) {
     let footHtml = '';
     if (isAdmin) {
         if (r.status === 'dispute') {
-            footHtml = `<button class="btn btn-warning" onclick="closeModal('usageDetailModal');openAdminDisputeHandler('${r.id}')">处理</button>`;
+            footHtml = `<button class="btn btn-warning" onclick="closeModal('usageDetailModal');switchTab('dispute')">处理</button>`;
         }
         footHtml += `${footHtml ? ' ' : ''}<button class="btn btn-default" onclick="closeModal('usageDetailModal')">关闭</button>`;
     } else {
         if (isPending) {
             footHtml = `<button class="btn btn-success" onclick="confirmUsageAndClose('${r.id}')">确认</button>
-                        <button class="btn btn-warning" onclick="closeModal('usageDetailModal');openDisputeFromRow('${r.id}','${r.name}')">异议</button>`;
+                        <button class="btn btn-warning" onclick="closeModal('usageDetailModal');openDisputeModal()">异议</button>`;
         }
         const dConfirm = findPendingConfirmDisputeForResid(r.id);
         if (dConfirm && disputeRowVisibleForCurrentUserScope(dConfirm)) {
@@ -3164,21 +3030,12 @@ function setStatPeriod(period, btn) {
 function applyDisputeFilters(rows) {
     let out = rows.slice();
     const idEl = document.getElementById('filterDisputeId');
-    const kwEl = document.getElementById('filterDisputeKw');
     const stEl = document.getElementById('filterDisputeStatus');
     const idKw = idEl ? String(idEl.value || '').trim().toLowerCase() : '';
-    const kw = kwEl ? String(kwEl.value || '').trim().toLowerCase() : '';
     const stVal = stEl ? stEl.value : '';
-
     if (idKw) {
         out = out.filter(function (d) {
             return String(d.id || '').toLowerCase().indexOf(idKw) >= 0;
-        });
-    }
-    if (kw) {
-        out = out.filter(function (d) {
-            return String(d.resid || '').toLowerCase().indexOf(kw) >= 0 ||
-                String(d.name || '').toLowerCase().indexOf(kw) >= 0;
         });
     }
     if (stVal) {
@@ -3195,10 +3052,8 @@ function doDisputeFilter() {
 
 function resetDisputeFilter() {
     const idEl = document.getElementById('filterDisputeId');
-    const kwEl = document.getElementById('filterDisputeKw');
     const stEl = document.getElementById('filterDisputeStatus');
     if (idEl) idEl.value = '';
-    if (kwEl) kwEl.value = '';
     if (stEl) stEl.value = '';
     renderDisputeTable();
     showToast('异议筛选条件已重置');
@@ -3215,33 +3070,18 @@ function renderDisputeTable() {
         const actions = [];
         const isAdmin = currentView === 'admin';
         const isPending = d.status === 'processing';
-        const isPendingConfirm = d.status === 'pending_confirm';
-        
         if (isAdmin && isPending) {
             actions.push(`<button class="btn btn-sm btn-primary" onclick="openDisputeDetail('${d.id}')">查看</button>`);
-            actions.push(`<button class="btn btn-sm btn-warning" onclick="openDisputeProcessFromRow('${d.id}')">处理</button>`);
-        } else if (isAdmin && isPendingConfirm) {
-            actions.push(`<button class="btn btn-sm btn-primary" onclick="openDisputeDetail('${d.id}')">查看</button>`);
+            actions.push(`<button class="btn btn-sm btn-warning" onclick="openAdminDisputeProcessModal('${d.id}')">处理</button>`);
         } else {
             actions.push(`<button class="btn btn-sm btn-default" onclick="openDisputeDetail('${d.id}')">查看</button>`);
             if (!isAdmin && isPending && String(d.user || '') === String(sessionUser.name || '')) {
                 actions.push(`<button class="btn btn-sm btn-default" onclick="withdrawDisputeByDisputeId('${d.id}')">撤回</button>`);
             }
-            if (!isAdmin && isPendingConfirm && disputeRowVisibleForCurrentUserScope(d)) {
-                actions.push(`<button type="button" class="btn btn-sm btn-success" onclick="userConfirmDispute('${d.id}')" title="核对运维处理结果后完结本异议">确认</button>`);
-                actions.push(`<button type="button" class="btn btn-sm btn-default" onclick="userReturnDispute('${d.id}')" title="退回由运维继续处理">退回</button>`);
-            }
         }
-        
         return `
         <tr>
             <td><button class="btn-link" onclick="openDisputeDetail('${d.id}')">${d.id}</button></td>
-            <td>${d.resid}</td>
-            <td>${
-                d.resid && d.resid !== '—'
-                    ? `<button type="button" class="btn-link" onclick="goToUsageDetailFromDispute('${d.resid}')">${d.name}</button>`
-                    : `<span class="muted">${d.name}</span>`
-            }</td>
             <td>${d.dept}</td>
             <td>${d.user}</td>
             <td>${d.time}</td>
@@ -3249,8 +3089,6 @@ function renderDisputeTable() {
             <td><div class="action-btns">${actions.join('')}</div></td>
         </tr>
     `}).join('');
-    
-    // 管理员视图：显示新建按钮，用户视图：隐藏
     document.getElementById('btnNewDispute').style.display = currentView === 'user' ? 'inline-block' : 'none';
     document.getElementById('adminDisputeNotice').style.display = currentView === 'admin' ? 'block' : 'none';
 }
@@ -3280,31 +3118,17 @@ function openDisputeDetail(id) {
         showToast('无权查看该异议单（仅本人申请或本部门数据可见）。');
         return;
     }
-
     document.getElementById('disputeDetailTitle').textContent = buildDisputeDetailTitle(raw);
     document.getElementById('disputeDetailContent').innerHTML = buildDisputeDetailBody(raw);
-    
-    // 底部按钮：管理员仅对「待处理」异议显示处理类操作
     const isAdmin = currentView === 'admin';
-    const adminActionsAllowed = isAdmin && raw.status === 'processing';
-    
     let footHtml = '';
-    if (adminActionsAllowed) {
-        footHtml = `
-            <button class="btn btn-primary" onclick="closeModal('disputeDetailModal');openAdminDisputeProcessModal('${id}')">处理</button>
-            <button class="btn btn-default" onclick="handleDispute('${id}','退回')">退回</button>
+    if (isAdmin && raw.status === 'processing') {
+        footHtml = `<button class="btn btn-primary" onclick="closeModal('disputeDetailModal');openAdminDisputeProcessModal('${id}')">处理</button>
             <button class="btn btn-default" onclick="closeModal('disputeDetailModal')">关闭</button>`;
     } else {
-        if (raw.status === 'pending_confirm' && currentView === 'user' && disputeRowVisibleForCurrentUserScope(raw)) {
-            footHtml = `<button class="btn btn-success" onclick="userConfirmDispute('${id}')">确认</button>
-                <button class="btn btn-default" onclick="userReturnDispute('${id}')">退回</button>
-                <button class="btn btn-default" onclick="closeModal('disputeDetailModal')">关闭</button>`;
-        } else {
-            footHtml = `<button class="btn btn-default" onclick="closeModal('disputeDetailModal')">关闭</button>`;
-        }
+        footHtml = `<button class="btn btn-default" onclick="closeModal('disputeDetailModal')">关闭</button>`;
     }
     document.getElementById('disputeDetailFoot').innerHTML = footHtml;
-    
     openModal('disputeDetailModal');
 }
 
@@ -3512,12 +3336,11 @@ function applyDisputeBasicInfoLocked() {
 function openDisputeModal(preId) {
     resetNewDisputeForm();
     applyDisputeBasicInfoLocked();
-    refreshDisputeResPickOptions(preId ? [preId] : []);
     openModal('disputeModal');
 }
 
 function openDisputeFromRow(id, name) {
-    openDisputeModal(id);
+    openDisputeModal();
 }
 
 /** 运维「处理异议」弹窗：资源规格模板（云主机 / 物理机 / 其他） */
@@ -3607,7 +3430,6 @@ function buildCorrectionModifyFieldsHtml(r) {
         '<textarea id="corrExtraNote" rows="2" placeholder="选填：维护窗口、停机说明等"></textarea></div></div>'
     );
 }
-
 
 var adminCorrEntrySeq = 0;
 
@@ -4185,41 +4007,21 @@ function submitDispute() {
     const deptEl = document.getElementById('disputeDept');
     const dept = deptEl ? deptEl.value : '研发中心';
     const applicant = (document.getElementById('disputeApplicant').value || '').trim();
-
-    if (!remark) {
-        showToast('请填写异议说明');
-        return;
-    }
-    if (!applicant) {
-        showToast('请填写申请人');
-        return;
-    }
-
+    if (!remark) { showToast('请填写异议说明'); return; }
+    if (!applicant) { showToast('请填写申请人'); return; }
     const timeStr = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-');
     const newId = 'DIS-2026-00' + (Math.floor(Math.random() * 90) + 10);
-    const title = remark.length > 24 ? remark.slice(0, 24) + '…' : remark;
     const newDispute = {
-        id: newId, resid: '—', name: title, type: '', dept: dept,
-        user: applicant,
-        period: period,
-        time: timeStr,
-        remark: remark,
-        sysUsage: '—', newUsage: '—', status: 'processing',
-        correctionEntries: [],
-        processLog: []
+        id: newId, dept: dept, user: applicant, period: period, time: timeStr, remark: remark,
+        postNoteLabel: '处理说明', postNote: '—', status: 'processing', processLog: []
     };
-    appendDisputeProcessLog(
-        newDispute,
-        '用户 ' + applicant + ' 提交异议申请（仅异议说明，待运维添加修正数据）',
-        false
-    );
+    appendDisputeProcessLog(newDispute, '用户 ' + applicant + ' 提交异议申请（v2：仅说明）', false);
     disputeData.unshift(newDispute);
-
     closeModal('disputeModal');
-    renderDetailTable();
     renderDisputeTable();
     showToast('异议申请已提交，等待运维管理员处理！');
 }
+
 function openExportModal() { openModal('exportModal'); }
 
 // ══════════════════════════════════════════════
@@ -4868,13 +4670,38 @@ function rejectAddInstanceDispute() {
     handleDispute(id, '退回');
 }
 
+
+
+function submitDisputeComplete() {
+    var hid = document.getElementById('corrDisputeId');
+    var disputeId = hid && hid.value ? hid.value.trim() : '';
+    var noteEl = document.getElementById('disputeCompletePostNote');
+    var note = noteEl ? (noteEl.value || '').trim() : '';
+    if (!disputeId) { showToast('未关联异议单'); return; }
+    if (!note) { showToast('请填写处理说明'); return; }
+    var d = disputeData.find(function (x) { return x.id === disputeId; });
+    if (!d || d.status !== 'processing') { showToast('异议单状态不可完结'); return; }
+    d.postNote = note;
+    d.postNoteLabel = '处理说明';
+    appendDisputeProcessLog(d, '运维管理员 admin 填写处理说明并完结：' + note, false);
+    d.status = 'closed';
+    closeModal('usageCorrectionModal');
+    renderDisputeTable();
+    showToast('异议已完结');
+}
+
 function openDisputeProcessFromRow(disputeId) {
+    openAdminDisputeProcessModal(disputeId);
+}
+
+function openDisputeCompleteModal(disputeId) {
     openAdminDisputeProcessModal(disputeId);
 }
 
 function openAdminDisputeHandler(resourceId) {
     closeModal('usageDetailModal');
-    openAdminDisputeProcessModal('', resourceId);
+    switchTab('dispute');
+    showToast('请在异议管理中处理；用量修正请使用用量明细的「编辑」或「新增实例」。');
 }
 
 function submitNewInstance() {

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinOps财务运营管理平台 - 页面标题</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <!-- 通用样式 -->
     <link rel="stylesheet" href="css/common.css">
 </head>
@@ -27,6 +29,8 @@
     </div>
 
     <!-- 引入通用JavaScript -->
+    <script src="../js/finops-table-ui.js" defer></script>
+    <script src="../js/finops-nav-active.js"></script>
     <script src="../js/common.js"></script>
     
     <!-- 页面初始化 -->
@@ -43,9 +47,10 @@
             .then(response => response.text())
             .then(html => {
                 document.getElementById('sidebar-container').innerHTML = html;
-                // 侧边栏加载完成后初始化
+                // 侧边栏加载完成后初始化（common 的 markActiveMenu 之后再用 finops 规则覆盖高亮）
                 setTimeout(() => {
                     FinOps.initSidebar();
+                    if (window.markFinopsNavActive) window.markFinopsNavActive();
                 }, 100);
             });
     </script>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="theme-color" content="#1890ff">
+    <title>异议详情</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: rgba(0,0,0,.88);
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+        }
+        .m-header {
+            background: linear-gradient(180deg, #1890ff 0%, #096dd9 100%);
+            color: #fff;
+            padding: 16px;
+            padding-top: calc(16px + env(safe-area-inset-top, 0px));
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .m-header h1 { font-size: 17px; font-weight: 600; }
+        .m-header-sub { font-size: 12px; opacity: .92; margin-top: 6px; }
+        .m-content { padding: 12px 16px 24px; }
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-pending { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+        .badge-done { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+        .badge-withdrawn { background: #fafafa; color: #595959; border: 1px solid #d9d9d9; }
+        .hint {
+            font-size: 12px;
+            color: #8c8c8c;
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px 12px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 12px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+            border: 1px solid #f0f0f0;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .kv { display: grid; grid-template-columns: 96px 1fr; gap: 8px 12px; font-size: 14px; }
+        .kv dt { color: #8c8c8c; }
+        .kv dd { color: #262626; word-break: break-all; }
+        .section-body { font-size: 14px; color: #434343; white-space: pre-wrap; }
+        .attach {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #f0f0f0;
+        }
+        .attach-icon { width: 40px; height: 40px; border-radius: 6px; background: #e6f7ff; color: #1890ff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+        .attach-meta { flex: 1; min-width: 0; }
+        .attach-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .attach-sub { font-size: 12px; color: #8c8c8c; margin-top: 2px; }
+        .evidence-block {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        .evidence-block h4 { font-size: 13px; color: #389e0d; margin-bottom: 8px; }
+        .diff-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 8px; }
+        .diff-table th, .diff-table td { border: 1px solid #d9f7be; padding: 6px 8px; text-align: left; }
+        .diff-table th { background: #fcffe6; color: #595959; }
+        .footer-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+            background: rgba(255,255,255,.96);
+            border-top: 1px solid #f0f0f0;
+            box-shadow: 0 -4px 12px rgba(0,0,0,.06);
+            z-index: 20;
+        }
+        .m-btn-danger {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid #ff4d4f;
+            background: #fff;
+            color: #ff4d4f;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .m-btn-danger:disabled { opacity: .45; cursor: not-allowed; }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 100px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,.78);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s;
+        }
+        .toast.show { opacity: 1; }
+        .demo-switch {
+            margin-top: 8px;
+            padding: 12px;
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #ad6800;
+        }
+        .demo-switch strong { display: block; margin-bottom: 8px; }
+        .demo-switch a { color: #1890ff; margin-right: 10px; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <header class="m-header">
+        <h1>异议详情</h1>
+        <div class="m-header-sub">企业微信内 · 本人可见（原型）</div>
+    </header>
+
+    <main class="m-content">
+        <div class="status-row">
+            <span id="statusBadge" class="badge badge-pending">待处理</span>
+            <span id="caseNo" style="font-size:12px;color:#8c8c8c;">单号 —</span>
+        </div>
+        <div id="hintWithdraw" class="hint">未受理前可撤回异议；受理后不可撤回。撤回为一次点击、无二次确认。</div>
+        <div id="hintReadonly" class="hint hidden">本单已完结，以下为处理结论与证据摘要（只读）。</div>
+        <div id="hintWithdrawn" class="hint hidden">您已撤回本异议，后续以用量确认页数据为准。</div>
+
+        <section class="card">
+            <div class="card-title">基本信息</div>
+            <dl class="kv">
+                <dt>异议单号</dt><dd id="fCaseNo">OBJ-202604-0001</dd>
+                <dt>账期</dt><dd id="fPeriod">2026-04</dd>
+                <dt>提交时间</dt><dd id="fTime">2026-05-10 14:32</dd>
+                <dt>备案产品</dt><dd id="fProduct">云主机 ECS</dd>
+                <dt>实例摘要</dt><dd id="fInst">i-abc123 · cn-north-1 · 生产</dd>
+            </dl>
+        </section>
+
+        <section class="card" id="blockUser">
+            <div class="card-title">异议说明（用户提交）</div>
+            <div class="section-body">账单中该实例 4 月 CPU 用量与控制台监控趋势不一致，请协助核对计量口径与账单明细。</div>
+            <div class="attach">
+                <div class="attach-icon">PNG</div>
+                <div class="attach-meta">
+                    <div class="attach-name">监控截图_202604.png</div>
+                    <div class="attach-sub">128 KB · 点击预览（原型占位）</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card hidden" id="blockEvidence">
+            <div class="card-title">处理结论与证据（已完结）</div>
+            <div class="evidence-block">
+                <h4>结论摘要</h4>
+                <div class="section-body">经核对，该实例账单用量与计量源数据一致；控制台图表为 5 分钟粒度聚合，与账单日粒度存在展示差异，非计费错误。</div>
+                <table class="diff-table">
+                    <thead><tr><th>锚点字段</th><th>调整前（摘要）</th><th>调整后（摘要）</th></tr></thead>
+                    <tbody>
+                        <tr><td>CPU 用量（账期）</td><td>1,024 vCPU·h</td><td>1,024 vCPU·h（不变）</td></tr>
+                        <tr><td>账单金额</td><td>¥ 320.00</td><td>¥ 320.00（不变）</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="attach">
+                <div class="attach-icon">PDF</div>
+                <div class="attach-meta">
+                    <div class="attach-name">核对说明_运维盖章.pdf</div>
+                    <div class="attach-sub">256 KB · 预览优先（原型占位）</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="demo-switch" role="note">
+            <strong>原型：切换状态</strong>
+            <a href="?bill_period=2026-04&amp;state=pending">待处理</a>
+            <a href="?bill_period=2026-04&amp;state=accepted">已受理</a>
+            <a href="?bill_period=2026-04&amp;state=done">已完结</a>
+            <a href="?bill_period=2026-04&amp;state=withdrawn">已撤回</a>
+            <div style="margin-top:8px;"><a href="usage-objection-submit-success-mobile.html">提交成功页</a></div>
+        </div>
+    </main>
+
+    <div class="footer-bar" id="footerWithdraw">
+        <button type="button" class="m-btn-danger" id="btnWithdraw">撤回异议</button>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var state = (params.get('state') || 'pending').toLowerCase();
+            var billPeriod = params.get('bill_period') || '2026-04';
+
+            var elBadge = document.getElementById('statusBadge');
+            var elCaseNo = document.getElementById('caseNo');
+            var elFCaseNo = document.getElementById('fCaseNo');
+            var hintW = document.getElementById('hintWithdraw');
+            var hintR = document.getElementById('hintReadonly');
+            var hintWd = document.getElementById('hintWithdrawn');
+            var blockEvidence = document.getElementById('blockEvidence');
+            var footer = document.getElementById('footerWithdraw');
+            var btn = document.getElementById('btnWithdraw');
+            var toast = document.getElementById('toast');
+            var fPeriod = document.getElementById('fPeriod');
+
+            fPeriod.textContent = billPeriod;
+
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                setTimeout(function () { toast.classList.remove('show'); }, 2200);
+            }
+
+            function applyState(s) {
+                hintW.classList.add('hidden');
+                hintR.classList.add('hidden');
+                hintWd.classList.add('hidden');
+                blockEvidence.classList.add('hidden');
+                footer.classList.add('hidden');
+
+                if (s === 'pending') {
+                    elBadge.textContent = '待处理';
+                    elBadge.className = 'badge badge-pending';
+                    hintW.classList.remove('hidden');
+                    footer.classList.remove('hidden');
+                    btn.disabled = false;
+                } else if (s === 'accepted') {
+                    elBadge.textContent = '待处理';
+                    elBadge.className = 'badge badge-pending';
+                    hintW.textContent = '运维已受理，不可撤回。处理完成后将展示处理结论与证据摘要。';
+                    hintW.classList.remove('hidden');
+                } else if (s === 'done') {
+                    elBadge.textContent = '已完结';
+                    elBadge.className = 'badge badge-done';
+                    hintR.classList.remove('hidden');
+                    blockEvidence.classList.remove('hidden');
+                } else if (s === 'withdrawn') {
+                    elBadge.textContent = '已撤回';
+                    elBadge.className = 'badge badge-withdrawn';
+                    hintWd.classList.remove('hidden');
+                } else {
+                    applyState('pending');
+                    return;
+                }
+                elCaseNo.textContent = '单号 ' + elFCaseNo.textContent;
+            }
+
+            applyState(state);
+
+            var withdrawing = false;
+            btn.addEventListener('click', function () {
+                if (withdrawing || btn.disabled) return;
+                withdrawing = true;
+                btn.disabled = true;
+                showToast('已撤回');
+                setTimeout(function () {
+                    window.location.href = 'usage-objection-detail-mobile.html?bill_period=' + encodeURIComponent(billPeriod) + '&state=withdrawn';
+                }, 600);
+            });
+        })();
+    </script>
+</body>
+</html>

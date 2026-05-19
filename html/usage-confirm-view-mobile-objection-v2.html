@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="theme-color" content="#1890ff">
-    <title>用量确认</title>
+    <title>【v2 副本】用量确认</title>
     <link rel="stylesheet" href="../css/finops-ui-consistency.css">
 
     <style>
@@ -223,7 +223,7 @@
         <div class="row"><span class="label">截止</span><span class="warn" id="mDeadline">2026-05-09 24:00</span></div>
         <div class="row"><span class="label">用户</span><span id="mUser">zhangsan</span></div>
         <div class="row" style="font-size:12px;color:#666;line-height:1.45;padding-top:4px;border-top:1px dashed #f0f0f0;margin-top:8px;">
-            勾选实例后可批量确认或提交异议；「异议」仅需填写异议说明（无需选择类型或实例），由运维处理。已提交异议的实例灰显且不可再选。
+            勾选实例后可批量确认或提交异议；异议弹窗会带出已选实例，提交时需选择异议类型。已提交异议的实例灰显且不可再选。
         </div>
     </section>
 
@@ -243,9 +243,20 @@
         <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
             <div class="sheet-hd" id="sheetTitle">提交异议</div>
             <div class="sheet-bd">
-                <p id="mobObjHint" style="font-size:12px;color:#666;line-height:1.5;margin-bottom:10px;">请填写异议说明；无需选择异议类型或实例，提交后由运维管理员根据说明添加修正数据。</p>
-                <p id="mobNoteLabel" style="font-size:13px;font-weight:600;margin-top:12px;">异议说明 *</p>
-                <textarea id="objNoteMob" placeholder="请详细描述异议原因及依据"></textarea>
+                <p id="mobObjHint" style="font-size:12px;color:#666;line-height:1.5;margin-bottom:10px;">请勾选存在用量争议的实例；若无对应实例，可在下方说明中描述。提交前请选择异议类型。</p>
+                <label for="objDisputeTypeMob" style="font-size:13px;font-weight:600;margin-bottom:6px;display:block;">异议类型 *</label>
+                <select id="objDisputeTypeMob" style="width:100%;margin-bottom:12px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+                    <option value="">请选择异议类型</option>
+                    <option value="多算实例">多算实例</option>
+                    <option value="少算实例">少算实例</option>
+                    <option value="实例信息错误（归属、配置、使用时长）">实例信息错误（归属、配置、使用时长）</option>
+                    <option value="其他">其他</option>
+                </select>
+                <div id="objInstWrapMob">
+                    <div id="objListMob"></div>
+                </div>
+                <p id="mobNoteLabel" style="font-size:13px;font-weight:600;margin-top:12px;">补充说明（选填）</p>
+                <textarea id="objNoteMob" placeholder="可填写争议点等"></textarea>
             </div>
             <div class="sheet-ft">
                 <button type="button" class="m-btn" id="objCloseMob">取消</button>
@@ -466,6 +477,7 @@
         }
         var preIds = selectedMobListIds();
         renderObjSheet();
+        
         document.getElementById('objNoteMob').value = '';
         document.querySelectorAll('.mob-obj-chk').forEach(function (c) {
             c.checked = preIds.indexOf(c.value) >= 0;
@@ -526,18 +538,36 @@
     });
 
     document.getElementById('objSendMob').addEventListener('click', function () {
-        var note = (document.getElementById('objNoteMob').value || '').trim();
-        if (!note) {
-            alert('请填写异议说明。');
+        var objType = (document.getElementById('objDisputeTypeMob').value || '').trim();
+        if (!objType) {
+            alert('请选择异议类型。');
             return;
         }
+        var note = (document.getElementById('objNoteMob').value || '').trim();
+        var ids = [];
+        document.querySelectorAll('.mob-obj-chk:checked').forEach(function (c) {
+            ids.push(c.value);
+        });
+        if (!ids.length && !note) {
+            alert('请至少选择一个异议实例，或填写补充说明。');
+            return;
+        }
+        ids.forEach(function (id) {
+            rows.forEach(function (r) {
+                if (r.id === id && r.status === 'pending') r.status = 'objection';
+            });
+        });
         counts();
         initSvcFilter();
         renderList();
         closeSheet();
-        location.href =
-            'usage-objection-submit-success-mobile.html?bill_period=' +
-            encodeURIComponent(document.getElementById('mPeriod').textContent || '');
+        if (!ids.length) {
+            location.href =
+                'usage-objection-submit-success-mobile.html?bill_period=' +
+                encodeURIComponent(document.getElementById('mPeriod').textContent || '');
+            return;
+        }
+        alert('【原型】异议已提交（类型：' + objType + '，' + ids.length + ' 个实例）。请留意企微通知。');
     });
 
     initSvcFilter();

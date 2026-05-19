@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>FinOps财务运营管理平台 - 消息推送</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; }
@@ -332,7 +334,7 @@
     <div class="container">
         <aside class="sidebar">
             <div class="sidebar-head">菜单导航</div>
-            <ul style="list-style: none; padding: 0; margin: 0;">
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
                 <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
                     <a class="menu-item" href="cost-overview.html">成本管理</a>
@@ -345,6 +347,7 @@
                 <li>
                     <a class="menu-item" href="usage-management.html">用量管理</a>
                     <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
                         <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
                         <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
                         <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
@@ -359,17 +362,13 @@
                         <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
                     </ul>
                 </li>
-                <li>
-                    <a class="menu-item active" href="usage-push-strategy-management.html">消息推送</a>
-                    <ul class="sub-menu">
-                        <li><a class="sub-menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
-                    </ul>
-                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
                 <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
                 <li>
                     <a class="menu-item" href="system-management.html">系统管理</a>
                     <ul class="sub-menu">
-                        <li><a class="sub-menu-item" href="system-management.html">用户与权限</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
                 </li>
             </ul>
@@ -388,11 +387,14 @@
                 <span class="muted" style="display:block;margin-top:6px;">多条推送策略可在 <a href="usage-push-strategy-management.html">消息推送</a> 列表中集中维护。</span>
             </div>
 
-            <div class="card">
-                <h2 class="page-title">消息推送</h2>
-                <p class="page-desc">配置企业微信应用凭证、<strong>推送终端</strong>与对应端模板，并设置推送频率、推送时间与截止前提醒。<strong>截止前提醒</strong>与<strong>接收人</strong>为标签多选（选项标签展示在输入框内）。推送终端选「PC 与移动」时终端模板显示双页签；选「仅 PC」或「仅移动」时仅显示对应端的页签与模板。</p>
+            <div style="margin-bottom:4px;">
+                <h2 class="page-title" id="pageMainTitle">消息推送</h2>
+                <p class="page-desc" style="margin-bottom:0;">分块配置<strong>应用连通</strong>、<strong>推送策略</strong>与<strong>终端模板</strong>；以下为原型，对接企微与任务后生效。</p>
+            </div>
 
-                <h3 class="sub-card-title">应用连通（PC / 移动共用）</h3>
+            <div class="card">
+                <h2 class="page-title">应用连通</h2>
+                <p class="hint" style="margin-bottom:14px;">PC / 移动共用同一企业微信应用凭证。</p>
                 <div class="grid-2">
                     <div class="field">
                         <label for="corpId">企业 CorpID</label>
@@ -415,13 +417,88 @@
             </div>
 
             <div class="card">
-                <h3 class="sub-card-title" style="border:0;padding:0;margin:0 0 12px;">推送策略</h3>
+                <h2 class="page-title">推送策略</h2>
+                <p class="hint" style="margin-bottom:14px;">策略名称用于列表识别；推送终端、范围、频率、提醒与接收人本模块维护。</p>
+
+                <div class="field">
+                    <label for="strategyName">策略名称</label>
+                    <input type="text" id="strategyName" placeholder="例如：用量推送-全量-按二级部门" maxlength="64" autocomplete="off">
+                </div>
 
                 <div class="field-inline">
                     <span class="label-text" style="width:100%;margin-bottom:0;">推送终端</span>
                     <label><input type="radio" name="pushTerminal" value="both" checked> PC 与移动</label>
                     <label><input type="radio" name="pushTerminal" value="pc_only"> 仅 PC</label>
                     <label><input type="radio" name="pushTerminal" value="mobile_only"> 仅移动</label>
+                </div>
+
+                <div class="field-inline" style="margin-top:4px;">
+                    <span class="label-text" style="width:100%;margin-bottom:0;">推送范围</span>
+                    <label><input type="radio" name="pushScopeMode" value="full" checked> 全量推送</label>
+                    <label><input type="radio" name="pushScopeMode" value="dept"> 指定部门推送</label>
+                    <label><input type="radio" name="pushScopeMode" value="user"> 指定人员</label>
+                </div>
+                <div id="blockPushScopeFullExtra" class="conditional-block">
+                    <div class="field-inline" style="margin-bottom:8px;">
+                        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:#333;">
+                            <input type="checkbox" id="deptAggByHierarchy"> 按部门层级汇总推送
+                        </label>
+                    </div>
+                    <div id="blockDeptHierarchyLevels" class="conditional-block" hidden>
+                        <span class="label-text" style="display:block;margin-bottom:6px;">部门层级（单选）</span>
+                        <div class="field-inline" style="margin-bottom:0;">
+                            <label><input type="radio" name="deptAggLevelRadio" value="1" checked> 一级</label>
+                            <label><input type="radio" name="deptAggLevelRadio" value="2"> 二级</label>
+                        </div>
+                        <p class="hint" style="margin-top:8px;margin-bottom:0;">勾选「按部门层级汇总推送」后，选择按一级或二级部门聚合消息（示意）。</p>
+                    </div>
+                </div>
+                <div id="blockPushScopeDeptPick" class="conditional-block" hidden>
+                    <div class="field">
+                        <label class="label-text">指定部门（多选）</label>
+                        <div id="scopeDeptMsContainer" class="finops-ms-wrap">
+                            <div class="finops-ms-trigger" id="scopeDeptMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="指定部门，点击展开多选">
+                                <div class="finops-ms-tags" id="scopeDeptMsTags" aria-label="已选部门"></div>
+                                <input type="text" class="finops-ms-input" id="scopeDeptMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
+                                <span class="finops-ms-arrow">▼</span>
+                            </div>
+                            <div class="finops-ms-dd" id="scopeDeptMsDd">
+                                <div class="finops-ms-dd-search">
+                                    <input type="text" id="scopeDeptMsDdSearch" placeholder="搜索" autocomplete="off">
+                                </div>
+                                <div id="scopeDeptMsOptions">
+                                    <div class="finops-ms-row" data-value="rd" data-label="研发中心"><span>研发中心</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="cloud" data-label="云计算事业部"><span>云计算事业部</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="fin" data-label="财务部"><span>财务部</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="ops" data-label="运维中心"><span>运维中心</span><span class="finops-ms-check">✓</span></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="scopeDeptMsHidden" value="">
+                        </div>
+                    </div>
+                </div>
+                <div id="blockPushScopeUserPick" class="conditional-block" hidden>
+                    <div class="field">
+                        <label class="label-text">指定人员（多选）</label>
+                        <div id="scopeUserMsContainer" class="finops-ms-wrap">
+                            <div class="finops-ms-trigger" id="scopeUserMsTrigger" role="button" tabindex="0" aria-expanded="false" aria-label="指定人员，点击展开多选">
+                                <div class="finops-ms-tags" id="scopeUserMsTags" aria-label="已选人员"></div>
+                                <input type="text" class="finops-ms-input" id="scopeUserMsSearch" tabindex="-1" aria-hidden="true" autocomplete="off">
+                                <span class="finops-ms-arrow">▼</span>
+                            </div>
+                            <div class="finops-ms-dd" id="scopeUserMsDd">
+                                <div class="finops-ms-dd-search">
+                                    <input type="text" id="scopeUserMsDdSearch" placeholder="搜索" autocomplete="off">
+                                </div>
+                                <div id="scopeUserMsOptions">
+                                    <div class="finops-ms-row" data-value="u1" data-label="张明（研发中心）"><span>张明（研发中心）</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="u2" data-label="李华（云计算）"><span>李华（云计算）</span><span class="finops-ms-check">✓</span></div>
+                                    <div class="finops-ms-row" data-value="u3" data-label="王芳（财务部）"><span>王芳（财务部）</span><span class="finops-ms-check">✓</span></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="scopeUserMsHidden" value="">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="field-inline">
@@ -538,9 +615,11 @@
                     </div>
                     <p class="hint">无匹配人时记入「待人工分发」队列（对接后端后告警）。</p>
                 </div>
+            </div>
 
-                <h3 class="sub-card-title">终端模板</h3>
-                <p class="muted" style="margin-bottom:10px;">根据「推送终端」显示页签：双端时切换 PC / 移动；仅一端时只显示该端页签。</p>
+            <div class="card">
+                <h2 class="page-title">终端模板</h2>
+                <p class="muted" style="margin-bottom:12px;">根据「推送策略」中的<strong>推送终端</strong>显示页签：双端时可切换 PC / 移动；仅一端时只显示该端页签与模板。</p>
                 <div id="platformTabsWrap" class="platform-tabs" role="tablist" aria-label="PC 或移动端配置">
                     <button type="button" class="platform-tab active" role="tab" aria-selected="true" data-platform="pc">PC 端</button>
                     <button type="button" class="platform-tab" role="tab" aria-selected="false" data-platform="mobile">移动端</button>
@@ -650,7 +729,7 @@
 (function () {
     'use strict';
 
-    var STORAGE_KEY = 'finops_wecom_usage_push_settings_v3';
+    var STORAGE_KEY = 'finops_wecom_usage_push_settings_v5';
 
     function $(id) { return document.getElementById(id); }
 
@@ -795,6 +874,26 @@
         searchId: 'recvMsSearch',
         placeholder: '请选择接收人'
     });
+    var scopeDeptMs = initFinopsMs({
+        tagsId: 'scopeDeptMsTags',
+        ddId: 'scopeDeptMsDd',
+        triggerId: 'scopeDeptMsTrigger',
+        hiddenId: 'scopeDeptMsHidden',
+        ddSearchId: 'scopeDeptMsDdSearch',
+        optionsId: 'scopeDeptMsOptions',
+        searchId: 'scopeDeptMsSearch',
+        placeholder: '请选择部门'
+    });
+    var scopeUserMs = initFinopsMs({
+        tagsId: 'scopeUserMsTags',
+        ddId: 'scopeUserMsDd',
+        triggerId: 'scopeUserMsTrigger',
+        hiddenId: 'scopeUserMsHidden',
+        ddSearchId: 'scopeUserMsDdSearch',
+        optionsId: 'scopeUserMsOptions',
+        searchId: 'scopeUserMsSearch',
+        placeholder: '请选择人员'
+    });
 
     document.addEventListener('click', function () {
         document.querySelectorAll('.finops-ms-dd').forEach(function (d) { d.style.display = 'none'; });
@@ -817,6 +916,34 @@
     function getPushTerminal() {
         var r = document.querySelector('input[name="pushTerminal"]:checked');
         return r ? r.value : 'both';
+    }
+
+    function getPushScopeMode() {
+        var r = document.querySelector('input[name="pushScopeMode"]:checked');
+        return r ? r.value : 'full';
+    }
+
+    function getDeptAggLevel() {
+        var r = document.querySelector('input[name="deptAggLevelRadio"]:checked');
+        return r ? r.value : '1';
+    }
+
+    function syncDeptAggLevelsVisibility() {
+        var chk = $('deptAggByHierarchy');
+        var blk = $('blockDeptHierarchyLevels');
+        if (!chk || !blk) return;
+        blk.hidden = !chk.checked;
+    }
+
+    function syncPushScopeModeUI() {
+        var mode = getPushScopeMode();
+        var fullExtra = $('blockPushScopeFullExtra');
+        var deptPick = $('blockPushScopeDeptPick');
+        var userPick = $('blockPushScopeUserPick');
+        if (fullExtra) fullExtra.hidden = mode !== 'full';
+        if (deptPick) deptPick.hidden = mode !== 'dept';
+        if (userPick) userPick.hidden = mode !== 'user';
+        syncDeptAggLevelsVisibility();
     }
 
     function bindPlatformTabs() {
@@ -972,6 +1099,13 @@
     document.querySelectorAll('input[name="pushTerminal"]').forEach(function (el) {
         el.addEventListener('change', syncTerminalPanels);
     });
+    document.querySelectorAll('input[name="pushScopeMode"]').forEach(function (el) {
+        el.addEventListener('change', syncPushScopeModeUI);
+    });
+    var deptAggChk = $('deptAggByHierarchy');
+    if (deptAggChk) {
+        deptAggChk.addEventListener('change', syncDeptAggLevelsVisibility);
+    }
     document.querySelectorAll('input[name="pushFreq"], input[name="pushWhen"]').forEach(function (el) {
         el.addEventListener('change', function () {
             syncPushFreqWhenUI();
@@ -999,7 +1133,13 @@
         var base = {
             corpId: $('corpId').value,
             agentId: $('agentId').value,
+            strategyName: $('strategyName') ? ($('strategyName').value || '').trim() : '',
             pushTerminal: getPushTerminal(),
+            pushScopeMode: getPushScopeMode(),
+            deptAggByHierarchy: $('deptAggByHierarchy') ? !!$('deptAggByHierarchy').checked : false,
+            deptAggLevel: getDeptAggLevel(),
+            scopeDepartments: scopeDeptMs.getValues(),
+            scopeUsers: scopeUserMs.getValues(),
             pushFreq: pushFreq,
             remindBefore: remindMs.getValues(),
             receivers: recvMs.getValues(),
@@ -1031,6 +1171,23 @@
         if (!data) return;
         if (data.corpId) $('corpId').value = data.corpId;
         if (data.agentId) $('agentId').value = data.agentId;
+        if ($('strategyName')) $('strategyName').value = data.strategyName != null ? String(data.strategyName) : '';
+        if (data.pushScopeMode) {
+            var sm = document.querySelector('input[name="pushScopeMode"][value="' + data.pushScopeMode + '"]');
+            if (sm) sm.checked = true;
+        }
+        if ($('deptAggByHierarchy')) $('deptAggByHierarchy').checked = !!data.deptAggByHierarchy;
+        if (data.deptAggLevel === '1' || data.deptAggLevel === '2') {
+            var rl = document.querySelector('input[name="deptAggLevelRadio"][value="' + data.deptAggLevel + '"]');
+            if (rl) rl.checked = true;
+        } else if (data.deptAggLevels && data.deptAggLevels.length) {
+            var pick = data.deptAggLevels.indexOf('2') >= 0 ? '2' : '1';
+            if (data.deptAggLevels.length === 1) pick = data.deptAggLevels[0];
+            var r2 = document.querySelector('input[name="deptAggLevelRadio"][value="' + pick + '"]');
+            if (r2) r2.checked = true;
+        }
+        if (data.scopeDepartments && data.scopeDepartments.length) scopeDeptMs.setValues(data.scopeDepartments);
+        if (data.scopeUsers && data.scopeUsers.length) scopeUserMs.setValues(data.scopeUsers);
         if (data.pushTerminal) {
             var pt = document.querySelector('input[name="pushTerminal"][value="' + data.pushTerminal + '"]');
             if (pt) pt.checked = true;
@@ -1083,6 +1240,7 @@
             var rec = roleMap[data.receiverRole];
             if (rec) recvMs.setValues(rec);
         }
+        syncPushScopeModeUI();
         syncPushFreqWhenUI();
         syncTerminalPanels();
         samplePreview();
@@ -1100,12 +1258,15 @@
 
     try {
         var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) raw = localStorage.getItem('finops_wecom_usage_push_settings_v4');
+        if (!raw) raw = localStorage.getItem('finops_wecom_usage_push_settings_v3');
         if (!raw) raw = localStorage.getItem('finops_wecom_usage_push_settings_v2');
         if (!raw) raw = localStorage.getItem('finops_wecom_usage_push_settings_v1');
         if (raw) applyForm(JSON.parse(raw));
     } catch (e) {}
 
     bindPlatformTabs();
+    syncPushScopeModeUI();
     syncPushFreqWhenUI();
     syncTerminalPanels();
     samplePreview();
@@ -1144,7 +1305,7 @@
                         x.style.display = 'none';
                     });
                 }
-                var pt = document.querySelector('.page-title');
+                var pt = document.getElementById('pageMainTitle');
                 if (pt) pt.textContent = '查看策略 · 消息推送';
                 var sub = document.querySelector('.header-sub');
                 if (sub) sub.textContent = '推送管理 · 消息推送（只读）';
@@ -1153,5 +1314,7 @@
     })();
     </script>
     <script src="../js/finops-session-header.js" defer></script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>

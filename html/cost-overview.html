@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>FinOps财务运营管理平台 - 成本总览</title>
+    <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+
     <style>
         * {
             margin: 0;
@@ -45,11 +50,16 @@
             font-weight: 600;
         }
 
+        .header-sub {
+            font-size: 13px;
+            opacity: 0.92;
+        }
+
         .container {
             width: 100%;
-            padding: 0 20px;
+            padding: 16px 20px 32px;
             display: flex;
-            gap: 20px;
+            gap: 16px;
             min-height: calc(100vh - 120px);
             box-sizing: border-box;
         }
@@ -198,91 +208,6 @@
             border-color: #1890ff;
             box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
         }
-
-        /* 多选下拉框组件样式 */
-        .multi-select-dropdown {
-            position: relative;
-            width: 100%;
-        }
-
-        .multi-select-trigger {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            border: 1px solid #d9d9d9;
-            border-radius: 4px;
-            background-color: white;
-            cursor: pointer;
-            font-size: 14px;
-            min-height: 36px;
-        }
-
-        .multi-select-trigger:hover {
-            border-color: #1890ff;
-        }
-
-        .multi-select-trigger.active {
-            border-color: #1890ff;
-            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-        }
-
-        .multi-select-placeholder {
-            color: #999;
-        }
-
-        .multi-select-trigger.has-selection .multi-select-placeholder {
-            color: #333;
-        }
-
-        .multi-select-arrow {
-            font-size: 12px;
-            color: #999;
-            transition: transform 0.2s;
-        }
-
-        .multi-select-trigger.active .multi-select-arrow {
-            transform: rotate(180deg);
-        }
-
-        .multi-select-options {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background-color: white;
-            border: 1px solid #d9d9d9;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .multi-select-options.show {
-            display: block;
-        }
-
-        .multi-select-options label {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            cursor: pointer;
-            margin: 0;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
-
-        .multi-select-options label:hover {
-            background-color: #e6f7ff;
-        }
-
-        .multi-select-options input[type="checkbox"] {
-             margin-right: 8px;
-             width: auto;
-         }
 
         /* 统计区域 */
         .stats-section {
@@ -439,40 +364,9 @@
             background-color: #fafafa;
             font-weight: 600;
             color: #333;
-            position: sticky;
-            top: 0;
-            z-index: 1;
             resize: horizontal;
             overflow: auto;
             min-width: 80px;
-        }
-
-        /* 冻结操作列 - 表头 */
-        th:last-child {
-            position: sticky;
-            right: 0;
-            z-index: 2;
-            background-color: #fafafa;
-            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.09);
-        }
-
-        /* 冻结操作列 - 数据行 */
-        td:last-child {
-            position: sticky;
-            right: 0;
-            background-color: white;
-            z-index: 1;
-            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.09);
-        }
-
-        /* 数据行hover时操作列背景色 */
-        tr:hover td:last-child {
-            background-color: #f5f5f5;
-        }
-
-        /* 历史数据行操作列样式 */
-        .history-row td:last-child {
-            background-color: #f5f5f5;
         }
 
         th::-webkit-resizer {
@@ -640,58 +534,204 @@
             color: #ff4d4f;
         }
 
-        /* 侧边栏 */
+        /* 主导航侧栏（与 bill-management 等页面一致） */
         .sidebar {
             width: 220px;
-            background-color: white;
+            background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
-            overflow: hidden;
+            flex-shrink: 0;
             position: sticky;
-            top: 20px;
-            height: calc(100vh - 40px);
+            top: 16px;
+            align-self: flex-start;
+            max-height: calc(100vh - 32px);
+            overflow: auto;
         }
 
-        .menu-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
+        .sidebar-head {
+            background: #1890ff;
+            color: #fff;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .sidebar .menu-item {
+            display: block;
+            padding: 12px 16px;
             color: #333;
             text-decoration: none;
             border-left: 3px solid transparent;
-            transition: all 0.3s;
-            font-size: 14px;
             font-weight: 500;
         }
 
-        .menu-item:hover, .menu-item.active {
-            background-color: #e6f7ff;
+        .sidebar .menu-item:hover,
+        .sidebar .menu-item.active {
+            background: #e6f7ff;
             color: #1890ff;
             border-left-color: #1890ff;
         }
 
-        .sub-menu {
+        .sidebar .sub-menu {
             list-style: none;
-            padding: 0;
+            background: #f9f9f9;
             margin: 0;
-            background-color: #f9f9f9;
+            padding: 0;
         }
 
-        .sub-menu-item {
+        .sidebar .sub-menu-item {
             display: block;
-            padding: 10px 20px 10px 40px;
+            padding: 10px 16px 10px 28px;
             color: #666;
             text-decoration: none;
-            transition: all 0.3s;
             font-size: 13px;
             border-left: 3px solid transparent;
         }
 
-        .sub-menu-item:hover, .sub-menu-item.active {
-            background-color: #e6f7ff;
+        .sidebar .sub-menu-item:hover {
+            background: #f0f0f0;
+            color: #1890ff;
+        }
+
+        .sidebar .sub-menu-item.active {
+            background: #e6f7ff;
             color: #1890ff;
             border-left-color: #1890ff;
+            font-weight: 500;
+        }
+
+        /* 成本分类树状导航 */
+        .cost-category-sidebar {
+            width: 200px;
+            min-width: 200px;
+            background-color: white;
+            border-right: 1px solid #e8e8e8;
+            padding: 16px 0;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .cost-category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            padding: 0 16px 12px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .sidebar-toggle-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            padding: 12px 8px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+            margin-left: -40px;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background-color: #40a9ff;
+        }
+
+        .cost-category-sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            position: relative;
+        }
+
+        .tree-node {
+            user-select: none;
+        }
+
+        .tree-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0;
+            border-radius: 0;
+        }
+
+        .tree-item:hover {
+            background-color: #f0f8ff;
+        }
+
+        .tree-item.active {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border-right: 3px solid #1890ff;
+        }
+
+        .tree-expand-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-size: 12px;
+            color: #999;
+            transition: transform 0.2s;
+        }
+
+        .tree-expand-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .tree-expand-icon.hidden {
+            visibility: hidden;
+        }
+
+        .tree-label {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .tree-children {
+            margin-left: 20px;
+            display: none;
+        }
+
+        .tree-children.expanded {
+            display: block;
+        }
+
+        .content-with-sidebar {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 12px 12px 24px;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+                max-height: none;
+            }
         }
     </style>
 </head>
@@ -700,85 +740,166 @@
     <div class="header">
         <div class="header-content">
             <h1>FinOps财务运营管理平台</h1>
+            <span class="header-sub">成本管理 · 成本总览</span>
         </div>
     </div>
 
     <!-- 主容器 -->
     <div class="container">
-        <!-- 左侧菜单 -->
-        <div class="sidebar">
-            <div style="background-color: #1890ff; color: white; padding: 20px; font-size: 16px; font-weight: 600;">
-                菜单导航
-            </div>
-            <ul style="list-style: none; padding: 0; margin: 0;">
+        <aside class="sidebar">
+            <div class="sidebar-head">菜单导航</div>
+                                                <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a class="menu-item" href="asset-ledger-management.html">B类资产管理</a></li>
                 <li>
-                    <a href="cost-overview.html" class="menu-item active">
-                        <span>成本管理</span>
-                    </a>
+                    <a class="menu-item" href="cost-overview.html">成本管理</a>
                     <ul class="sub-menu">
-                        <li>
-                            <a href="cost-overview.html" class="sub-menu-item active">成本总览</a>
-                        </li>
-                        <li>
-                            <a href="cost-analysis.html" class="sub-menu-item">成本分析</a>
-                        </li>
+                        <li><a class="sub-menu-item" href="cost-overview.html">成本总览</a></li>
+                        <li><a class="sub-menu-item" href="cost-pool-management.html">成本池管理</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-management.html">定价管理</a></li>
+                <li>
+                    <a class="menu-item" href="usage-management.html">用量管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="usage-monthly-overview.html">月度用量总览</a></li>
+                        <li><a class="sub-menu-item" href="usage-management.html">用量明细</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-pc.html?bill_period=2026-04">PC 用量确认</a></li>
+                        <li><a class="sub-menu-item" href="usage-confirm-view-mobile.html?bill_period=2026-04">移动用量确认</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="pricing-pending-todos-demo.html">待办管理</a></li>
+                <li>
+                    <a class="menu-item" href="bill-overview.html">账单管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="bill-monthly-overview.html">月度账单总览</a></li>
+                        <li><a class="sub-menu-item" href="bill-management.html">账单详情</a></li>
+                        <li><a class="sub-menu-item" href="bill-overview.html">账单分析</a></li>
+                    </ul>
+                </li>
+                <li><a class="menu-item" href="usage-push-strategy-management.html">消息推送</a></li>
+                <li><a class="menu-item" href="allocation-management.html">分账管理</a></li>
+                <li>
+                    <a class="menu-item" href="system-management.html">系统管理</a>
+                    <ul class="sub-menu">
+                        <li><a class="sub-menu-item" href="system-management.html#users">用户管理</a></li>
+                        <li><a class="sub-menu-item" href="system-management.html#roles">角色管理</a></li>
                     </ul>
                 </li>
             </ul>
-        </div>
+        </aside>
 
         <!-- 右侧内容 -->
-        <div class="content">
-            <!-- 查询筛选模块（含成本月选择器） -->
-            <div class="search-filter-section">
-                <div class="search-filter-header">
-                    <div class="month-selector-inline">
-                        <label>成本月</label>
-                        <input type="month" id="costMonth" value="2026-02" max="2026-02">
-                        <span class="history-notice-inline" id="historyNotice" style="display: none;">
+        <main class="content" style="display: flex; flex-direction: column; gap: 20px; flex: 1; min-width: 0; min-height: 0;">
+            <!-- 成本月模块（上栏） -->
+            <div style="width: 100%; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);">
+                <!-- 成本月选择器 -->
+                <div class="month-selector-row" style="display: flex; align-items: center; justify-content: space-between; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <label style="font-weight: 600; color: #333; font-size: 14px;">成本月</label>
+                        <input type="month" id="costMonth" value="2026-02" max="2026-02" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; background-color: white;">
+                        <span class="history-notice-inline" id="historyNotice" style="display: none; color: #fa8c16; font-size: 13px;">
                             <span class="history-notice-icon">⚠️</span>
                             <span class="history-notice-text">您正在查看历史成本数据，该数据已归档，仅支持查看和导出，不支持编辑、删除或修改操作。</span>
                         </span>
                     </div>
                     <div class="month-indicator">
-                        <span class="month-badge current" id="monthBadge">当前月</span>
+                        <span class="month-badge current" id="monthBadge" style="background-color: #52c41a; color: white; padding: 6px 16px; border-radius: 4px; font-size: 12px; font-weight: 500;">当前月</span>
                     </div>
                 </div>
-                <div class="filter-form">
-                    <div class="filter-item">
-                        <label>成本分类</label>
-                        <div class="multi-select-dropdown" id="filterCategoryContainer">
-                            <div class="multi-select-trigger" onclick="toggleDropdown('filterCategoryDropdown')">
-                                <span class="multi-select-placeholder">请选择</span>
-                                <span class="multi-select-arrow">▼</span>
+            </div>
+
+            <!-- 下栏：成本分类导航 + 数据区域 -->
+            <div class="bottom-section">
+                <!-- 左侧成本分类树状导航 -->
+                <div class="cost-category-sidebar" id="costCategorySidebar">
+                    <div class="cost-category-title">成本分类</div>
+                    <div id="costCategoryTree"></div>
+                </div>
+
+                <!-- 右侧数据区域 -->
+                <div class="main-content">
+                    <!-- 成本分类悬浮按钮 -->
+                    <button class="sidebar-toggle-btn" onclick="toggleSidebar()">成本分类</button>
+                    
+                    <div class="card" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);">
+                        <!-- 数据统计区域 -->
+                        <div class="stats-row stats-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px; border-bottom: 1px solid #f0f0f0;">
+                            <div class="stat-card" style="background-color: #f6ffed; border-radius: 8px; padding: 20px; border: 1px solid #b7eb8f;">
+                                <div class="stat-main-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span class="stat-title" style="color: #666; font-size: 14px;">总成本</span>
+                                    <span class="stat-amount primary" id="statTotalCost" style="font-size: 24px; font-weight: 600; color: #1890ff;">¥512,000</span>
+                                </div>
+                                <div class="stat-mom-row" style="text-align: right;">
+                                    <span class="mom-badge" id="totalCostMom" style="font-size: 12px; color: #52c41a; background-color: white; padding: 2px 8px; border-radius: 4px;">环比 +5.2% ↑</span>
+                                </div>
                             </div>
-                            <div class="multi-select-options" id="filterCategoryDropdown">
-                                <label><input type="checkbox" value="设备费用"> 设备费用</label>
-                                <label><input type="checkbox" value="软件平台"> 软件平台</label>
-                                <label><input type="checkbox" value="网络带宽"> 网络带宽</label>
-                                <label><input type="checkbox" value="运营费用"> 运营费用</label>
-                                <label><input type="checkbox" value="基础设施"> 基础设施</label>
+                            <div class="stat-card" style="background-color: #fff7e6; border-radius: 8px; padding: 20px; border: 1px solid #ffd591;">
+                                <div class="stat-main-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span class="stat-title" style="color: #666; font-size: 14px;">公摊总成本</span>
+                                    <span class="stat-amount warning" id="statSharedCost" style="font-size: 24px; font-weight: 600; color: #fa8c16;">¥128,000</span>
+                                </div>
+                                <div class="stat-mom-row" style="text-align: right;">
+                                    <span class="mom-badge" id="sharedCostMom" style="font-size: 12px; color: #52c41a; background-color: white; padding: 2px 8px; border-radius: 4px;">环比 +3.8% ↑</span>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- 查询筛选模块 -->
+                        <div class="search-filter-section" style="box-shadow: none; margin-bottom: 0; padding: 20px; border-bottom: 1px solid #f0f0f0;">
+                            <div class="filter-form" style="margin-top: 12px;">
+                    <input type="hidden" id="filterPrimaryCategory" value="">
+                    <input type="hidden" id="filterCategory" value="">
+                    <input type="hidden" id="filterPurpose" value="">
+                    <div class="filter-item">
+                        <label>资产细分</label>
+                        <div id="filterAssetSubdivideContainer" class="finops-filter-anchor">
+                            <div class="custom-select">
+                                <div id="assetSubdivideTags"></div>
+                                <input type="text" id="assetSubdivideSearch" placeholder="请选择资产细分">
+                                <span class="select-arrow">▼</span>
+                            </div>
+                            <div id="assetSubdivideDropdown" class="select-dropdown" style="display: none;">
+                                <div>
+                                    <input type="text" id="assetSubdivideDropdownSearch" placeholder="搜索资产细分">
+                                </div>
+                                <div id="assetSubdivideOptions" style="padding: 4px 0;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer;" onclick="toggleAssetSubdivide('标准通用服务器-容器应用')">
+                                        <span>标准通用服务器-容器应用</span>
+                                        <span id="check_标准通用服务器-容器应用" style="display: none; color: #1890ff;">✓</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer;" onclick="toggleAssetSubdivide('标准通用服务器-虚拟化类应用')">
+                                        <span>标准通用服务器-虚拟化类应用</span>
+                                        <span id="check_标准通用服务器-虚拟化类应用" style="display: none; color: #1890ff;">✓</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer;" onclick="toggleAssetSubdivide('高性能容器应用')">
+                                        <span>高性能容器应用</span>
+                                        <span id="check_高性能容器应用" style="display: none; color: #1890ff;">✓</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer;" onclick="toggleAssetSubdivide('高速编译型应用')">
+                                        <span>高速编译型应用</span>
+                                        <span id="check_高速编译型应用" style="display: none; color: #1890ff;">✓</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="filterAssetSubdivide" value="">
                     </div>
                     <div class="filter-item">
                         <label>成本池</label>
-                        <div class="multi-select-dropdown" id="filterPoolContainer">
-                            <div class="multi-select-trigger" onclick="toggleDropdown('filterPoolDropdown')">
-                                <span class="multi-select-placeholder">请选择</span>
-                                <span class="multi-select-arrow">▼</span>
+                        <div id="filterCostPoolContainer" class="finops-filter-anchor">
+                            <div class="custom-select">
+                                <div id="costPoolTags"></div>
+                                <input type="text" id="costPoolSearch" placeholder="请选择成本池">
+                                <span class="select-arrow">▼</span>
                             </div>
-                            <div class="multi-select-options" id="filterPoolDropdown">
-                                <label><input type="checkbox" value="通算服务器"> 通算服务器</label>
-                                <label><input type="checkbox" value="智算服务器"> 智算服务器</label>
-                                <label><input type="checkbox" value="存储"> 存储</label>
-                                <label><input type="checkbox" value="安全"> 安全</label>
-                                <label><input type="checkbox" value="网络"> 网络</label>
-                                <label><input type="checkbox" value="容器"> 容器</label>
-                                <label><input type="checkbox" value="数据库"> 数据库</label>
-                                <label><input type="checkbox" value="机房环境"> 机房环境</label>
+                            <div id="costPoolDropdown" class="select-dropdown" style="display: none;">
+                                <div>
+                                    <input type="text" id="costPoolDropdownSearch" placeholder="搜索成本池">
+                                </div>
+                                <div id="costPoolOptions" style="padding: 4px 0;"></div>
                             </div>
                         </div>
+                        <input type="hidden" id="filterCostPool" value="">
                     </div>
                     <div class="filter-item">
                         <label>地域</label>
@@ -795,22 +916,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="filter-item">
-                        <label>公摊池</label>
-                        <select id="filterSharePool">
-                            <option value="">全部</option>
-                            <option value="基础资源">基础资源</option>
-                            <option value="容器">容器</option>
-                            <option value="数据库">数据库</option>
-                            <option value="网络">网络</option>
-                            <option value="公网映射">公网映射</option>
-                        </select>
-                    </div>
+
                     <div class="filter-item">
                         <label>公摊类型</label>
                         <select id="filterType">
                             <option value="">全部</option>
                             <option value="公摊成本">公摊成本</option>
+                            <option value="局部公摊">局部公摊</option>
                             <option value="非公摊成本">非公摊成本</option>
                         </select>
                     </div>
@@ -825,75 +937,56 @@
                 </div>
             </div>
 
-            <!-- 数据统计区域 -->
-            <div class="stats-section">
-                <div class="stats-row stats-row-2col">
-                    <div class="stat-card">
-                        <div class="stat-main-row">
-                            <span class="stat-title">总成本</span>
-                            <span class="stat-amount primary" id="statTotalCost">¥512,000</span>
+                <!-- 分隔线 -->
+                <div style="border-top: 1px solid #f0f0f0; margin: 16px 0;"></div>
+
+                <!-- 功能操作区（仅当前月显示） -->
+                <div class="action-buttons" id="actionButtons" style="margin-left: 0; margin-right: 0;">
+                    <button class="btn btn-primary" onclick="exportData()">导出</button>
+                    <button class="btn btn-default" onclick="showImportModal()">导入</button>
+                    <button class="btn btn-default" onclick="batchDelete()">批量删除</button>
+                    <button class="btn btn-default" onclick="showAddModal()">手动添加</button>
+                </div>
+
+                <!-- 历史月操作区（仅历史月显示） -->
+                <div class="action-buttons" id="historyActionButtons" style="display: none; margin-left: 0; margin-right: 0;">
+                    <button class="btn btn-primary" onclick="exportData()">导出</button>
+                </div>
+
+                <!-- 勾选统计信息 -->
+                <div class="selection-stats" id="selectionStats" style="display: none; margin-left: 0; margin-right: 0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 20px;">✓</span>
+                                <span style="font-weight: 600; color: #1890ff;">已选择</span>
+                                <span id="selectedCount" style="font-size: 20px; font-weight: 700; color: #1890ff;">0</span>
+                                <span style="color: #666;">条数据</span>
+                            </div>
+                            <div style="width: 1px; height: 24px; background-color: #d9d9d9;"></div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-weight: 600; color: #52c41a;">选中总成本</span>
+                                <span id="selectedTotalCost" style="font-size: 20px; font-weight: 700; color: #52c41a;">¥0</span>
+                            </div>
                         </div>
-                        <div class="stat-mom-row">
-                            <span class="mom-badge" id="totalCostMom">环比 +5.2% ↑</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-main-row">
-                            <span class="stat-title">公摊总成本</span>
-                            <span class="stat-amount warning" id="statSharedCost">¥128,000</span>
-                        </div>
-                        <div class="stat-mom-row">
-                            <span class="mom-badge" id="sharedCostMom">环比 +3.8% ↑</span>
-                        </div>
+                        <button class="btn btn-default" onclick="clearSelection()" style="font-size: 12px; padding: 4px 12px;">清除选择</button>
                     </div>
                 </div>
-            </div>
 
-            <!-- 功能操作区（仅当前月显示） -->
-            <div class="action-buttons" id="actionButtons">
-                <button class="btn btn-primary" onclick="exportData()">导出</button>
-                <button class="btn btn-default" onclick="showImportModal()">导入</button>
-                <button class="btn btn-default" onclick="batchDelete()">批量删除</button>
-                <button class="btn btn-default" onclick="showAddModal()">手动添加</button>
-            </div>
-
-            <!-- 历史月操作区（仅历史月显示） -->
-            <div class="action-buttons" id="historyActionButtons" style="display: none;">
-                <button class="btn btn-primary" onclick="exportData()">导出</button>
-            </div>
-
-            <!-- 勾选统计信息 -->
-            <div class="selection-stats" id="selectionStats" style="display: none;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 24px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 20px;">✓</span>
-                            <span style="font-weight: 600; color: #1890ff;">已选择</span>
-                            <span id="selectedCount" style="font-size: 20px; font-weight: 700; color: #1890ff;">0</span>
-                            <span style="color: #666;">条数据</span>
-                        </div>
-                        <div style="width: 1px; height: 24px; background-color: #d9d9d9;"></div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-weight: 600; color: #52c41a;">选中总成本</span>
-                            <span id="selectedTotalCost" style="font-size: 20px; font-weight: 700; color: #52c41a;">¥0</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-default" onclick="clearSelection()" style="font-size: 12px; padding: 4px 12px;">清除选择</button>
-                </div>
-            </div>
-
-            <!-- 数据表格区 -->
-            <div class="table-container">
+                <!-- 数据表格区 -->
+                <div class="table-container" style="margin-bottom: 16px;">
                 <table id="costTable">
                     <thead>
                         <tr>
                             <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
                             <th>成本编码</th>
-                            <th>成本分类</th>
-                            <th>成本池</th>
+                            <th>成本一级分类</th>
+                            <th>成本二级分类</th>
+                            <th>成本三级分类</th>
                             <th>成本项</th>
+                            <th>成本池</th>
+                            <th>资产细分</th>
                             <th>地域</th>
-                            <th>公摊池</th>
                             <th>公摊类型</th>
                             <th>数据来源</th>
                             <th>描述</th>
@@ -903,12 +996,9 @@
                             <th>数量</th>
                             <th>单位</th>
                             <th>成本月</th>
-                            <th>月成本（元）</th>
+                            <th>月总成本（元）</th>
                             <th>公摊比例</th>
                             <th>公摊后月总成本</th>
-                            <th>CPU资源总量</th>
-                            <th>MEM资源总量</th>
-                            <th>Disk资源总量</th>
                             <th style="width: 120px;">操作</th>
                         </tr>
                     </thead>
@@ -918,14 +1008,17 @@
                 </table>
             </div>
 
-            <!-- 分页 -->
-            <div class="pagination" id="paginationContainer">
-                <button id="prevPage" onclick="changePage(-1)">上一页</button>
-                <span id="pageNumbers"></span>
-                <button id="nextPage" onclick="changePage(1)">下一页</button>
-                <span style="margin-left: 16px; color: #666;">共 <span id="totalRecords">0</span> 条</span>
+                <!-- 分页 -->
+                <div class="pagination" id="paginationContainer" style="margin-bottom: 0;">
+                    <button id="prevPage" onclick="changePage(-1)">上一页</button>
+                    <span id="pageNumbers"></span>
+                    <button id="nextPage" onclick="changePage(1)">下一页</button>
+                    <span style="margin-left: 16px; color: #666;">共 <span id="totalRecords">0</span> 条</span>
+                </div>
             </div>
         </div>
+            </div>
+        </main>
     </div>
 
     <!-- 模态框 -->
@@ -956,50 +1049,51 @@
 
         // 模拟数据 - 2026-02的数据（含成本编码和完整价格）
         const feb2026Data = [
-            { id: 1, code: 'DEV-001', category: '设备费用', pool: '通算服务器', name: '标准通用服务器-容器应用', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 2, code: 'DEV-002', category: '设备费用', pool: '通算服务器', name: '标准通用服务器-虚拟化类应用', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 3, code: 'DEV-003', category: '设备费用', pool: '通算服务器', name: '大数据类存储-机械多盘', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 4, code: 'DEV-004', category: '设备费用', pool: '通算服务器', name: '大数据类存储-机械大盘', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 5, code: 'DEV-005', category: '设备费用', pool: '通算服务器', name: '大数据类存储-高速IO', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 6, code: 'DEV-006', category: '设备费用', pool: '通算服务器', name: '大数据类超大存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 7, code: 'DEV-007', category: '设备费用', pool: '通算服务器', name: '高性能容器应用', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 8, code: 'DEV-008', category: '设备费用', pool: '通算服务器', name: '小型单机应用', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 9, code: 'DEV-009', category: '设备费用', pool: '通算服务器', name: '高速编译型应用（高主频、高核心）', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 10, code: 'DEV-010', category: '设备费用', pool: '通算服务器', name: '国产化服务器', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 11, code: 'DEV-011', category: '设备费用', pool: '智算服务器', name: 'GPU服务器-RTX3090', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 12, code: 'DEV-012', category: '设备费用', pool: '智算服务器', name: 'GPU服务器-RTX4090', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 13, code: 'DEV-013', category: '设备费用', pool: '智算服务器', name: 'GPU服务器-A10', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 14, code: 'DEV-014', category: '设备费用', pool: '智算服务器', name: 'GPU服务器-A40', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 15, code: 'DEV-015', category: '设备费用', pool: '智算服务器', name: 'GPU服务器-A100', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 16, code: 'DEV-016', category: '设备费用', pool: '智算服务器', name: 'GPU服务器-A800', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 17, code: 'DEV-017', category: '设备费用', pool: '智算服务器', name: 'GPU服务器-H100', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 18, code: 'DEV-018', category: '设备费用', pool: '存储', name: '块存储SAN', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '60', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 19, code: 'OPS-019', category: '运营费用', pool: '存储', name: '存储维保', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '70000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 20, code: 'DEV-020', category: '设备费用', pool: '安全', name: 'waf', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 21, code: 'DEV-021', category: '设备费用', pool: '安全', name: 'IDS', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 22, code: 'DEV-022', category: '设备费用', pool: '安全', name: 'IPS', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 23, code: 'DEV-023', category: '设备费用', pool: '安全', name: '防火墙', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 24, code: 'DEV-024', category: '设备费用', pool: '安全', name: '堡垒机', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 25, code: 'DEV-025', category: '设备费用', pool: '网络', name: '防火墙（数据中心）', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '14', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 26, code: 'DEV-026', category: '设备费用', pool: '网络', name: '流量编排（数据中心）', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '12', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 27, code: 'DEV-027', category: '设备费用', pool: '网络', name: '路由器（数据中心）', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '10', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 28, code: 'DEV-028', category: '设备费用', pool: '网络', name: '交换机（数据中心）', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '700', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 29, code: 'DEV-029', category: '设备费用', pool: '网络', name: '负载均衡（数据中心）', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '14', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 30, code: 'OPS-030', category: '运营费用', pool: '网络', name: '维保费用', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 31, code: 'SW-031', category: '软件平台', pool: '机房环境', name: '动环系统', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '85000', depreciationMonths: '60', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 32, code: 'OPS-032', category: '运营费用', pool: '机房环境', name: '动环维保', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '25000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 33, code: 'INF-033', category: '基础设施', pool: '机房环境', name: '机房环境', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '（UPS、主机、配电柜、蓄电池、行级空调、精密空调、空间配电柜、机柜、耗材、装修、弱电、地板、防静电地板）', unitPrice: '30230000', depreciationMonths: '120', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 34, code: 'INF-034', category: '基础设施', pool: '机房环境', name: '场地成本', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '4.5', depreciationMonths: '240', depreciationMonthly: '', quantity: '1560', unit: '平', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 35, code: 'OPS-035', category: '运营费用', pool: '机房环境', name: '机房维保费用', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '350000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 36, code: 'OPS-036', category: '运营费用', pool: '机房环境', name: '电费-北京一期', region: '北京一期', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.89', depreciationMonths: '1', depreciationMonthly: '', quantity: '51252', unit: '度', costMonth: '2026-02', monthlyCost: '45460', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 37, code: 'OPS-037', category: '运营费用', pool: '机房环境', name: '电费-北京二期', region: '北京二期', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.85', depreciationMonths: '1', depreciationMonthly: '', quantity: '251742', unit: '度', costMonth: '2026-02', monthlyCost: '210456', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 38, code: 'OPS-038', category: '运营费用', pool: '机房环境', name: '电费-西安', region: '西安', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.69', depreciationMonths: '1', depreciationMonthly: '', quantity: '217699', unit: '度', costMonth: '2026-02', monthlyCost: '150316', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 39, code: 'OPS-039', category: '运营费用', pool: '机房环境', name: '电费-上海', region: '上海', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.89', depreciationMonths: '1', depreciationMonthly: '', quantity: '87285', unit: '度', costMonth: '2026-02', monthlyCost: '79429', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 40, code: 'OPS-040', category: '运营费用', pool: '机房环境', name: '机房人工费用', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '机房、服务器人工费', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 41, code: 'SW-041', category: '软件平台', pool: '容器', name: '容器管理平台', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '容器管理平台', unitPrice: '2880000', depreciationMonths: '60', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 42, code: 'OPS-042', category: '运营费用', pool: '容器', name: '容器人工费用', region: '', sharePool: '容器', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 43, code: 'OPS-043', category: '运营费用', pool: '数据库', name: '数据库人工费用', region: '', sharePool: '数据库', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
-            { id: 44, code: 'NET-044', category: '网络带宽', pool: '网络', name: '互联网网络带宽', region: '', sharePool: '网络', shareType: '非公摊成本', description: '', unitPrice: '512410', depreciationMonths: '12', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' }
+            { id: 1, code: 'DEV-001', category: '设备费用', pool: '标准通用服务器-容器', name: '标准通用服务器-容器', purpose: '物理机', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 2, code: 'DEV-002', category: '设备费用', pool: '标准通用服务器-容器', name: '标准通用服务器-容器', purpose: '容器', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 3, code: 'DEV-003', category: '设备费用', pool: '大数据类存储-机械多盘', name: '大数据类存储-机械多盘', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 4, code: 'DEV-004', category: '设备费用', pool: '大数据类存储-机械大盘', name: '大数据类存储-机械大盘', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 5, code: 'DEV-005', category: '设备费用', pool: '大数据类存储-高速IO', name: '大数据类存储-高速IO', purpose: '数据库', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 6, code: 'DEV-006', category: '设备费用', pool: '大数据类超大存储', name: '大数据类超大存储', purpose: '存储', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 7, code: 'DEV-007', category: '设备费用', pool: '高性能容器应用-容器', name: '高性能容器应用-容器', purpose: '容器', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 8, code: 'DEV-008', category: '设备费用', pool: '小型单机应用', name: '小型单机应用', purpose: '物理机', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 9, code: 'DEV-009', category: '设备费用', pool: '高速编译型应用', name: '高速编译型应用', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 10, code: 'DEV-010', category: '设备费用', pool: '国产化服务器', name: '国产化服务器', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 11, code: 'DEV-011', category: '设备费用', pool: 'GPU服务器-RTX3090', name: 'GPU服务器-RTX3090', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 12, code: 'DEV-012', category: '设备费用', pool: 'GPU服务器-RTX4090', name: 'GPU服务器-RTX4090', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 13, code: 'DEV-013', category: '设备费用', pool: 'GPU服务器-A10', name: 'GPU服务器-A10', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 14, code: 'DEV-014', category: '设备费用', pool: 'GPU服务器-A40', name: 'GPU服务器-A40', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 15, code: 'DEV-015', category: '设备费用', pool: 'GPU服务器-A100', name: 'GPU服务器-A100', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 16, code: 'DEV-016', category: '设备费用', pool: 'GPU服务器-A800', name: 'GPU服务器-A800', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 17, code: 'DEV-017', category: '设备费用', pool: 'GPU服务器-H100', name: 'GPU服务器-H100', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 18, code: 'DEV-018', category: '设备费用', pool: 'GPU服务器-H800', name: 'GPU服务器-H800', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 19, code: 'DEV-019', category: '设备费用', pool: '块存储SAN', name: '块存储SAN', purpose: '', region: '', sharePool: '基础资源', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '60', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 20, code: 'OPS-020', category: '运营费用', pool: '大数据类存储-机械多盘', name: '大数据类存储-机械多盘', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '70000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 21, code: 'DEV-021', category: '设备费用', pool: '安全', name: 'waf', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 22, code: 'DEV-022', category: '设备费用', pool: '安全', name: 'IDS', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 23, code: 'DEV-023', category: '设备费用', pool: '安全', name: 'IPS', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 24, code: 'DEV-024', category: '设备费用', pool: '安全', name: '防火墙', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 25, code: 'DEV-025', category: '设备费用', pool: '安全', name: '堡垒机', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 26, code: 'DEV-026', category: '设备费用', pool: '网络', name: '防火墙（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '14', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 27, code: 'DEV-027', category: '设备费用', pool: '网络', name: '流量编排（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '12', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 28, code: 'DEV-028', category: '设备费用', pool: '网络', name: '路由器（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '10', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 29, code: 'DEV-029', category: '设备费用', pool: '网络', name: '交换机（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '700', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 30, code: 'DEV-030', category: '设备费用', pool: '网络', name: '负载均衡（数据中心）', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '14', unit: '台', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 31, code: 'OPS-031', category: '运营费用', pool: '网络', name: '维保费用', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '', depreciationMonths: '', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 32, code: 'SW-032', category: '软件平台', pool: '公摊', name: '动环系统', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '85000', depreciationMonths: '60', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 33, code: 'OPS-033', category: '运营费用', pool: '公摊', name: '动环维保', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '25000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 34, code: 'INF-034', category: '基础设施', pool: '公摊', name: '机房环境', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '（UPS、主机、配电柜、蓄电池、行级空调、精密空调、空间配电柜、机柜、耗材、装修、弱电、地板、防静电地板）', unitPrice: '30230000', depreciationMonths: '120', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 35, code: 'INF-035', category: '基础设施', pool: '公摊', name: '场地成本', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '4.5', depreciationMonths: '240', depreciationMonthly: '', quantity: '1560', unit: '平', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 36, code: 'OPS-036', category: '运营费用', pool: '公摊', name: '机房维保费用', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '350000', depreciationMonths: '12', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 37, code: 'OPS-037', category: '运营费用', pool: '公摊', name: '电费-北京一期', purpose: '', region: '北京一期', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.89', depreciationMonths: '1', depreciationMonthly: '', quantity: '51252', unit: '度', costMonth: '2026-02', monthlyCost: '45460', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 38, code: 'OPS-038', category: '运营费用', pool: '公摊', name: '电费-北京二期', purpose: '', region: '北京二期', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.85', depreciationMonths: '1', depreciationMonthly: '', quantity: '251742', unit: '度', costMonth: '2026-02', monthlyCost: '210456', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 39, code: 'OPS-039', category: '运营费用', pool: '公摊', name: '电费-西安', purpose: '', region: '西安', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.69', depreciationMonths: '1', depreciationMonthly: '', quantity: '217699', unit: '度', costMonth: '2026-02', monthlyCost: '150316', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 40, code: 'OPS-040', category: '运营费用', pool: '公摊', name: '电费-上海', purpose: '', region: '上海', sharePool: '基础资源', shareType: '公摊成本', description: '', unitPrice: '0.89', depreciationMonths: '1', depreciationMonthly: '', quantity: '87285', unit: '度', costMonth: '2026-02', monthlyCost: '79429', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 41, code: 'OPS-041', category: '运营费用', pool: '公摊', name: '机房人工费用', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '机房、服务器人工费', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 42, code: 'SW-042', category: '软件平台', pool: '容器', name: '容器管理平台', purpose: '', region: '', sharePool: '基础资源', shareType: '公摊成本', description: '容器管理平台', unitPrice: '2880000', depreciationMonths: '60', depreciationMonthly: '', quantity: '1', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 43, code: 'OPS-043', category: '运营费用', pool: '容器', name: '容器人工费用', purpose: '', region: '', sharePool: '容器', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 44, code: 'OPS-044', category: '运营费用', pool: '数据库', name: '数据库人工费用', purpose: '', region: '', sharePool: '数据库', shareType: '非公摊成本', description: '', unitPrice: '', depreciationMonths: '12', depreciationMonthly: '', quantity: '2', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' },
+            { id: 45, code: 'NET-045', category: '网络带宽', pool: '网络', name: '互联网网络带宽', purpose: '', region: '', sharePool: '网络', shareType: '非公摊成本', description: '', unitPrice: '512410', depreciationMonths: '12', depreciationMonthly: '', quantity: '', unit: '', costMonth: '2026-02', monthlyCost: '', shareRatio: '', sharedCost: '', cpuTotal: '', memTotal: '', diskTotal: '' }
         ];
 
         // 复制2026-02数据作为2025-12数据（ID重新编号）
@@ -1010,6 +1104,7 @@
                 category: item.category,
                 pool: item.pool,
                 name: item.name,
+                purpose: item.purpose,
                 region: item.region,
                 sharePool: item.sharePool,
                 shareType: item.shareType,
@@ -1022,10 +1117,7 @@
                 costMonth: '2025-12',
                 monthlyCost: item.monthlyCost,
                 shareRatio: item.shareRatio,
-                sharedCost: item.sharedCost,
-                cpuTotal: item.cpuTotal,
-                memTotal: item.memTotal,
-                diskTotal: item.diskTotal
+                sharedCost: item.sharedCost
             };
         });
 
@@ -1037,6 +1129,7 @@
                 category: item.category,
                 pool: item.pool,
                 name: item.name,
+                purpose: item.purpose,
                 region: item.region,
                 sharePool: item.sharePool,
                 shareType: item.shareType,
@@ -1049,10 +1142,7 @@
                 costMonth: '2026-01',
                 monthlyCost: item.monthlyCost,
                 shareRatio: item.shareRatio,
-                sharedCost: item.sharedCost,
-                cpuTotal: item.cpuTotal,
-                memTotal: item.memTotal,
-                diskTotal: item.diskTotal
+                sharedCost: item.sharedCost
             };
         });
 
@@ -1090,16 +1180,52 @@
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             initMonthSelector();
+            renderCostCategoryTree();
             loadData();
+            syncDataFromDetailPage();
             initCheckboxEvents();
             initMultiSelectDropdowns();
         });
 
+        // 从详情页同步数据
+        function syncDataFromDetailPage() {
+            const lastUpdated = localStorage.getItem('lastUpdatedCostItem');
+            if (lastUpdated) {
+                const updatedItem = JSON.parse(lastUpdated);
+                
+                // 根据成本月份确定要更新的数据集
+                let targetData;
+                if (updatedItem.costMonth === '2026-02') {
+                    targetData = feb2026Data;
+                } else if (updatedItem.costMonth === '2025-12') {
+                    targetData = dec2025Data;
+                } else if (updatedItem.costMonth === '2026-01') {
+                    targetData = jan2026Data;
+                }
+                
+                if (targetData) {
+                    const itemIndex = targetData.findIndex(item => item.id == updatedItem.id);
+                    if (itemIndex >= 0) {
+                        // 更新现有数据
+                        Object.assign(targetData[itemIndex], updatedItem);
+                    } else {
+                        // 新增数据
+                        targetData.push(updatedItem);
+                    }
+                    // 重新加载数据以更新显示
+                    loadData();
+                }
+                // 清除已同步的标记
+                localStorage.removeItem('lastUpdatedCostItem');
+            }
+        }
+
         // 初始化多选下拉框事件
         function initMultiSelectDropdowns() {
-            const containers = ['filterCategoryContainer', 'filterPoolContainer', 'filterRegionContainer'];
+            const containers = ['filterCategoryContainer', 'filterRegionContainer'];
             containers.forEach(function(containerId) {
                 const container = document.getElementById(containerId);
+                if (!container) return;
                 const checkboxes = container.querySelectorAll('input[type="checkbox"]');
                 checkboxes.forEach(function(checkbox) {
                     checkbox.addEventListener('change', function() {
@@ -1116,7 +1242,8 @@
             monthInput.addEventListener('change', function() {
                 currentMonth = this.value;
                 updateMonthUI();
-                loadData();
+                // 切换成本月时重置筛选条件并重新加载数据
+                resetFilter();
             });
 
             updateMonthUI();
@@ -1144,14 +1271,241 @@
             document.getElementById('historyActionButtons').style.display = isHistoryMode ? 'flex' : 'none';
         }
 
+        // 展开/收起树节点
+        function toggleExpand(nodeId) {
+            const expandIcon = document.getElementById('expand-' + nodeId);
+            const children = document.getElementById('children-' + nodeId);
+            if (expandIcon && children) {
+                expandIcon.classList.toggle('expanded');
+                children.classList.toggle('expanded');
+            }
+        }
+
+        // 选择成本分类
+        function selectCostCategory(type, primaryValue, secondaryValue, tertiaryValue) {
+            event.stopPropagation();
+            
+            // 更新选中状态
+            document.querySelectorAll('.tree-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // 设置筛选条件并查询
+            if (type === 'all') {
+                document.getElementById('filterPrimaryCategory').value = '';
+                document.getElementById('filterCategory').value = '';
+                document.getElementById('filterPurpose').value = '';
+            } else if (type === 'primary') {
+                document.getElementById('filterPrimaryCategory').value = primaryValue;
+                document.getElementById('filterCategory').value = '';
+                document.getElementById('filterPurpose').value = '';
+            } else if (type === 'secondary') {
+                document.getElementById('filterPrimaryCategory').value = primaryValue;
+                document.getElementById('filterCategory').value = secondaryValue;
+                document.getElementById('filterPurpose').value = '';
+            } else if (type === 'tertiary') {
+                document.getElementById('filterPrimaryCategory').value = primaryValue;
+                document.getElementById('filterCategory').value = secondaryValue;
+                document.getElementById('filterPurpose').value = tertiaryValue;
+            }
+            
+            searchData();
+        }
+
+        // 构建成本分类树数据
+        function buildCategoryTree(data) {
+            const tree = {
+                '资产成本': {},
+                '运营成本': {}
+            };
+            
+            data.forEach(item => {
+                const dataSource = getDataSourceByCategory(item.category);
+                const primaryCategory = dataSource === '资产系统-B类资产' ? '资产成本' : '运营成本';
+                const secondaryCategory = item.category;
+                const tertiaryCategory = item.purpose || '';
+                
+                if (!tree[primaryCategory][secondaryCategory]) {
+                    tree[primaryCategory][secondaryCategory] = new Set();
+                }
+                if (tertiaryCategory) {
+                    tree[primaryCategory][secondaryCategory].add(tertiaryCategory);
+                }
+            });
+            
+            // 为设备费用和软件平台添加固定的三级分类
+            const fixedTertiaryCategories = ['物理机', '虚拟机', '容器', '存储', '数据库', '公用'];
+            if (tree['资产成本']['设备费用']) {
+                fixedTertiaryCategories.forEach(category => {
+                    tree['资产成本']['设备费用'].add(category);
+                });
+            }
+            if (tree['资产成本']['软件平台']) {
+                fixedTertiaryCategories.forEach(category => {
+                    tree['资产成本']['软件平台'].add(category);
+                });
+            }
+            
+            return tree;
+        }
+
+        // 渲染成本分类树
+        function renderCostCategoryTree() {
+            const treeContainer = document.getElementById('costCategoryTree');
+            const currentMonthData = mockData.filter(function(item) { return item.costMonth === currentMonth; });
+            const categoryTree = buildCategoryTree(currentMonthData);
+            
+            let html = `
+                <div class="tree-node">
+                    <div class="tree-item active" data-type="all" onclick="selectCostCategory('all')">
+                        <span class="tree-expand-icon hidden">▶</span>
+                        <span class="tree-label">全部</span>
+                    </div>
+                </div>
+            `;
+            
+            // 资产成本
+            const assetSecondaries = Object.keys(categoryTree['资产成本']);
+            if (assetSecondaries.length > 0) {
+                html += `
+                    <div class="tree-node">
+                        <div class="tree-item" data-type="primary" data-value="资产成本" onclick="toggleExpand('assetCost'); selectCostCategory('primary', '资产成本')">
+                            <span class="tree-expand-icon" id="expand-assetCost">▶</span>
+                            <span class="tree-label">资产成本</span>
+                        </div>
+                        <div class="tree-children" id="children-assetCost">
+                `;
+                
+                assetSecondaries.forEach(secondary => {
+                    const tertiaries = Array.from(categoryTree['资产成本'][secondary]);
+                    const hasTertiaries = tertiaries.length > 0;
+                    const nodeId = 'asset-' + secondary.replace(/\s/g, '-');
+                    
+                    html += `
+                        <div class="tree-node">
+                            <div class="tree-item" data-type="secondary" data-primary="资产成本" data-value="${secondary}" onclick="${hasTertiaries ? 'toggleExpand(\'' + nodeId + '\'); ' : ''}selectCostCategory('secondary', '资产成本', '${secondary}')">
+                                <span class="tree-expand-icon ${hasTertiaries ? '' : 'hidden'}" id="expand-${nodeId}">▶</span>
+                                <span class="tree-label">${secondary}</span>
+                            </div>
+                    `;
+                    
+                    if (hasTertiaries) {
+                        html += `<div class="tree-children" id="children-${nodeId}">`;
+                        tertiaries.forEach(tertiary => {
+                            html += `
+                                <div class="tree-node">
+                                    <div class="tree-item" data-type="tertiary" data-primary="资产成本" data-secondary="${secondary}" data-value="${tertiary}" onclick="selectCostCategory('tertiary', '资产成本', '${secondary}', '${tertiary}')">
+                                        <span class="tree-expand-icon hidden">▶</span>
+                                        <span class="tree-label">${tertiary}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    }
+                    
+                    html += `</div>`;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 运营成本
+            const operationSecondaries = Object.keys(categoryTree['运营成本']);
+            if (operationSecondaries.length > 0) {
+                html += `
+                    <div class="tree-node">
+                        <div class="tree-item" data-type="primary" data-value="运营成本" onclick="toggleExpand('operationCost'); selectCostCategory('primary', '运营成本')">
+                            <span class="tree-expand-icon" id="expand-operationCost">▶</span>
+                            <span class="tree-label">运营成本</span>
+                        </div>
+                        <div class="tree-children" id="children-operationCost">
+                `;
+                
+                operationSecondaries.forEach(secondary => {
+                    const tertiaries = Array.from(categoryTree['运营成本'][secondary]);
+                    const hasTertiaries = tertiaries.length > 0;
+                    const nodeId = 'operation-' + secondary.replace(/\s/g, '-');
+                    
+                    html += `
+                        <div class="tree-node">
+                            <div class="tree-item" data-type="secondary" data-primary="运营成本" data-value="${secondary}" onclick="${hasTertiaries ? 'toggleExpand(\'' + nodeId + '\'); ' : ''}selectCostCategory('secondary', '运营成本', '${secondary}')">
+                                <span class="tree-expand-icon ${hasTertiaries ? '' : 'hidden'}" id="expand-${nodeId}">▶</span>
+                                <span class="tree-label">${secondary}</span>
+                            </div>
+                    `;
+                    
+                    if (hasTertiaries) {
+                        html += `<div class="tree-children" id="children-${nodeId}">`;
+                        tertiaries.forEach(tertiary => {
+                            html += `
+                                <div class="tree-node">
+                                    <div class="tree-item" data-type="tertiary" data-primary="运营成本" data-secondary="${secondary}" data-value="${tertiary}" onclick="selectCostCategory('tertiary', '运营成本', '${secondary}', '${tertiary}')">
+                                        <span class="tree-expand-icon hidden">▶</span>
+                                        <span class="tree-label">${tertiary}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    }
+                    
+                    html += `</div>`;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            treeContainer.innerHTML = html;
+        }
+
         // 加载数据
+        function refreshCostPoolFilterOptions() {
+            const opts = document.getElementById('costPoolOptions');
+            if (!opts) return;
+            const monthData = mockData.filter(function(item) { return item.costMonth === currentMonth; });
+            const pools = Array.from(new Set(monthData.map(function(item) { return item.pool; }).filter(Boolean))).sort();
+            selectedCostPools = selectedCostPools.filter(function(p) { return pools.includes(p); });
+            opts.innerHTML = '';
+            pools.forEach(function(p) {
+                const row = document.createElement('div');
+                row.className = 'cost-pool-option';
+                row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer;';
+                row.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleCostPool(p);
+                });
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = p;
+                const check = document.createElement('span');
+                check.className = 'cost-pool-check';
+                check.setAttribute('data-pool', p);
+                check.style.cssText = 'display: none; color: #1890ff;';
+                check.textContent = '✓';
+                row.appendChild(nameSpan);
+                row.appendChild(check);
+                opts.appendChild(row);
+            });
+            updateCostPoolTags();
+        }
+
         function loadData() {
+            refreshCostPoolFilterOptions();
             currentFilteredData = mockData.filter(function(item) { return item.costMonth === currentMonth; });
             totalPages = Math.ceil(currentFilteredData.length / pageSize);
             if (currentPage > totalPages) currentPage = totalPages || 1;
             // 重置页码和选中状态
             currentPage = 1;
             selectedIds.clear();
+            // 重新渲染树状导航
+            renderCostCategoryTree();
             renderTable(currentFilteredData);
             updateStatistics(currentFilteredData);
             renderPagination();
@@ -1214,6 +1568,7 @@
 
         // 根据成本分类获取数据来源
         function getDataSourceByCategory(category) {
+            // 只有设备费用和软件平台使用资产系统
             if (category === '设备费用' || category === '软件平台') {
                 return '资产系统-B类资产';
             }
@@ -1242,14 +1597,19 @@
                 // 获取数据来源
                 const dataSource = getDataSourceByCategory(item.category);
 
+                // 计算成本一级分类
+                const primaryCategory = dataSource === '资产系统-B类资产' ? '资产成本' : '运营成本';
+                
                 row.innerHTML = `
                     <td><input type="checkbox" data-id="${item.id}" ${isChecked}></td>
                     <td>${item.code || '-'}</td>
+                    <td>${primaryCategory}</td>
                     <td>${item.category}</td>
-                    <td>${item.pool}</td>
+                    <td>${item.purpose || '-'}</td>
                     <td><a href="cost-detail.html?id=${item.id}" class="text-primary">${item.name}</a></td>
+                    <td>${item.pool || '-'}</td>
+                    <td>${item.assetSubdivide || '-'}</td>
                     <td>${item.region || '-'}</td>
-                    <td>${item.sharePool}</td>
                     <td>${item.shareType}</td>
                     <td>${dataSource}</td>
                     <td>${item.description || '-'}</td>
@@ -1262,13 +1622,10 @@
                     <td>${item.monthlyCost ? '¥' + parseInt(item.monthlyCost).toLocaleString() : '-'}</td>
                     <td>${item.shareRatio || '-'}</td>
                     <td>${item.sharedCost ? '¥' + parseInt(item.sharedCost).toLocaleString() : '-'}</td>
-                    <td>${item.cpuTotal || '-'}</td>
-                    <td>${item.memTotal || '-'}</td>
-                    <td>${item.diskTotal || '-'}</td>
                     <td>
-                        ${isHistoryMode 
-                            ? `<button class="btn btn-default" style="padding: 4px 8px;" onclick="viewDetail(${item.id})">详情</button>` 
-                            : `<button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;" onclick="editItem(${item.id})">编辑</button>
+                        ${isHistoryMode
+                            ? `<button class="btn btn-default" style="padding: 4px 8px;" onclick="viewDetail(${item.id})">详情</button>`
+                            : `<button class="btn btn-default" style="padding: 4px 8px; margin-right: 4px;" onclick="editItem(${item.id})">详情</button>
                                <button class="btn btn-default" style="padding: 4px 8px; color: #ff4d4f;" onclick="deleteItem(${item.id})">删除</button>`
                         }
                     </td>
@@ -1391,6 +1748,234 @@
             }
         });
 
+        // 初始化资产细分下拉
+        function initAssetSubdivideDropdown() {
+            // 点击下拉箭头显示/隐藏下拉框
+            const assetSubdivideContainer = document.querySelector('#filterAssetSubdivideContainer');
+            const customSelect = assetSubdivideContainer ? assetSubdivideContainer.querySelector('.custom-select') : null;
+            if (customSelect) {
+                customSelect.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const costDd = document.getElementById('costPoolDropdown');
+                    if (costDd) costDd.style.display = 'none';
+                    document.querySelectorAll('.multi-select-options.show').forEach(function(el) {
+                        el.classList.remove('show');
+                        if (el.previousElementSibling) el.previousElementSibling.classList.remove('active');
+                    });
+                    const dropdown = document.getElementById('assetSubdivideDropdown');
+                    if (dropdown) {
+                        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                    }
+                });
+            }
+
+            // 点击页面其他地方关闭资产细分、成本池下拉
+            document.addEventListener('click', function() {
+                const dropdown = document.getElementById('assetSubdivideDropdown');
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                }
+                const costDd = document.getElementById('costPoolDropdown');
+                if (costDd) {
+                    costDd.style.display = 'none';
+                }
+            });
+
+            // 阻止下拉框内部点击事件冒泡
+            const dropdown = document.getElementById('assetSubdivideDropdown');
+            if (dropdown) {
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            // 搜索功能
+            const searchInput = document.getElementById('assetSubdivideDropdownSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const options = document.querySelectorAll('#assetSubdivideOptions label');
+                    options.forEach(function(option) {
+                        const text = option.textContent.toLowerCase();
+                        option.style.display = text.includes(searchTerm) ? 'block' : 'none';
+                    });
+                });
+            }
+        }
+
+        // 初始化成本池下拉（交互与资产细分一致：标签 + 多选下拉 + 搜索）
+        function initCostPoolDropdown() {
+            const container = document.getElementById('filterCostPoolContainer');
+            const customSelect = container ? container.querySelector('.custom-select') : null;
+            if (customSelect) {
+                customSelect.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const assetDd = document.getElementById('assetSubdivideDropdown');
+                    if (assetDd) assetDd.style.display = 'none';
+                    document.querySelectorAll('.multi-select-options.show').forEach(function(el) {
+                        el.classList.remove('show');
+                        if (el.previousElementSibling) el.previousElementSibling.classList.remove('active');
+                    });
+                    const dropdown = document.getElementById('costPoolDropdown');
+                    if (dropdown) {
+                        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                    }
+                });
+            }
+            const dropdown = document.getElementById('costPoolDropdown');
+            if (dropdown) {
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            const searchInput = document.getElementById('costPoolDropdownSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const options = document.querySelectorAll('#costPoolOptions .cost-pool-option');
+                    options.forEach(function(option) {
+                        const nameSpan = option.querySelector('span:first-of-type');
+                        const t = nameSpan ? nameSpan.textContent.toLowerCase() : '';
+                        option.style.display = t.includes(searchTerm) ? 'flex' : 'none';
+                    });
+                });
+            }
+        }
+
+        // 存储选中的资产细分
+        let selectedAssetSubdivides = [];
+        // 存储选中的成本池（与资产细分筛选交互一致）
+        let selectedCostPools = [];
+
+        function toggleCostPool(value) {
+            const index = selectedCostPools.indexOf(value);
+            if (index > -1) {
+                selectedCostPools.splice(index, 1);
+            } else {
+                selectedCostPools.push(value);
+            }
+            updateCostPoolTags();
+        }
+
+        function updateCostPoolTags() {
+            const tagsContainer = document.getElementById('costPoolTags');
+            const hiddenInput = document.getElementById('filterCostPool');
+            if (tagsContainer) {
+                tagsContainer.innerHTML = '';
+            }
+            selectedCostPools.forEach(function(value) {
+                if (tagsContainer) {
+                    const tag = document.createElement('div');
+                    tag.className = 'tag';
+                    tag.appendChild(document.createTextNode(value));
+                    const closer = document.createElement('span');
+                    closer.textContent = '×';
+                    closer.style.cursor = 'pointer';
+                    closer.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        removeCostPoolTag(value);
+                    });
+                    tag.appendChild(closer);
+                    tagsContainer.appendChild(tag);
+                }
+            });
+            document.querySelectorAll('#costPoolOptions .cost-pool-check').forEach(function(el) {
+                const v = el.getAttribute('data-pool');
+                el.style.display = selectedCostPools.includes(v) ? 'inline' : 'none';
+            });
+            if (hiddenInput) {
+                hiddenInput.value = selectedCostPools.join(',');
+            }
+            const searchInput = document.getElementById('costPoolSearch');
+            if (searchInput) {
+                searchInput.placeholder = selectedCostPools.length > 0 ? '' : '请选择成本池';
+            }
+        }
+
+        function removeCostPoolTag(value) {
+            const index = selectedCostPools.indexOf(value);
+            if (index > -1) {
+                selectedCostPools.splice(index, 1);
+                updateCostPoolTags();
+            }
+        }
+
+        // 切换资产细分选项
+        function toggleAssetSubdivide(value) {
+            const index = selectedAssetSubdivides.indexOf(value);
+            if (index > -1) {
+                selectedAssetSubdivides.splice(index, 1);
+            } else {
+                selectedAssetSubdivides.push(value);
+            }
+            updateAssetSubdivideTags();
+        }
+
+        // 更新资产细分标签
+        function updateAssetSubdivideTags() {
+            const tagsContainer = document.getElementById('assetSubdivideTags');
+            const hiddenInput = document.getElementById('filterAssetSubdivide');
+
+            if (tagsContainer) {
+                tagsContainer.innerHTML = '';
+            }
+
+            selectedAssetSubdivides.forEach(function(value) {
+                if (tagsContainer) {
+                    const tag = document.createElement('div');
+                    tag.className = 'tag';
+                    tag.textContent = '';
+                    var span = document.createElement('span');
+                    span.textContent = value;
+                    tag.appendChild(span);
+                    var x = document.createElement('span');
+                    x.style.cursor = 'pointer';
+                    x.textContent = '×';
+                    x.addEventListener('click', function (ev) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        removeAssetSubdivideTag(value);
+                    });
+                    tag.appendChild(x);
+                    tagsContainer.appendChild(tag);
+                }
+                // 显示勾选标记
+                const checkElement = document.getElementById('check_' + value);
+                if (checkElement) {
+                    checkElement.style.display = 'inline';
+                }
+            });
+
+            // 隐藏未选中项的勾选标记
+            const allOptions = ['标准通用服务器-容器应用', '标准通用服务器-虚拟化类应用', '高性能容器应用', '高速编译型应用'];
+            allOptions.forEach(function(option) {
+                if (!selectedAssetSubdivides.includes(option)) {
+                    const checkElement = document.getElementById('check_' + option);
+                    if (checkElement) {
+                        checkElement.style.display = 'none';
+                    }
+                }
+            });
+
+            if (hiddenInput) {
+                hiddenInput.value = selectedAssetSubdivides.join(',');
+            }
+
+            const searchInput = document.getElementById('assetSubdivideSearch');
+            if (searchInput) {
+                searchInput.placeholder = selectedAssetSubdivides.length > 0 ? '' : '请选择资产细分';
+            }
+        }
+
+        // 移除资产细分标签
+        function removeAssetSubdivideTag(value) {
+            const index = selectedAssetSubdivides.indexOf(value);
+            if (index > -1) {
+                selectedAssetSubdivides.splice(index, 1);
+                updateAssetSubdivideTags();
+            }
+        }
+
         // 获取多选下拉框的值
         function getMultiSelectValues(containerId) {
             const container = document.getElementById(containerId);
@@ -1419,38 +2004,56 @@
 
         // 搜索数据
         function searchData() {
-            const categoryValues = getMultiSelectValues('filterCategoryContainer');
-            const poolValues = getMultiSelectValues('filterPoolContainer');
+            const primaryCategory = document.getElementById('filterPrimaryCategory').value;
+            const category = document.getElementById('filterCategory').value;
+            const assetSubdivideValues = document.getElementById('filterAssetSubdivide').value ? document.getElementById('filterAssetSubdivide').value.split(',') : [];
             const regionValues = getMultiSelectValues('filterRegionContainer');
-            const sharePool = document.getElementById('filterSharePool').value;
-            const type = document.getElementById('filterType').value;
+            const poolValues = document.getElementById('filterCostPool').value ? document.getElementById('filterCostPool').value.split(',') : [];
+            const shareType = document.getElementById('filterType').value;
+            const purpose = document.getElementById('filterPurpose').value;
             const name = document.getElementById('filterName').value.toLowerCase();
 
             let filteredData = mockData.filter(function(item) { return item.costMonth === currentMonth; });
-            
-            // 多选筛选：成本分类
-            if (categoryValues.length > 0) {
-                filteredData = filteredData.filter(function(item) { 
-                    return categoryValues.includes(item.category); 
+
+            // 成本一级分类筛选
+            if (primaryCategory) {
+                filteredData = filteredData.filter(function(item) {
+                    const dataSource = getDataSourceByCategory(item.category);
+                    const itemPrimaryCategory = dataSource === '资产系统-B类资产' ? '资产成本' : '运营成本';
+                    return itemPrimaryCategory === primaryCategory;
                 });
             }
-            
-            // 多选筛选：成本池
-            if (poolValues.length > 0) {
-                filteredData = filteredData.filter(function(item) { 
-                    return poolValues.includes(item.pool); 
+
+            // 成本二级分类筛选
+            if (category) {
+                filteredData = filteredData.filter(function(item) {
+                    return item.category === category;
                 });
             }
-            
+
             // 多选筛选：地域
             if (regionValues.length > 0) {
-                filteredData = filteredData.filter(function(item) { 
-                    return regionValues.includes(item.region); 
+                filteredData = filteredData.filter(function(item) {
+                    return regionValues.includes(item.region);
+                });
+            }
+
+            // 多选筛选：成本池
+            if (poolValues.length > 0) {
+                filteredData = filteredData.filter(function(item) {
+                    return poolValues.includes(item.pool);
                 });
             }
             
-            if (sharePool) filteredData = filteredData.filter(function(item) { return item.sharePool === sharePool; });
-            if (type) filteredData = filteredData.filter(function(item) { return item.shareType === type; });
+            // 多选筛选：资产细分
+            if (assetSubdivideValues.length > 0) {
+                filteredData = filteredData.filter(function(item) {
+                    return assetSubdivideValues.includes(item.assetSubdivide);
+                });
+            }
+            
+            if (shareType) filteredData = filteredData.filter(function(item) { return item.shareType === shareType; });
+            if (purpose) filteredData = filteredData.filter(function(item) { return item.purpose === purpose; });
             if (name) filteredData = filteredData.filter(function(item) { return item.name.toLowerCase().includes(name); });
 
             // 重置到第一页
@@ -1474,11 +2077,26 @@
 
         // 重置筛选
         function resetFilter() {
-            resetMultiSelect('filterCategoryContainer');
-            resetMultiSelect('filterPoolContainer');
+            // 重置成本一级分类
+            document.getElementById('filterPrimaryCategory').value = '';
+            
+            document.getElementById('filterCategory').value = '';
+            // 重置资产细分
+            selectedAssetSubdivides = [];
+            document.getElementById('filterAssetSubdivide').value = '';
+            document.getElementById('assetSubdivideTags').innerHTML = '';
+            document.getElementById('assetSubdivideSearch').placeholder = '请选择资产细分';
             resetMultiSelect('filterRegionContainer');
-            document.getElementById('filterSharePool').value = '';
+            selectedCostPools = [];
+            document.getElementById('filterCostPool').value = '';
+            const costPoolTagsEl = document.getElementById('costPoolTags');
+            if (costPoolTagsEl) costPoolTagsEl.innerHTML = '';
+            const costPoolSearchEl = document.getElementById('costPoolSearch');
+            if (costPoolSearchEl) costPoolSearchEl.placeholder = '请选择成本池';
+            const costPoolDd = document.getElementById('costPoolDropdown');
+            if (costPoolDd) costPoolDd.style.display = 'none';
             document.getElementById('filterType').value = '';
+            document.getElementById('filterPurpose').value = '';
             document.getElementById('filterName').value = '';
             // 重置到第一页
             currentPage = 1;
@@ -1490,13 +2108,9 @@
             window.location.href = `cost-detail.html?id=${id}&mode=view&month=${currentMonth}`;
         }
 
-        // 编辑（当前月）
+        // 详情（当前月）
         function editItem(id) {
-            if (isHistoryMode) {
-                alert('历史数据不可编辑');
-                return;
-            }
-            window.location.href = `cost-detail.html?id=${id}&mode=edit`;
+            window.location.href = `cost-detail.html?id=${id}&mode=view&month=${currentMonth}`;
         }
 
         // 删除（当前月）
@@ -1550,8 +2164,9 @@
                 <div class="form-group">
                     <label>数据来源 <span class="text-danger">*</span></label>
                     <select id="import-data-source">
-                        <option value="资产系统-B类资产">资产系统-B类资产</option>
+                        <option value="">请选择</option>
                         <option value="手动维护" selected>手动维护</option>
+                        <option value="资产系统">资产系统-B类资产</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1659,37 +2274,34 @@
         function downloadManualTemplate() {
             // 表头（带必填标识）
             const headers = [
-                '成本分类*', '成本池*', '成本项*', '公摊池*', '公摊类型*', 
-                '数据来源*', '地域', '单价（元）*', '折旧月限*', '数量*', 
+                '成本分类*', '成本项*', '公摊类型*',
+                '数据来源*', '地域', '单价（元）*', '折旧月限*', '数量*',
                 '单位*', '成本月*', '描述'
             ];
-            
+
             // 下拉选项值定义
             const costCategoryOptions = ['设备费用', '软件平台', '网络带宽', '运营费用', '基础设施'];
-            const costPoolOptions = ['通算服务器', '智算服务器', '存储', '安全', '网络', '机房环境'];
-            const sharePoolOptions = ['基础资源', '容器', '数据库', '网络'];
+            const sharePoolOptions = ['基础资源', '网络'];
             const shareTypeOptions = ['公摊成本', '非公摊成本'];
             const regionOptions = ['北京一期', '北京二期', '西安', '上海'];
             const unitOptions = ['台', '套', 'Gbps', 'TB', '月'];
-            
+
             // 创建多行内容，包含下拉值选项
             const rows = [
                 headers,
-                ['【下拉选项】', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['可选值：', '', '', '', '', '', '', '', '', '', '', '', ''],
-                costCategoryOptions.concat(['', '', '', '', '', '', '', '', '', '']),
-                costPoolOptions.concat(['', '', '', '', '', '', '', '']),
-                ['文本输入', '', '', '', '', '', '', '', '', '', '', '', ''],
-                sharePoolOptions.concat(['', '', '', '', '', '', '', '', '']),
-                shareTypeOptions.concat(['', '', '', '', '', '', '', '', '', '', '']),
-                ['手动维护', '', '', '', '', '', '', '', '', '', '', '', ''],
-                regionOptions.concat(['', '', '', '', '', '', '', '', '']),
-                ['数字', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['数字（月）', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['数字', '', '', '', '', '', '', '', '', '', '', '', ''],
-                unitOptions.concat(['', '', '', '', '', '', '', '', '']),
-                ['YYYY-MM格式', '', '', '', '', '', '', '', '', '', '', '', ''],
-                ['文本', '', '', '', '', '', '', '', '', '', '', '', '']
+                ['【下拉选项】', '', '', '', '', '', '', '', '', '', ''],
+                ['可选值：', '', '', '', '', '', '', '', '', '', ''],
+                costCategoryOptions.concat(['', '', '', '', '', '', '', '']),
+                ['文本输入', '', '', '', '', '', '', '', '', '', ''],
+                shareTypeOptions.concat(['', '', '', '', '', '', '', '', '']),
+                ['手动维护', '', '', '', '', '', '', '', '', '', ''],
+                regionOptions.concat(['', '', '', '', '', '', '']),
+                ['数字', '', '', '', '', '', '', '', '', '', ''],
+                ['数字（月）', '', '', '', '', '', '', '', '', '', ''],
+                ['数字', '', '', '', '', '', '', '', '', '', ''],
+                unitOptions.concat(['', '', '', '', '', '', '']),
+                ['YYYY-MM格式', '', '', '', '', '', '', '', '', '', ''],
+                ['文本', '', '', '', '', '', '', '', '', '', '']
             ];
             
             // 添加填写说明
@@ -1724,31 +2336,28 @@
         function downloadAssetSystemTemplate() {
             // 表头（带必填标识）
             const headers = [
-                '成本分类*', '成本池*', '成本项*', '公摊池*', '公摊类型*', 
-                '数据来源*', '资产分类*', '成本月*', '描述'
+                '成本分类*', '成本项*', '公摊类型*',
+                '数据来源*', '资产细分*', '成本月*', '描述'
             ];
-            
+
             // 下拉选项值定义
             const costCategoryOptions = ['设备费用', '软件平台', '网络带宽', '运营费用', '基础设施'];
-            const costPoolOptions = ['通算服务器', '智算服务器', '存储', '安全', '网络', '机房环境'];
-            const sharePoolOptions = ['基础资源', '容器', '数据库', '网络'];
+            const sharePoolOptions = ['基础资源', '网络'];
             const shareTypeOptions = ['公摊成本', '非公摊成本'];
             const assetCategoryOptions = ['服务器', '存储设备', '网络设备', '安全设备'];
-            
+
             // 创建多行内容，包含下拉值选项
             const rows = [
                 headers,
-                ['【下拉选项】', '', '', '', '', '', '', '', ''],
-                ['可选值：', '', '', '', '', '', '', '', ''],
-                costCategoryOptions.concat(['', '', '', '', '']),
-                costPoolOptions.concat(['', '', '']),
-                ['文本输入', '', '', '', '', '', '', '', ''],
-                sharePoolOptions.concat(['', '', '', '', '', '']),
-                shareTypeOptions.concat(['', '', '', '', '', '', '']),
-                ['资产系统-B类资产', '', '', '', '', '', '', '', ''],
-                assetCategoryOptions.concat(['', '', '', '', '']),
-                ['YYYY-MM格式', '', '', '', '', '', '', '', ''],
-                ['文本', '', '', '', '', '', '', '', '']
+                ['【下拉选项】', '', '', '', '', '', ''],
+                ['可选值：', '', '', '', '', '', ''],
+                costCategoryOptions.concat(['', '', '']),
+                ['文本输入', '', '', '', '', '', ''],
+                shareTypeOptions.concat(['', '', '', '', '']),
+                ['资产系统-B类资产', '', '', '', '', '', ''],
+                assetCategoryOptions.concat(['', '', '']),
+                ['YYYY-MM格式', '', '', '', '', '', ''],
+                ['文本', '', '', '', '', '', '']
             ];
             
             // 添加填写说明
@@ -1758,7 +2367,7 @@
                 ['1. 带*号字段为必填项'],
                 ['2. 请从下拉选项中选择对应值，或严格按照可选值填写'],
                 ['3. 成本月格式：YYYY-MM（如：2026-02）'],
-                ['4. 资产分类仅在数据来源为"资产系统-B类资产"时必填'],
+                ['4. 资产细分仅在数据来源为"资产系统-B类资产"时必填'],
                 []
             ];
             
@@ -1791,19 +2400,50 @@
             loadData();
         }
 
+        /** 手动添加 / 详情页成本池下拉选项（与总览 mock 数据池名称一致） */
+        const COST_POOL_OPTION_VALUES = Array.from(new Set([
+            'GPU服务器-A10', 'GPU服务器-A100', 'GPU服务器-A40', 'GPU服务器-A800', 'GPU服务器-H100', 'GPU服务器-H800',
+            'GPU服务器-RTX3090', 'GPU服务器-RTX4090',
+            '块存储SAN',
+            '大数据类存储-高速IO', '大数据类存储-机械大盘', '大数据类存储-机械多盘', '大数据类超大存储',
+            '高性能容器应用-容器', '高速编译型应用', '国产化服务器',
+            '容器', '数据库', '公摊', '安全', '标准通用服务器-容器', '小型单机应用', '网络'
+        ])).sort();
+
+        function buildCostPoolSelectOptionsHtml() {
+            return '<option value="">请选择</option>' + COST_POOL_OPTION_VALUES.map(function(p) {
+                const esc = String(p).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                const text = String(p).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+                return '<option value="' + esc + '">' + text + '</option>';
+            }).join('');
+        }
+
         function showAddModal() {
             if (isHistoryMode) return;
             
             // 获取当前月份，格式为YYYY-MM
             const now = new Date();
             const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            const addCostPoolOptionsHtml = buildCostPoolSelectOptionsHtml();
             
             document.getElementById('modal-title').textContent = '手动添加成本';
             document.getElementById('modal-body').innerHTML = `
+                <div class="form-group">
+                    <label>成本项 <span class="text-danger">*</span></label>
+                    <input type="text" id="cost-item" placeholder="请输入成本项" required>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>成本分类 <span class="text-danger">*</span></label>
-                        <select id="cost-category" required>
+                        <label>成本一级分类 <span class="text-danger">*</span></label>
+                        <select id="cost-primary-category" required>
+                            <option value="">请选择</option>
+                            <option value="资产成本">资产成本</option>
+                            <option value="运营成本">运营成本</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>成本二级分类 <span class="text-danger">*</span></label>
+                        <select id="cost-secondary-category" required>
                             <option value="">请选择</option>
                             <option value="设备费用">设备费用</option>
                             <option value="软件平台">软件平台</option>
@@ -1813,59 +2453,46 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>成本池 <span class="text-danger">*</span></label>
-                        <select id="cost-pool" required>
+                        <label>成本三级分类 <span class="text-danger">*</span></label>
+                        <select id="cost-tertiary-category" required>
                             <option value="">请选择</option>
-                            <option value="通算服务器">通算服务器</option>
-                            <option value="智算服务器">智算服务器</option>
+                            <option value="服务器">服务器</option>
                             <option value="存储">存储</option>
-                            <option value="安全">安全</option>
-                            <option value="网络">网络</option>
-                            <option value="机房环境">机房环境</option>
+                            <option value="网络设备">网络设备</option>
+                            <option value="安全设备">安全设备</option>
+                            <option value="软件">软件</option>
+                            <option value="带宽">带宽</option>
                         </select>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>成本项 <span class="text-danger">*</span></label>
-                    <input type="text" id="cost-item" placeholder="请输入成本项" required>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1; min-width: 0;">
+                        <label>成本池</label>
+                        <select id="add-cost-pool" style="width: 100%;">
+                            ` + addCostPoolOptionsHtml + `
+                        </select>
+                    </div>
                 </div>
                 <!-- 资产系统-B类资产表单 -->
                 <div class="form-container" id="asset-system-form" style="display: none;">
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>公摊池 <span class="text-danger">*</span></label>
-                            <select id="asset-share-pool" required>
-                                <option value="">请选择</option>
-                                <option value="基础资源">基础资源</option>
-                                <option value="容器">容器</option>
-                                <option value="数据库">数据库</option>
-                                <option value="网络">网络</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>公摊类型 <span class="text-danger">*</span></label>
-                            <select id="asset-share-type" required>
-                                <option value="">请选择</option>
-                                <option value="公摊成本">公摊成本</option>
-                                <option value="非公摊成本">非公摊成本</option>
-                            </select>
-                        </div>
                     </div>
                     <div class="form-group">
                         <label>数据来源 <span class="text-danger">*</span></label>
                         <select id="asset-data-source" required>
+                            <option value="">请选择</option>
+                            <option value="手动维护">手动维护</option>
                             <option value="资产系统-B类资产">资产系统-B类资产</option>
-                            <option value="手动维护" selected>手动维护</option>
                         </select>
                     </div>
                     <div class="form-group" id="asset-category-container-1" style="display: none;">
-                        <label>资产分类 <span class="text-danger">*</span></label>
+                        <label>资产细分 <span class="text-danger">*</span></label>
                         <select id="asset-category-1" required>
                             <option value="">请选择</option>
-                            <option value="服务器">服务器</option>
-                            <option value="存储设备">存储设备</option>
-                            <option value="网络设备">网络设备</option>
-                            <option value="安全设备">安全设备</option>
+                            <option value="标准通用服务器-容器应用">服务器</option>
+                            <option value="">标准通用服务器-虚拟化类应用</option>
+                            <option value="网络设备">高性能容器应用</option>
+                            <option value="安全设备">高速编译型应用</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1881,20 +2508,11 @@
                 <div class="form-container" id="manual-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>公摊池 <span class="text-danger">*</span></label>
-                            <select id="share-pool" required>
-                                <option value="">请选择</option>
-                                <option value="基础资源">基础资源</option>
-                                <option value="容器">容器</option>
-                                <option value="数据库">数据库</option>
-                                <option value="网络">网络</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label>公摊类型 <span class="text-danger">*</span></label>
                             <select id="share-type" required>
                                 <option value="">请选择</option>
                                 <option value="公摊成本">公摊成本</option>
+                                <option value="局部公摊">局部公摊</option>
                                 <option value="非公摊成本">非公摊成本</option>
                             </select>
                         </div>
@@ -1902,18 +2520,19 @@
                     <div class="form-group">
                         <label>数据来源 <span class="text-danger">*</span></label>
                         <select id="manual-data-source" required>
-                            <option value="资产系统-B类资产">资产系统-B类资产</option>
+                            <option value="">请选择</option>
                             <option value="手动维护" selected>手动维护</option>
+                            <option value="资产系统-B类资产">资产系统-B类资产</option>
                         </select>
                     </div>
                     <div class="form-group" id="asset-category-container-2" style="display: none;">
-                        <label>资产分类 <span class="text-danger">*</span></label>
+                        <label>资产细分 <span class="text-danger">*</span></label>
                         <select id="asset-category-2" required>
                             <option value="">请选择</option>
-                            <option value="服务器">服务器</option>
-                            <option value="存储设备">存储设备</option>
-                            <option value="网络设备">网络设备</option>
-                            <option value="安全设备">安全设备</option>
+                            <option value="标准通用服务器-容器应用">服务器</option>
+                            <option value="">标准通用服务器-虚拟化类应用</option>
+                            <option value="网络设备">高性能容器应用</option>
+                            <option value="安全设备">高速编译型应用</option>
                         </select>
                     </div>
                     <div class="form-row">
@@ -1992,7 +2611,7 @@
             manualForm.style.display = 'block';
             assetSystemForm.style.display = 'none';
             
-            // 确保初始状态下资产分类字段隐藏
+            // 确保初始状态下资产细分字段隐藏
             if (assetCategoryContainer1) assetCategoryContainer1.style.display = 'none';
             if (assetCategoryContainer2) assetCategoryContainer2.style.display = 'none';
             
@@ -2032,50 +2651,40 @@
         // 保存手动添加的成本
         function saveAddCost() {
             // 表单验证
-            const costCategory = document.getElementById('cost-category');
-            const costPool = document.getElementById('cost-pool');
+            const costPrimaryCategory = document.getElementById('cost-primary-category');
+            const costSecondaryCategory = document.getElementById('cost-secondary-category');
+            const costTertiaryCategory = document.getElementById('cost-tertiary-category');
             const assetSystemForm = document.getElementById('asset-system-form');
             const manualForm = document.getElementById('manual-form');
-            
-            if (!costCategory || !costCategory.value) {
-                alert('请选择成本分类');
+
+            if (!costPrimaryCategory || !costPrimaryCategory.value) {
+                alert('请选择成本一级分类');
                 return;
             }
-            if (!costPool || !costPool.value) {
-                alert('请选择成本池');
+            if (!costSecondaryCategory || !costSecondaryCategory.value) {
+                alert('请选择成本二级分类');
                 return;
             }
-            
+            if (!costTertiaryCategory || !costTertiaryCategory.value) {
+                alert('请选择成本三级分类');
+                return;
+            }
+
             // 确定当前显示的表单
             const isAssetSystem = assetSystemForm && assetSystemForm.style.display === 'block';
-            
+
             if (isAssetSystem) {
                 // 资产系统-B类资产验证
-                const costCategory = document.getElementById('cost-category');
-                const costPool = document.getElementById('cost-pool');
                 const costItem = document.getElementById('cost-item');
                 const assetCategory = document.getElementById('asset-category-1');
-                const assetSharePool = document.getElementById('asset-share-pool');
                 const assetShareType = document.getElementById('asset-share-type');
-                
-                if (!costCategory || !costCategory.value) {
-                    alert('请选择成本分类');
-                    return;
-                }
-                if (!costPool || !costPool.value) {
-                    alert('请选择成本池');
-                    return;
-                }
+
                 if (!costItem || !costItem.value) {
                     alert('请输入成本项');
                     return;
                 }
                 if (assetCategory && !assetCategory.value) {
-                    alert('请选择资产分类');
-                    return;
-                }
-                if (!assetSharePool || !assetSharePool.value) {
-                    alert('请选择公摊池');
+                    alert('请选择资产细分');
                     return;
                 }
                 if (!assetShareType || !assetShareType.value) {
@@ -2084,31 +2693,20 @@
                 }
             } else {
                 // 手动维护验证
-                const costCategory = document.getElementById('cost-category');
-                const costPool = document.getElementById('cost-pool');
                 const costItem = document.getElementById('cost-item');
-                const sharePool = document.getElementById('share-pool');
                 const shareType = document.getElementById('share-type');
                 const region = document.getElementById('region');
                 const unitPrice = document.getElementById('unit-price');
                 const depreciationMonths = document.getElementById('depreciation-months');
                 const quantity = document.getElementById('quantity');
                 const unit = document.getElementById('unit');
-                
-                if (!costCategory || !costCategory.value) {
-                    alert('请选择成本分类');
-                    return;
-                }
-                if (!costPool || !costPool.value) {
-                    alert('请选择成本池');
+
+                if (!costSecondaryCategory || !costSecondaryCategory.value) {
+                    alert('请选择成本二级分类');
                     return;
                 }
                 if (!costItem || !costItem.value) {
                     alert('请输入成本项');
-                    return;
-                }
-                if (!sharePool || !sharePool.value) {
-                    alert('请选择公摊池');
                     return;
                 }
                 if (!shareType || !shareType.value) {
@@ -2161,8 +2759,8 @@
             }
             
             // 定义CSV表头
-            const headers = ['成本编码', '成本分类', '成本池', '成本项', '地域', '公摊池', '公摊类型', '描述', '单价（元）', '折旧月限', '折旧月价', '数量', '单位', '成本月', '月成本（元）', '公摊比例', '公摊后月总成本', 'CPU资源总量', 'MEM资源总量', 'Disk资源总量'];
-            
+            const headers = ['成本编码', '成本分类', '成本项', '成本池', '资产细分', '地域', '公摊类型', '描述', '单价（元）', '折旧月限', '折旧月价', '数量', '单位', '成本月', '月成本（元）', '公摊比例', '公摊后月总成本'];
+
             // 转换数据为CSV格式
             const csvContent = [
                 headers.join(','),
@@ -2170,10 +2768,10 @@
                     return [
                         item.code || '',
                         item.category || '',
-                        item.pool || '',
                         item.name || '',
+                        item.pool || '',
+                        item.assetSubdivide || '',
                         item.region || '',
-                        item.sharePool || '',
                         item.shareType || '',
                         item.description || '',
                         item.unitPrice || '',
@@ -2184,10 +2782,7 @@
                         item.costMonth || '',
                         item.monthlyCost || '',
                         item.shareRatio || '',
-                        item.sharedCost || '',
-                        item.cpuTotal || '',
-                        item.memTotal || '',
-                        item.diskTotal || ''
+                        item.sharedCost || ''
                     ].map(function(field) {
                         // 处理包含逗号的字段
                         if (typeof field === 'string' && field.includes(',')) {
@@ -2218,6 +2813,20 @@
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
         }
+
+        // 侧边栏展开/收起
+        function toggleSidebar() {
+            const sidebar = document.getElementById('costCategorySidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // 页面加载完成后初始化资产细分、成本池下拉（交互一致）
+        document.addEventListener('DOMContentLoaded', function() {
+            initAssetSubdivideDropdown();
+            initCostPoolDropdown();
+        });
     </script>
+        <script src="../js/finops-table-ui.js" defer></script>
+<script src="../js/finops-nav-active.js" defer></script>
 </body>
 </html>
