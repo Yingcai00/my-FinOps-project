@@ -346,7 +346,38 @@
         .corr-entry-title { font-weight: 600; font-size: 14px; color: #262626; }
         .corr-editor-mode { display: flex; gap: 16px; margin: 8px 0 12px; flex-wrap: wrap; }
         .corr-editor-mode label { font-size: 13px; cursor: pointer; }
-        #corrEntriesRoot .js-corr-inst-select { width: 100%; max-width: 100%; }
+        .finops-bill-period-lock {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 4px 12px;
+            background: #fafafa;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .finops-bill-period-text { font-size: 14px; color: #262626; font-weight: 500; }
+        .corr-inst-pick-wrap { border: 1px solid #d9d9d9; border-radius: 4px; background: #fff; }
+        .corr-inst-pick-scroll { max-height: 200px; overflow: auto; }
+        .corr-inst-pick-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .corr-inst-pick-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #fafafa;
+            color: #8c8c8c;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .corr-inst-pick-table td { padding: 8px 10px; border-bottom: 1px solid #f5f5f5; color: #262626; }
+        .corr-inst-pick-row { cursor: pointer; transition: background 0.15s; }
+        .corr-inst-pick-row:hover { background: #e6f7ff; }
+        .corr-inst-pick-row--selected { background: #e6f7ff; }
+        .corr-inst-pick-row--selected td { font-weight: 500; }
+        .corr-date-row--locked { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .corr-date-row--locked .finops-bill-period-lock { width: 100%; }
         #corrPanelTypeHint {
             margin: 12px 0 0;
             padding: 10px 12px;
@@ -377,6 +408,11 @@
 
         /* ── DL Grid ── */
         .dl-grid { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; font-size: 13px; }
+        .dl-grid.dl-grid-2col {
+            grid-template-columns: 96px 1fr 96px 1fr;
+            column-gap: 20px;
+            row-gap: 8px;
+        }
         .dl-grid dt { color: #888; }
         .dl-grid dd { color: #333; word-break: break-all; white-space: normal; }
         .dispute-diff-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; align-items: start; }
@@ -457,7 +493,36 @@
             grid-template-columns: 1fr 1fr;
             gap: 14px;
         }
-
+        .corr-config-section { margin-bottom: 2px; }
+        .corr-usage-section { margin-top: 2px; }
+        .corr-section-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 14px 0 10px;
+            color: #333;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .corr-section-divider::before,
+        .corr-section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e8e8e8;
+        }
+        .corr-field-locked,
+        .corr-field-locked:disabled {
+            background: #f5f5f5 !important;
+            color: #8c8c8c !important;
+            border-color: #e8e8e8;
+            cursor: not-allowed;
+        }
+        .corr-billing-spec-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 4px; }
+        .corr-billing-spec-row .form-item { margin-bottom: 0; }
+        @media (max-width: 720px) {
+            .corr-billing-spec-row { grid-template-columns: 1fr; }
+        }
         .add-inst-spec-section { margin-top: 4px; }
         .add-inst-owner-section {
             margin-top: 2px;
@@ -1032,8 +1097,11 @@
             <div class="bill-global-card-head">
                 <div class="bill-global-bar">
                     <div class="field" style="margin-bottom:0;">
-                        <label for="globalBillMonth">账期（全局）</label>
-                        <input type="month" id="globalBillMonth" value="2026-04" autocomplete="off">
+                        <label for="globalBillMonthDisplay">账期（全局）</label>
+                        <div class="finops-bill-period-lock" id="globalBillMonthLock" title="账期由系统锁定，不可修改年、月">
+                            <span class="finops-bill-period-text" id="globalBillMonthDisplay">2026年4月</span>
+                            <input type="hidden" id="globalBillMonth" value="2026-04">
+                        </div>
                     </div>
                     <!-- 用户/管理员视图切换 -->
                     <div class="view-switch" id="viewSwitchArea">
@@ -1132,7 +1200,7 @@
                                                 <th>开始使用时间</th>
                                                 <th>结束使用时间</th>
                                                 <th>确认状态</th>
-                                                <th>实例状态</th>
+                                                <th>用量计费状态</th>
                                                 <th>操作</th>
                                             </tr>
                                         </thead>
@@ -1161,7 +1229,7 @@
             <div class="panel" id="panel-dispute" style="padding:20px;">
                 
                 <div class="notice-bar" id="adminDisputeNotice" style="margin-bottom:16px;display:none;">
-                    <strong>管理员视图：</strong>处理异议时可逐条添加修正数据（修正实例用量 / 新增实例），无需用户预先选择异议类型。
+                    <strong>管理员视图：</strong>处理异议时逐条修正关联实例的用量与配置字段，无需用户预先选择异议类型。
                 </div>
 
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -1263,7 +1331,10 @@
                 </div>
             </div>
             <div class="form-row full"><div class="form-item"><label>账期</label>
-                    <input type="month" value="2026-04" id="disputePeriod" autocomplete="off">
+                    <div class="finops-bill-period-lock" id="disputePeriodLock" title="账期由系统锁定，不可修改年、月">
+                        <span class="finops-bill-period-text" id="disputePeriodDisplay">2026年4月</span>
+                        <input type="hidden" id="disputePeriod" value="2026-04">
+                    </div>
                 </div></div>
             <div class="card-title-sm" style="margin:16px 0 12px;">异议说明 *</div>
             <div class="form-row full"><div class="form-item"><label>异议说明</label>
@@ -1633,7 +1704,7 @@ var USAGE_ADV_FIELD_DEFS = [
     {
         advKey: 'instState',
         elId: 'filterInstState',
-        label: '实例状态',
+        label: '用量计费状态',
         control: 'select',
         options: [
             { v: '', t: '全部' },
@@ -1738,14 +1809,14 @@ function buildUsageAdvDrawerFields() {
 }
 
 let disputeData = [
-    { id:'DIS-2026-0042', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-03 09:21', remark:'该实例于2026-04-10至04-15处于维护停机状态（共120小时），期间未承载业务，系统仍按在运计费，请核减停机期间用量。', postNoteLabel:'处理说明', postNote:'—', status:'processing',
+    { id:'DIS-2026-0042', resid:'i-09f3ab22', name:'prod-web-02', dept:'研发中心', user:'张明', period:'2026-04', time:'2026-05-03 09:21', remark:'该实例于2026-04-10至04-15处于维护停机状态（共120小时），期间未承载业务，系统仍按在运计费，请核减停机期间用量。', postNoteLabel:'处理说明', postNote:'—', status:'processing',
         processLog: [
             { time: '2026-05-03 09:21', content: '用户提交异议申请', warn: false },
             { time: '2026-05-04 10:00', content: '运维管理员 admin 已受理，核查中…', warn: true }
         ] },
     { id:'DIS-2026-0043', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-10 09:00', remark:'4 月已部署 API 网关 demo-api-gw，用量表无记录，请按说明补录 2026-04 全账期。', postNoteLabel:'处理说明', postNote:'—', status:'processing',
         processLog: [{ time: '2026-05-10 09:00', content: '用户提交异议申请', warn: false }] },
-    { id:'DIS-2026-0041', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-02 14:35', remark:'卷扩容在4月30日完成，扩容前全月1024GB，系统错误按2048GB计费。', postNoteLabel:'处理说明', postNote:'—', status:'processing', processLog: [] },
+    { id:'DIS-2026-0041', resid:'vol-0a8f2b11', name:'backup-vol-001', dept:'运营部', user:'李晓芸', period:'2026-04', time:'2026-05-02 14:35', remark:'卷扩容在4月30日完成，扩容前全月1024GB，系统错误按2048GB计费。', postNoteLabel:'处理说明', postNote:'—', status:'processing', processLog: [] },
     { id:'DIS-2026-0039', dept:'产品部', user:'王磊', period:'2026-04', time:'2026-04-29 11:08', remark:'费用归属应为研发中心，申请调整。', postNoteLabel:'处理说明', postNote:'已修正费用归属并完结。', status:'closed',
         processLog: [
             { time: '2026-04-29 11:08', content: '用户提交异议申请', warn: false },
@@ -1757,6 +1828,72 @@ let disputeData = [
             { time: '2026-05-06 14:00', content: '运维管理员 admin 已填写处理说明并完结。', warn: false }
         ] },
 ];
+
+
+function seedDisputeDemoSnapshots() {
+    function enrich(did, resid, name, beforeOverrides, afterOverrides, correctionSummary) {
+        var d = disputeData.find(function (x) { return x.id === did; });
+        var row = detailData.find(function (x) { return x.id === resid; });
+        if (!d || !row) return;
+        d.resid = resid;
+        d.name = name;
+        var beforeRow = Object.assign({}, row, beforeOverrides || {});
+        var afterRow = Object.assign({}, row, afterOverrides || {});
+        d.instanceSnapshotBefore = snapshotInstanceForDisputeDisplay(beforeRow, d);
+        d.instanceSnapshotAfter = snapshotInstanceForDisputeDisplay(afterRow, d);
+        var changed = getChangedSnapshotFieldList(d.instanceSnapshotBefore, d.instanceSnapshotAfter);
+        if (changed.length) {
+            d.instanceDiffs = [
+                {
+                    instId: resid,
+                    instName: name,
+                    before: d.instanceSnapshotBefore,
+                    after: d.instanceSnapshotAfter,
+                    changed: changed,
+                },
+            ];
+        }
+        d.correctionEntries = [
+            {
+                mode: 'modify',
+                modeLabel: '修正',
+                instId: resid,
+                summary: correctionSummary || '修正实例「' + name + '」用量信息',
+            },
+        ];
+    }
+    enrich(
+        'DIS-2026-0039',
+        'i-0b2c3d4e',
+        'prod-web-01',
+        null,
+        { owner: '张明' },
+        '修正实例「prod-web-01」费用归属人'
+    );
+    enrich(
+        'DIS-2026-0040',
+        'vol-001aaa',
+        'data-disk-01',
+        { quota: '1000 GB', instanceStateInfo: '重复计量：双盘各计 500 GB' },
+        { quota: '500 GB', instanceStateInfo: '已合并重复计量为单盘 500 GB' },
+        '修正实例「data-disk-01」用量（合并重复计量）'
+    );
+    enrich(
+        'DIS-2026-0042',
+        'i-09f3ab22',
+        'prod-web-02',
+        { spec: 'ecs.t6.large' },
+        { spec: 'ecs.g6.large', specCluster: '通用型 g6', config: '2 vCPU / 8 GB / ESSD 40G' },
+        '修正实例「prod-web-02」规格（停机核减场景演示）'
+    );
+    var d42 = disputeData.find(function (x) { return x.id === 'DIS-2026-0042'; });
+    if (d42) {
+        d42.status = 'closed';
+        d42.postNote = '已按维护停机口径调整规格并核减用量，异议完结。';
+        d42.type = '已修正';
+    }
+}
+
 
 const statusMap = {
     confirmed:      '<span class="tag tag-green">已确认</span>',
@@ -1806,7 +1943,7 @@ function buildCorrectionEntriesForProcessLog(d) {
             ? d.processLog[d.processLog.length - 1].time
             : d.time || '—';
     return d.correctionEntries.map(function (e, i) {
-        var label = e.modeLabel || (e.mode === 'add' ? '新增实例' : '修正实例用量');
+        var label = e.modeLabel || '修正';
         return {
             time: e.time || fallbackTime,
             content:
@@ -1940,7 +2077,7 @@ function applyAdminDisputePanelsByType(type) {
     if (modHint) {
         if (type === '多算实例') {
             modHint.innerHTML =
-                '当前为<strong>多算实例</strong>：可修正归属、使用时长与规格，或将实例状态设为「作废」后提交。';
+                '当前为<strong>多算实例</strong>：可修正归属、使用时长与规格，或将用量计费状态设为「作废」后提交。';
         } else if (type && type.indexOf('实例信息错误') === 0) {
             modHint.innerHTML =
                 '当前为<strong>实例信息错误</strong>：请修正费用归属、使用时长、规格等字段后提交。';
@@ -1998,6 +2135,71 @@ function formatBillMonthLabel(period) {
     const y = m[1];
     const mon = parseInt(m[2], 10);
     return `${y}年${mon}月`;
+}
+
+/** 全局账期只读展示（不可修改年、月） */
+function syncGlobalBillMonthDisplay() {
+    var hid = document.getElementById('globalBillMonth');
+    var disp = document.getElementById('globalBillMonthDisplay');
+    if (!hid || !disp) return;
+    var p = hid.value || '2026-04';
+    disp.textContent = formatBillMonthLabel(p);
+}
+
+function getGlobalBillMonthValue() {
+    var gb = document.getElementById('globalBillMonth');
+    var p = gb && gb.value ? String(gb.value).trim() : '';
+    return /^\d{4}-\d{2}$/.test(p) ? p : '2026-04';
+}
+
+function getLockedBillPeriodBounds(monthOpt) {
+    var bm = monthOpt || getGlobalBillMonthValue();
+    var parts = bm.split('-');
+    var y = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10);
+    var lastDay = new Date(y, m, 0).getDate();
+    return {
+        month: bm,
+        start: bm + '-01',
+        end: bm + '-' + String(lastDay).padStart(2, '0'),
+        label: formatBillMonthLabel(bm),
+    };
+}
+
+/** 运维处理：使用起止日期锁定为当前账期，不可下拉修改年月 */
+function buildCorrLockedUsageDurationFieldsHtml(entryId, r) {
+    var sfx = entryId ? '-' + entryId : '';
+    var bounds = getLockedBillPeriodBounds();
+    var dr = parseUsageDurationRange(r && r.usageDuration);
+    var startVal = bounds.start;
+    var endVal = bounds.end;
+    if (dr.start && String(dr.start).indexOf(bounds.month) === 0) startVal = dr.start;
+    if (dr.end && String(dr.end).indexOf(bounds.month) === 0) endVal = dr.end;
+    return (
+        '<div class="form-row full"><div class="form-item"><label>使用时长</label>' +
+        '<p class="muted" style="font-size:12px;margin:0 0 8px;">起止日期锁定为当前账期，不可修改年、月。</p>' +
+        '<div class="corr-date-row corr-date-row--locked">' +
+        '<div><span class="muted" style="font-size:12px;display:block;margin-bottom:4px;">使用开始日期</span>' +
+        '<div class="finops-bill-period-lock" title="锁定为账期首日">' +
+        '<span class="finops-bill-period-text">' +
+        escHtmlText(startVal) +
+        '</span></div>' +
+        '<input type="hidden" id="corrDurStart' +
+        sfx +
+        '" value="' +
+        escHtmlAttr(startVal) +
+        '"></div>' +
+        '<div><span class="muted" style="font-size:12px;display:block;margin-bottom:4px;">使用结束日期</span>' +
+        '<div class="finops-bill-period-lock" title="锁定为账期末日">' +
+        '<span class="finops-bill-period-text">' +
+        escHtmlText(endVal) +
+        '</span></div>' +
+        '<input type="hidden" id="corrDurEnd' +
+        sfx +
+        '" value="' +
+        escHtmlAttr(endVal) +
+        '"></div></div></div></div>'
+    );
 }
 
 let pushUsageDeptMsApi = null;
@@ -2161,14 +2363,21 @@ function combineLegacySvcSpecForSnap(snap) {
 /** 用量明细行 → 异议详情快照（字段对齐「实例用量修正」页，不含用量确认/异议状态） */
 function snapshotInstanceForDisputeDisplay(r, disputeOpt) {
     if (!r) return null;
+    var meta = resolveCorrSpecCostPoolMeta(r);
+    var kind = getCorrectionResourceKind(r);
+    var specValue = r.spec != null && String(r.spec).trim() !== '' ? String(r.spec).trim() : '—';
+    var quotaValue = r.quota != null && String(r.quota).trim() !== '' ? String(r.quota).trim() : '—';
+    var specOrUsage = corrShowSpecNotUsage(kind) ? specValue : quotaValue;
     return {
-        instanceId: r.id != null && String(r.id).trim() !== '' ? String(r.id).trim() : '—',
+        _resourceKind: kind,
         instanceName: r.name != null && String(r.name).trim() !== '' ? String(r.name).trim() : '—',
         billPeriod: buildSnapshotBillPeriodLine(disputeOpt || null),
-        svcSpec: buildCorrectionSvcSpecLine(r),
+        billingResource: formatCorrPoolBillingResourceLabel(meta && meta.billingResource),
+        specValue: specValue,
+        quotaValue: quotaValue,
+        svcSpec: specOrUsage,
         owner: r.owner != null && String(r.owner).trim() !== '' ? String(r.owner).trim() : '—',
         usageDuration: r.usageDuration != null && String(r.usageDuration).trim() !== '' ? String(r.usageDuration).trim() : '—',
-        quota: r.quota != null && String(r.quota).trim() !== '' ? String(r.quota).trim() : '—',
         instState: r.instState != null && String(r.instState).trim() !== '' ? String(r.instState).trim() : '—',
         instanceStateInfo:
             r.instanceStateInfo != null && String(r.instanceStateInfo).trim() !== ''
@@ -2177,9 +2386,17 @@ function snapshotInstanceForDisputeDisplay(r, disputeOpt) {
     };
 }
 
-function recordDisputeInstanceDiff(d, beforeSnap, afterSnap) {
+function recordDisputeInstanceDiff(d, beforeSnap, afterSnap, meta) {
     if (!d) return;
-    d.instanceSnapshotBefore = beforeSnap || null;
+    if (!d.instanceDiffs) d.instanceDiffs = [];
+    d.instanceDiffs.push({
+        instId: meta && meta.instId ? meta.instId : '',
+        instName: meta && meta.instName ? meta.instName : '',
+        before: beforeSnap || null,
+        after: afterSnap || null,
+        changed: getChangedSnapshotFieldList(beforeSnap, afterSnap),
+    });
+    if (!d.instanceSnapshotBefore) d.instanceSnapshotBefore = beforeSnap || null;
     d.instanceSnapshotAfter = afterSnap || null;
 }
 
@@ -2194,16 +2411,18 @@ function formatInstanceSnapshotInner(snap) {
     if (!svcSpec) svcSpec = '—';
     var bill =
         snap.billPeriod != null && String(snap.billPeriod).trim() !== '' ? String(snap.billPeriod).trim() : '—';
+    var specLine =
+        snap.svcSpec != null && String(snap.svcSpec).trim() !== ''
+            ? String(snap.svcSpec).trim()
+            : svcSpec;
     var rows = [
-        ['实例ID', snap.instanceId != null && String(snap.instanceId).trim() !== '' ? snap.instanceId : '—'],
         ['实例名称', snap.instanceName != null && String(snap.instanceName).trim() !== '' ? snap.instanceName : '—'],
-        ['服务规格', svcSpec],
         ['账期', bill],
         ['费用归属人', snap.owner != null && String(snap.owner).trim() !== '' ? snap.owner : '—'],
+        ['计费资源', snap.billingResource != null && String(snap.billingResource).trim() !== '' ? snap.billingResource : '—'],
+        ['规格/用量', specLine],
         ['使用时长', snap.usageDuration != null && String(snap.usageDuration).trim() !== '' ? snap.usageDuration : '—'],
-        ['配额', snap.quota != null && String(snap.quota).trim() !== '' ? snap.quota : '—'],
-        ['实例状态', snap.instState != null && String(snap.instState).trim() !== '' ? snap.instState : '—'],
-        ['补充说明', snap.instanceStateInfo != null && String(snap.instanceStateInfo).trim() !== '' ? snap.instanceStateInfo : '—'],
+        ['用量计费状态', snap.instState != null && String(snap.instState).trim() !== '' ? snap.instState : '—'],
     ];
     var parts = [];
     for (var i = 0; i < rows.length; i++) {
@@ -2214,17 +2433,16 @@ function formatInstanceSnapshotInner(snap) {
     return '<dl class="dl-grid" style="margin:0;grid-template-columns:110px 1fr;font-size:12px;">' + parts.join('') + '</dl>';
 }
 
-/** 与 snapshotInstanceForDisputeDisplay 字段一致，用于差异对比 */
+/** 与 snapshotInstanceForDisputeDisplay 字段一致，用于差异对比（第三项 tag：spec | quota） */
 var INSTANCE_SNAPSHOT_DIFF_KEYS = [
-    ['instanceId', '实例ID'],
-    ['instanceName', '实例名称'],
-    ['svcSpec', '服务规格'],
-    ['billPeriod', '账期'],
-    ['owner', '费用归属人'],
-    ['usageDuration', '使用时长'],
-    ['quota', '配额'],
-    ['instState', '实例状态'],
-    ['instanceStateInfo', '补充说明'],
+    ['instanceName', '实例名称', null],
+    ['billPeriod', '账期', null],
+    ['owner', '费用归属人', null],
+    ['billingResource', '计费资源', null],
+    ['specValue', '规格', 'spec'],
+    ['quotaValue', '用量', 'quota'],
+    ['usageDuration', '使用时长', null],
+    ['instState', '用量计费状态', null],
 ];
 
 function normSnapScalar(v) {
@@ -2232,19 +2450,52 @@ function normSnapScalar(v) {
     return s === '' ? '—' : s;
 }
 
+function snapshotDiffKind(snap) {
+    if (!snap) return 'generic';
+    if (snap._resourceKind) return snap._resourceKind;
+    return 'generic';
+}
+
+function snapshotDiffKeyApplies(snap, tag) {
+    if (!tag) return true;
+    var kind = snapshotDiffKind(snap);
+    if (tag === 'spec') return corrShowSpecNotUsage(kind);
+    if (tag === 'quota') return !corrShowSpecNotUsage(kind);
+    return true;
+}
+
+function snapshotDiffSideLabels(key, tag, fallbackLabel) {
+    if (tag === 'spec') return { before: '改前规格', after: '改后规格' };
+    if (tag === 'quota') return { before: '改前用量', after: '改后用量' };
+    return { before: fallbackLabel, after: fallbackLabel };
+}
+
 function snapshotFieldMapForDiff(snap) {
     if (!snap || snap._emptyLabel) return null;
     var svcLine = combineLegacySvcSpecForSnap(snap);
+    var specLine =
+        snap.specValue != null && String(snap.specValue).trim() !== ''
+            ? String(snap.specValue).trim()
+            : snap.svcSpec != null && String(snap.svcSpec).trim() !== '' && corrShowSpecNotUsage(snapshotDiffKind(snap))
+              ? String(snap.svcSpec).trim()
+              : svcLine || '';
+    var quotaLine =
+        snap.quotaValue != null && String(snap.quotaValue).trim() !== ''
+            ? String(snap.quotaValue).trim()
+            : snap.svcSpec != null && String(snap.svcSpec).trim() !== '' && !corrShowSpecNotUsage(snapshotDiffKind(snap))
+              ? String(snap.svcSpec).trim()
+              : snap.quota != null
+                ? normSnapScalar(snap.quota)
+                : '—';
     return {
-        instanceId: normSnapScalar(snap.instanceId),
         instanceName: normSnapScalar(snap.instanceName),
-        svcSpec: normSnapScalar(svcLine || ''),
         billPeriod: normSnapScalar(snap.billPeriod),
         owner: normSnapScalar(snap.owner),
+        billingResource: normSnapScalar(snap.billingResource),
+        specValue: normSnapScalar(specLine),
+        quotaValue: normSnapScalar(quotaLine),
         usageDuration: normSnapScalar(snap.usageDuration),
-        quota: normSnapScalar(snap.quota),
         instState: normSnapScalar(snap.instState),
-        instanceStateInfo: normSnapScalar(snap.instanceStateInfo),
     };
 }
 
@@ -2254,31 +2505,48 @@ function getChangedSnapshotFieldList(beforeSnap, afterSnap) {
     if (!aMap) return [];
     var beforeEmpty = !beforeSnap || (beforeSnap && beforeSnap._emptyLabel);
     var bMap = beforeEmpty ? null : snapshotFieldMapForDiff(beforeSnap);
+    var kindSnap = afterSnap || beforeSnap;
     var out = [];
     for (var i = 0; i < INSTANCE_SNAPSHOT_DIFF_KEYS.length; i++) {
         var key = INSTANCE_SNAPSHOT_DIFF_KEYS[i][0];
         var label = INSTANCE_SNAPSHOT_DIFF_KEYS[i][1];
+        var tag = INSTANCE_SNAPSHOT_DIFF_KEYS[i][2];
+        if (!snapshotDiffKeyApplies(kindSnap, tag)) continue;
         var bv = bMap ? bMap[key] : '—';
         var av = aMap[key];
         if (bv !== av) {
-            out.push({ key: key, label: label, beforeVal: bv, afterVal: av });
+            var sideLabels = snapshotDiffSideLabels(key, tag, label);
+            out.push({
+                key: key,
+                label: label,
+                beforeLabel: sideLabels.before,
+                afterLabel: sideLabels.after,
+                beforeVal: bv,
+                afterVal: av,
+            });
         }
     }
     return out;
 }
 
-function formatChangedSnapshotDiffHtml(changed) {
+function formatChangedSnapshotDiffHtml(changed, instTitle) {
     if (!changed || !changed.length) {
         return '<p class="muted" style="margin:0;font-size:13px;">（无字段差异或快照一致）</p>';
     }
+    var titleHtml = instTitle
+        ? '<p class="muted" style="font-size:12px;margin:0 0 8px;">实例：' + escHtmlText(instTitle) + '</p>'
+        : '';
     var dlBefore = [];
     var dlAfter = [];
     for (var j = 0; j < changed.length; j++) {
         var row = changed[j];
-        dlBefore.push('<dt>' + escHtmlText(row.label) + '</dt><dd>' + escHtmlText(row.beforeVal) + '</dd>');
-        dlAfter.push('<dt>' + escHtmlText(row.label) + '</dt><dd>' + escHtmlText(row.afterVal) + '</dd>');
+        var bLabel = row.beforeLabel || row.label;
+        var aLabel = row.afterLabel || row.label;
+        dlBefore.push('<dt>' + escHtmlText(bLabel) + '</dt><dd>' + escHtmlText(row.beforeVal) + '</dd>');
+        dlAfter.push('<dt>' + escHtmlText(aLabel) + '</dt><dd>' + escHtmlText(row.afterVal) + '</dd>');
     }
     return (
+        titleHtml +
         '<div class="dispute-diff-wrap">' +
         '<div class="dispute-diff-col"><h4>修改前</h4>' +
         '<dl class="dl-grid" style="margin:0;grid-template-columns:110px 1fr;font-size:12px;">' +
@@ -2315,7 +2583,7 @@ function renderDisputeInstanceDiffSection(raw) {
     if (disputeInstanceDiffIsAddInstanceCase(raw)) {
         return (
             '<div class="card-title-sm" style="margin:16px 0 10px;">新增实例信息</div>' +
-            '<p class="muted" style="font-size:12px;margin:0 0 10px;">以下为异议处理完成后写入用量明细的<strong>新增实例</strong>快照（补录前无计费记录）；处理说明见上方「异议申请」。</p>' +
+            '<p class="muted" style="font-size:12px;margin:0 0 10px;">以下为异议处理完成后写入用量明细的<strong>新增实例</strong>快照（补录前无计费记录）；处理说明见上方「处理说明」。</p>' +
             '<div class="dispute-diff-wrap" style="grid-template-columns:1fr;">' +
             '<div class="dispute-diff-col after">' +
             formatInstanceSnapshotInner(raw.instanceSnapshotAfter) +
@@ -2324,18 +2592,35 @@ function renderDisputeInstanceDiffSection(raw) {
     }
     var hasBefore = !!raw.instanceSnapshotBefore;
     var hasAfter = !!raw.instanceSnapshotAfter;
-
     var chunks = [];
+    var titleOnce = false;
 
-    if (hasBefore && hasAfter) {
-        var changed = getChangedSnapshotFieldList(raw.instanceSnapshotBefore, raw.instanceSnapshotAfter);
-        if (changed.length) {
-            chunks.push(
-                '<div class="card-title-sm" style="margin:16px 0 10px;">实例修改信息</div>' +
-                formatChangedSnapshotDiffHtml(changed)
-            );
+    function pushDiffBlock(changed, instTitle) {
+        if (!changed || !changed.length) return;
+        if (!titleOnce) {
+            chunks.push('<div class="card-title-sm" style="margin:16px 0 10px;">实例修改信息</div>');
+            titleOnce = true;
         }
+        chunks.push(formatChangedSnapshotDiffHtml(changed, instTitle));
     }
+
+    var diffBlocks = [];
+    if (raw.instanceDiffs && raw.instanceDiffs.length) {
+        raw.instanceDiffs.forEach(function (block) {
+            var ch =
+                block.before && block.after
+                    ? getChangedSnapshotFieldList(block.before, block.after)
+                    : block.changed || [];
+            if (ch.length) diffBlocks.push({ changed: ch, instTitle: block.instName || block.instId || '' });
+        });
+    }
+    if (!diffBlocks.length && hasBefore && hasAfter) {
+        var legacyCh = getChangedSnapshotFieldList(raw.instanceSnapshotBefore, raw.instanceSnapshotAfter);
+        if (legacyCh.length) diffBlocks.push({ changed: legacyCh, instTitle: raw.name || raw.resid || '' });
+    }
+    diffBlocks.forEach(function (b) {
+        pushDiffBlock(b.changed, b.instTitle);
+    });
 
     if (!chunks.length) {
         return (
@@ -2356,7 +2641,7 @@ function renderDisputeCorrectionEntriesSection(raw) {
     if (!raw || !raw.correctionEntries || !raw.correctionEntries.length) return '';
     var items = raw.correctionEntries
         .map(function (e, i) {
-            var label = e.modeLabel || (e.mode === 'add' ? '新增实例' : '修正实例用量');
+            var label = e.modeLabel || '修正';
             return (
                 '<li style="margin-bottom:8px;font-size:13px;line-height:1.5;">' +
                 '<strong>处理 ' +
@@ -2377,17 +2662,25 @@ function renderDisputeCorrectionEntriesSection(raw) {
     );
 }
 
+function renderDisputePostNoteSection(raw) {
+    if (!raw || raw.status === 'processing') return '';
+    const postNote = raw.postNote && raw.postNote !== '—' ? raw.postNote : '—';
+    return (
+        '<div class="card-title-sm" style="margin:16px 0 10px;">' +
+        escHtmlText(raw.postNoteLabel || '处理说明') +
+        '</div>' +
+        '<p style="margin:0 0 16px;font-size:13px;line-height:1.6;white-space:pre-wrap;">' +
+        escHtmlText(postNote) +
+        '</p>'
+    );
+}
+
 function buildDisputeDetailBody(raw) {
     if (!raw) return '<p class="muted">未找到异议记录。</p>';
     const billMonth = formatBillMonthLabel(raw.period);
-    const postNote = raw.postNote && raw.postNote !== '—' ? raw.postNote : '—';
-    const postRow =
-        raw.status !== 'processing'
-            ? `<dt>${escHtmlText(raw.postNoteLabel || '处理说明')}</dt><dd style="white-space:pre-wrap;">${escHtmlText(postNote)}</dd>`
-            : '';
     return `
 <div class="card-title-sm" style="margin-bottom:10px;">基本信息</div>
-<dl class="dl-grid" style="margin-bottom:16px;">
+<dl class="dl-grid dl-grid-2col" style="margin-bottom:16px;">
   <dt>申请单号</dt><dd>${escHtmlText(raw.id)}</dd>
   <dt>申请状态</dt><dd>${statusLabelMap[raw.status] || escHtmlText(raw.status)}</dd>
   <dt>申请部门</dt><dd>${escHtmlText(raw.dept || '—')}</dd>
@@ -2398,8 +2691,8 @@ function buildDisputeDetailBody(raw) {
 <div class="card-title-sm" style="margin:16px 0 10px;">异议说明</div>
 <dl class="dl-grid" style="margin-bottom:16px;">
   <dt>异议说明</dt><dd style="white-space:pre-wrap;">${escHtmlText(raw.remark || '—')}</dd>
-  ${postRow}
 </dl>
+${renderDisputePostNoteSection(raw)}
 ${renderDisputeInstanceDiffSection(raw)}
 ${renderDisputeProcessLogSection(raw)}`;
 }
@@ -2685,7 +2978,7 @@ function renderUsageQueryTags() {
     var dStatus = usageAdvFieldTagDisplay('filterStatus');
     if (dStatus) parts.push(usageAdvTagHtml('确认状态', dStatus, 'status'));
     var dInst = usageAdvFieldTagDisplay('filterInstState');
-    if (dInst) parts.push(usageAdvTagHtml('实例状态', dInst, 'instState'));
+    if (dInst) parts.push(usageAdvTagHtml('用量计费状态', dInst, 'instState'));
     var ownV = usageAdvFieldTagDisplay('filterOwner');
     if (ownV) parts.push(usageAdvTagHtml('费用归属人', ownV, 'owner'));
     var suV = usageAdvFieldTagDisplay('filterStartUse');
@@ -2965,7 +3258,7 @@ function openUsageDetail(id) {
             <dt>开始使用时间</dt><dd>${r.startTime || '-'}</dd>
             <dt>结束使用时间</dt><dd>${r.endTime || '-'}</dd>
             <dt>确认状态</dt><dd>${statusMap[r.status]}</dd>
-            <dt>实例状态</dt><dd>${formatInstStateHtml(r)}</dd>
+            <dt>用量计费状态</dt><dd>${formatInstStateHtml(r)}</dd>
             ${r.usageDuration ? `<dt>使用时长（修正口径）</dt><dd>${escHtmlText(r.usageDuration)}</dd>` : ''}
             ${r.instanceStateInfo ? `<dt>实例状态信息</dt><dd>${escHtmlText(r.instanceStateInfo)}</dd>` : ''}
             <dt>采集时间</dt><dd>2026-04-30 23:59</dd>
@@ -3313,12 +3606,13 @@ function ensureDisputeDeptOption(dept) {
 function applyDisputeBasicInfoLocked() {
     const gb = document.getElementById('globalBillMonth');
     const periodEl = document.getElementById('disputePeriod');
+    const periodDisp = document.getElementById('disputePeriodDisplay');
     const deptEl = document.getElementById('disputeDept');
     const apEl = document.getElementById('disputeApplicant');
     if (periodEl) {
-        periodEl.value = gb && gb.value ? gb.value : '2026-04';
-        periodEl.disabled = true;
-        periodEl.classList.add('field-locked');
+        var p = gb && gb.value ? gb.value : '2026-04';
+        periodEl.value = p;
+        if (periodDisp) periodDisp.textContent = formatBillMonthLabel(p);
     }
     if (deptEl) {
         ensureDisputeDeptOption(sessionUser.dept);
@@ -3424,10 +3718,8 @@ function buildCorrectionModifyFieldsHtml(r) {
         '<div><span class="muted" style="font-size:12px;display:block;margin-bottom:4px;">结束日期</span>' +
         '<input type="date" id="corrDurEnd" value="' + escHtmlAttr(dr.end) + '"></div></div></div></div>' +
         specBlockHtml +
-        '<div class="form-row full"><div class="form-item"><label>实例状态</label>' +
-        '<select id="corrInstState">' + instSelectHtml + '</select></div></div>' +
-        '<div class="form-row full"><div class="form-item"><label>补充说明</label>' +
-        '<textarea id="corrExtraNote" rows="2" placeholder="选填：维护窗口、停机说明等"></textarea></div></div>'
+        '<div class="form-row full"><div class="form-item"><label>用量计费状态</label>' +
+        '<select id="corrInstState">' + instSelectHtml + '</select></div></div>'
     );
 }
 
@@ -3438,96 +3730,367 @@ function nextAdminCorrEntryId() {
     return 'e' + adminCorrEntrySeq;
 }
 
-function buildCorrInstSelectOptions() {
-    var html = '<option value="">请选择关联实例</option>';
-    getDetailRowsForUserScope().forEach(function (r) {
-        var label = (r.name || '') + ' · ' + r.id + ' · ' + (r.spec || r.specCluster || '—');
-        html +=
-            '<option value="' +
-            escHtmlAttr(r.id) +
-            '">' +
-            escHtmlText(label) +
-            '</option>';
-    });
-    return html;
+function getCorrEntryInstId(card) {
+    if (!card) return '';
+    var hid = card.querySelector('.js-corr-inst-id');
+    if (hid && hid.value) return String(hid.value).trim();
+    var sel = card.querySelector('.js-corr-inst-select');
+    return sel && sel.value ? String(sel.value).trim() : '';
 }
 
-function buildCorrectionSpecFieldsHtmlScoped(r, kind, cpuMem, entryId) {
-    var sfx = '-' + entryId;
-    if (kind === 'vm') {
-        return (
-            '<div class="corr-spec-block" style="margin-bottom:4px;">' +
-            '<p class="muted" style="font-size:12px;margin-bottom:8px;">当前为<strong>云主机</strong>类资源，可填写 vCPU 与内存（GB），均为选填。</p>' +
-            '<div class="form-row">' +
-            '<div class="form-item"><label>CPU（vCPU）</label>' +
-            '<input type="number" id="corrVmCpu' + sfx + '" min="0" step="1" value="' +
-            escHtmlAttr(cpuMem.cpu) +
-            '" placeholder="如 4"></div>' +
-            '<div class="form-item"><label>内存（GB）</label>' +
-            '<input type="number" id="corrVmMem' + sfx + '" min="0" step="0.5" value="' +
-            escHtmlAttr(cpuMem.mem) +
-            '" placeholder="如 8"></div></div></div>'
-        );
-    }
-    if (kind === 'pm') {
-        var models = [
-            'Dell R740 (2×Gold 6230 / 256GB)',
-            'HPE DL380 Gen10 (2×Silver 4214 / 128GB)',
-            'Lenovo SR650 (2×Gold 5218 / 512GB)',
-            '浪潮 NF5280M5 (2×Gold 6248 / 384GB)',
-        ];
-        var opts =
-            '<option value="">请选择机型</option>' +
-            models
-                .map(function (m) {
-                    return '<option value="' + escHtmlAttr(m) + '">' + escHtmlText(m) + '</option>';
-                })
-                .join('');
-        return (
-            '<div class="corr-spec-block" style="margin-bottom:4px;">' +
-            '<p class="muted" style="font-size:12px;margin-bottom:8px;">当前为<strong>物理机</strong>类资源，请选择机型（选填）。</p>' +
-            '<div class="form-row full"><div class="form-item"><label>机型</label><select id="corrPmModel' + sfx + '">' +
-            opts +
-            '</select></div></div></div>'
-        );
+function buildCorrInstPickerHtml(entryId, selectedId) {
+    var sel = selectedId ? String(selectedId).trim() : '';
+    var body = getDetailRowsForUserScope()
+        .map(function (r) {
+            var id = String(r.id || '');
+            var rowCls = id === sel ? ' corr-inst-pick-row--selected' : '';
+            return (
+                '<tr class="corr-inst-pick-row' +
+                rowCls +
+                '" data-inst-id="' +
+                escHtmlAttr(id) +
+                '" onclick="onCorrInstPickerRowClick(\'' +
+                escHtmlAttr(entryId) +
+                '\', this)">' +
+                '<td>' +
+                escHtmlText(r.name || '—') +
+                '</td><td>' +
+                escHtmlText(r.svc || '—') +
+                '</td><td>' +
+                escHtmlText(r.specCluster || '—') +
+                '</td></tr>'
+            );
+        })
+        .join('');
+    if (!body) {
+        body = '<tr><td colspan="3" class="muted" style="padding:12px;">暂无可选实例</td></tr>';
     }
     return (
-        '<div class="corr-spec-block" style="margin-bottom:4px;">' +
-        '<p class="muted" style="font-size:12px;margin-bottom:8px;">非云主机/物理机模板时，可填写<strong>服务规格</strong>说明（选填）。</p>' +
-        '<div class="form-row full"><div class="form-item"><label>服务规格说明</label>' +
-        '<input type="text" id="corrSpecGeneric' + sfx + '" value="" placeholder="容量、节点数、网络规格等"></div></div></div>'
+        '<div class="corr-inst-pick-wrap">' +
+        '<input type="hidden" class="js-corr-inst-id" id="corrInstId-' +
+        escHtmlAttr(entryId) +
+        '" value="' +
+        escHtmlAttr(sel) +
+        '">' +
+        '<div class="corr-inst-pick-scroll">' +
+        '<table class="corr-inst-pick-table">' +
+        '<thead><tr><th>实例名称</th><th>服务</th><th>规格簇</th></tr></thead>' +
+        '<tbody>' +
+        body +
+        '</tbody></table></div></div>'
+    );
+}
+
+function onCorrInstPickerRowClick(entryId, tr) {
+    var wrap = tr.closest('.corr-inst-pick-wrap');
+    if (!wrap) return;
+    wrap.querySelectorAll('.corr-inst-pick-row').forEach(function (row) {
+        row.classList.remove('corr-inst-pick-row--selected');
+    });
+    tr.classList.add('corr-inst-pick-row--selected');
+    var id = tr.getAttribute('data-inst-id') || '';
+    var hid = document.getElementById('corrInstId-' + entryId);
+    if (hid) hid.value = id;
+    onCorrEntryInstPickChange(entryId);
+}
+
+
+
+
+
+function getCorrCostPoolsSnapshot() {
+    var defaults = [
+        { name: '物理机', billingResource: 'CPU' },
+        { name: '虚拟机', billingResource: 'MEM' },
+        { name: '容器', billingResource: 'MEM' },
+        { name: '存储', billingResource: 'DISK' },
+        { name: '数据库', billingResource: 'CPU' },
+        { name: '网络', billingResource: '流量' },
+    ];
+    try {
+        var raw = localStorage.getItem('costPools');
+        if (raw) {
+            var arr = JSON.parse(raw);
+            if (Array.isArray(arr) && arr.length) return arr;
+        }
+    } catch (e) { /* ignore */ }
+    return defaults;
+}
+
+function getCorrPricingServicesSnapshot() {
+    try {
+        var raw = localStorage.getItem('pricingServices');
+        if (raw) {
+            var arr = JSON.parse(raw);
+            if (Array.isArray(arr)) return arr;
+        }
+    } catch (e) { /* ignore */ }
+    return [];
+}
+
+/** 成本池 billingResource 展示文案（与成本池管理「计费资源」字段一致） */
+function formatCorrPoolBillingResourceLabel(br) {
+    var s = String(br || '').trim();
+    if (!s) return '—';
+    if (s === 'MEM' || s === 'mem') return '内存';
+    if (s === 'DISK' || s === 'disk') return '存储';
+    return s;
+}
+
+/** 云主机 / 物理机：展示规格、不展示用量 */
+function corrShowSpecNotUsage(kind) {
+    return kind === 'vm' || kind === 'pm';
+}
+
+function findPricingRowByInstSpec(spec) {
+    var code = String(spec || '').trim();
+    if (!code) return null;
+    var pricing = getCorrPricingServicesSnapshot();
+    for (var i = 0; i < pricing.length; i++) {
+        var s = pricing[i];
+        if (String(s.serviceCode || '').trim() === code) return s;
+        if (String(s.serviceName || '').trim() === code) return s;
+    }
+    return null;
+}
+
+/** 实例规格 → 定价规格 → 关联成本池 → 成本池计费资源 */
+function resolveCorrSpecCostPoolMeta(r) {
+    var spec = r && r.spec ? String(r.spec).trim() : '';
+    var pools = getCorrCostPoolsSnapshot();
+    var pricingRow = findPricingRowByInstSpec(spec);
+    if (pricingRow && String(pricingRow.costPool || '').trim()) {
+        var poolName = String(pricingRow.costPool).trim();
+        var pool = pools.find(function (p) {
+            return String(p.name || '').trim() === poolName;
+        });
+        var br = pool && pool.billingResource ? pool.billingResource : pricingRow.billingResource || '';
+        return {
+            costPool: poolName,
+            billingResource: br,
+            pool: pool || null,
+        };
+    }
+    var kind = getCorrectionResourceKind(r);
+    var poolName = '';
+    if (kind === 'vm') poolName = '虚拟机';
+    else if (kind === 'pm') poolName = '物理机';
+    else if (r && r.svcCatL1 === '存储') poolName = '存储';
+    else if (r && r.svcCatL1 === '数据库') poolName = '数据库';
+    else if (r && r.svcCatL1 === '网络') poolName = '网络';
+    else if (r && r.svcCatL1 === '中间件') poolName = '容器';
+    var pool = pools.find(function (p) {
+        return String(p.name || '').trim() === poolName;
+    });
+    return {
+        costPool: poolName || '—',
+        billingResource: pool && pool.billingResource ? pool.billingResource : '',
+        pool: pool || null,
+    };
+}
+
+function parseUsageDurationRange(usageDuration) {
+    var s = String(usageDuration || '').trim();
+    if (!s) return { start: '', end: '' };
+    var m = s.match(/(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})/);
+    if (m) return { start: m[1], end: m[2] };
+    return { start: '', end: '' };
+}
+
+/** 规格下拉：列出该服务类型（云主机/物理机）下全部可选规格 */
+function getCorrSpecDropdownOptions(r, kind) {
+    var seen = {};
+    var list = [];
+    detailData.forEach(function (row) {
+        if (getCorrectionResourceKind(row) !== kind) return;
+        var spec = String(row.spec || '').trim();
+        if (!spec || seen[spec]) return;
+        seen[spec] = 1;
+        var cluster = String(row.specCluster || '').trim();
+        var label = cluster ? cluster + ' · ' + spec : spec;
+        if (row.config) label += ' · ' + String(row.config).trim();
+        list.push({ value: spec, label: label });
+    });
+    var cur = r && r.spec ? String(r.spec).trim() : '';
+    if (cur && !seen[cur]) {
+        var cluster = r && r.specCluster ? String(r.specCluster).trim() : '';
+        var label = cluster ? cluster + ' · ' + cur : cur;
+        if (r.config) label += ' · ' + String(r.config).trim();
+        list.unshift({ value: cur, label: label });
+    }
+    list.sort(function (a, b) {
+        return a.label.localeCompare(b.label, 'zh-CN');
+    });
+    return list;
+}
+
+function buildCorrBillingSpecUsageRowHtml(r, kind, meta, entryId) {
+    var sfx = '-' + entryId;
+    var poolLabel = meta && meta.costPool ? String(meta.costPool) : '—';
+    var brDisplay = formatCorrPoolBillingResourceLabel(meta && meta.billingResource);
+    var billingCol =
+        '<div class="form-item"><label>计费资源</label>' +
+        '<input type="text" id="corrBillingRes' +
+        sfx +
+        '" class="corr-field-locked" readonly disabled value="' +
+        escHtmlAttr(brDisplay) +
+        '" title="由当前实例规格关联成本池自动带出（成本池：' +
+        escHtmlAttr(poolLabel) +
+        '）">' +
+        '<input type="hidden" id="corrCostPool' +
+        sfx +
+        '" value="' +
+        escHtmlAttr(poolLabel) +
+        '">' +
+        '<input type="hidden" id="corrBillingResKey' +
+        sfx +
+        '" value="' +
+        escHtmlAttr(meta && meta.billingResource ? String(meta.billingResource) : '') +
+        '"></div>';
+    var secondCol = '';
+    if (corrShowSpecNotUsage(kind)) {
+        var curSpec = r && r.spec ? String(r.spec).trim() : '';
+        var specHint =
+            kind === 'vm'
+                ? ' title="可选云主机服务下的全部规格"'
+                : ' title="可选物理机服务下的全部规格"';
+        var opts =
+            '<option value="">请选择规格</option>' +
+            getCorrSpecDropdownOptions(r, kind)
+                .map(function (o) {
+                    return (
+                        '<option value="' +
+                        escHtmlAttr(o.value) +
+                        '"' +
+                        (o.value === curSpec ? ' selected' : '') +
+                        '>' +
+                        escHtmlText(o.label) +
+                        '</option>'
+                    );
+                })
+                .join('');
+        secondCol =
+            '<div class="form-item"><label>规格</label>' +
+            '<select id="corrSpecSelect' +
+            sfx +
+            specHint +
+            ' onchange="onCorrSpecSelectChange(\'' +
+            escHtmlAttr(entryId) +
+            '\')">' +
+            opts +
+            '</select></div>';
+    } else {
+        var usageVal = r && r.quota ? String(r.quota) : '';
+        secondCol =
+            '<div class="form-item"><label>用量</label>' +
+            '<input type="text" id="corrUsageQty' +
+            sfx +
+            '" value="' +
+            escHtmlAttr(usageVal) +
+            '" placeholder="如：500 GB、3 节点 / 100 GB"></div>';
+    }
+    return '<div class="form-row corr-billing-spec-row">' + billingCol + secondCol + '</div>';
+}
+
+function buildCorrectionUsageResourceHtmlScoped(r, entryId) {
+    var sfx = '-' + entryId;
+    var kind = getCorrectionResourceKind(r);
+    var meta = resolveCorrSpecCostPoolMeta(r);
+    var ownerVal = r && r.owner ? String(r.owner) : '';
+    var instCur = r && r.instState ? String(r.instState) : '';
+    var instSelectHtml = ['正常', '作废']
+        .map(function (s) {
+            return (
+                '<option value="' +
+                escHtmlAttr(s) +
+                '"' +
+                (s === instCur ? ' selected' : '') +
+                '>' +
+                escHtmlText(s) +
+                '</option>'
+            );
+        })
+        .join('');
+    return (
+        '<div class="corr-usage-section">' +
+        '<div class="corr-section-divider"><span>使用资源</span></div>' +
+        '<div class="form-row full"><div class="form-item"><label>费用归属人</label>' +
+        '<input type="text" id="corrOwner' +
+        sfx +
+        '" value="' +
+        escHtmlAttr(ownerVal) +
+        '" placeholder="选填"></div></div>' +
+        buildCorrBillingSpecUsageRowHtml(r, kind, meta, entryId) +
+        buildCorrLockedUsageDurationFieldsHtml(entryId, r) +
+        '<div class="form-row full"><div class="form-item"><label>用量计费状态</label>' +
+        '<select id="corrInstState' +
+        sfx +
+        '"><option value="">请选择</option>' +
+        instSelectHtml +
+        '</select></div></div></div>'
     );
 }
 
 function buildCorrectionModifyFieldsHtmlScoped(r, entryId) {
-    var kind = getCorrectionResourceKind(r);
-    var sfx = '-' + entryId;
-    var specBlockHtml = buildCorrectionSpecFieldsHtmlScoped(r, kind, { cpu: '', mem: '' }, entryId);
-    var instSelectHtml =
-        '<option value="" selected>请选择</option>' +
-        ['正常', '作废']
-            .map(function (s) {
-                return '<option value="' + escHtmlAttr(s) + '">' + escHtmlText(s) + '</option>';
-            })
-            .join('');
     return (
-        '<p class="muted" style="font-size:12px;margin-bottom:12px;">可修正费用归属、使用时长、规格及实例状态等字段。</p>' +
-        '<div class="form-row full"><div class="form-item"><label>费用归属人</label>' +
-        '<input type="text" id="corrOwner' + sfx + '" value="" placeholder="选填"></div></div>' +
-        '<div class="form-row full"><div class="form-item"><label>使用时长（起止日期，选填）</label>' +
-        '<div class="corr-date-row">' +
-        '<div><span class="muted" style="font-size:12px;display:block;margin-bottom:4px;">开始日期</span>' +
-        '<input type="date" id="corrDurStart' + sfx + '" value=""></div>' +
-        '<div><span class="muted" style="font-size:12px;display:block;margin-bottom:4px;">结束日期</span>' +
-        '<input type="date" id="corrDurEnd' + sfx + '" value=""></div></div></div></div>' +
-        specBlockHtml +
-        '<div class="form-row full"><div class="form-item"><label>实例状态</label>' +
-        '<select id="corrInstState' + sfx + '">' + instSelectHtml + '</select></div></div>' +
-        '<div class="form-row full"><div class="form-item"><label>补充说明</label>' +
-        '<textarea id="corrExtraNote' + sfx + '" rows="2" placeholder="选填：维护窗口、停机说明等"></textarea></div></div>'
+        '<p class="muted" style="font-size:12px;margin-bottom:12px;">计费资源由实例规格关联成本池自动带出；<strong>云主机/物理机</strong>修正规格（不展示用量），其他服务修正用量。</p>' +
+        buildCorrectionUsageResourceHtmlScoped(r, entryId)
     );
 }
 
+function onCorrSpecSelectChange(entryId) {
+    var card = document.querySelector('.corr-entry-card[data-entry-id="' + entryId + '"]');
+    if (!card) return;
+    var instId = getCorrEntryInstId(card);
+    if (!instId) return;
+    var r = detailData.find(function (x) {
+        return x.id === instId;
+    });
+    if (!r) return;
+    var specSel = document.getElementById('corrSpecSelect-' + entryId);
+    var draft = Object.assign({}, r);
+    if (specSel && specSel.value) {
+        draft.spec = specSel.value;
+        var kind = getCorrectionResourceKind(r);
+        var match = detailData.find(function (x) {
+            return x.spec === specSel.value && getCorrectionResourceKind(x) === kind;
+        });
+        if (match) {
+            draft.specCluster = match.specCluster;
+            draft.config = match.config;
+        }
+    }
+    var kind = getCorrectionResourceKind(draft);
+    var meta = resolveCorrSpecCostPoolMeta(draft);
+    var billRO = document.getElementById('corrBillingRes-' + entryId);
+    var poolHid = document.getElementById('corrCostPool-' + entryId);
+    var brHid = document.getElementById('corrBillingResKey-' + entryId);
+    var poolLabel = meta.costPool || '—';
+    var brDisplay = formatCorrPoolBillingResourceLabel(meta.billingResource);
+    if (billRO) billRO.value = brDisplay;
+    if (poolHid) poolHid.value = poolLabel;
+    if (brHid) brHid.value = meta.billingResource || '';
+    var specSelectEl = document.getElementById('corrSpecSelect-' + entryId);
+    if (specSelectEl && corrShowSpecNotUsage(kind)) {
+        var curVal = specSel && specSel.value ? specSel.value : '';
+        var opts =
+            '<option value="">请选择规格</option>' +
+            getCorrSpecDropdownOptions(draft, kind)
+                .map(function (o) {
+                    return (
+                        '<option value="' +
+                        escHtmlAttr(o.value) +
+                        '"' +
+                        (o.value === curVal ? ' selected' : '') +
+                        '>' +
+                        escHtmlText(o.label) +
+                        '</option>'
+                    );
+                })
+                .join('');
+        specSelectEl.innerHTML = opts;
+    }
+}
 function buildAddInstanceFormSectionForEntry(disputeRow, entryId) {
     var d = disputeRow || null;
     var hid = d ? '<input type="hidden" class="js-entry-add-dispute" value="' + escHtmlAttr(d.id) + '">' : '';
@@ -3546,8 +4109,7 @@ function buildAddInstanceFormSectionForEntry(disputeRow, entryId) {
 }
 
 function buildCorrEntryCardHtml(entryId, disputeRow, prefillInstId) {
-    var instOpts = buildCorrInstSelectOptions();
-    var selAttr = prefillInstId ? ' value="' + escHtmlAttr(prefillInstId) + '"' : '';
+    var picker = buildCorrInstPickerHtml(entryId, prefillInstId || '');
     return (
         '<div class="corr-entry-card" data-entry-id="' +
         escHtmlAttr(entryId) +
@@ -3556,34 +4118,15 @@ function buildCorrEntryCardHtml(entryId, disputeRow, prefillInstId) {
         '<span class="corr-entry-title">处理数据</span>' +
         '<button type="button" class="btn btn-sm btn-default btn-corr-entry-remove" onclick="removeAdminCorrEntryCard(this)">删除本条</button>' +
         '</div>' +
-        '<div class="corr-editor-mode">' +
-        '<label><input type="radio" name="corrEditorMode-' +
-        escHtmlAttr(entryId) +
-        '" value="modify" checked onchange="onCorrEntryModeChange(\'' +
-        escHtmlAttr(entryId) +
-        '\')"> 修正实例用量</label>' +
-        '<label><input type="radio" name="corrEditorMode-' +
-        escHtmlAttr(entryId) +
-        '" value="add" onchange="onCorrEntryModeChange(\'' +
-        escHtmlAttr(entryId) +
-        '\')"> 新增实例</label>' +
-        '</div>' +
         '<div class="js-entry-modify-panel">' +
         '<div class="form-row full" style="margin-bottom:12px;"><div class="form-item"><label>关联实例 *</label>' +
-        '<select class="js-corr-inst-select" onchange="onCorrEntryInstPickChange(\'' +
-        escHtmlAttr(entryId) +
-        '\')"' +
-        selAttr +
-        '>' +
-        instOpts +
-        '</select></div></div>' +
+        picker +
+        '</div></div>' +
         '<div class="js-corr-modify-mount"><p class="muted" style="font-size:13px;">请先选择关联实例。</p></div>' +
-        '</div>' +
-        '<div class="js-entry-add-panel" style="display:none;">' +
-        buildAddInstanceFormSectionForEntry(disputeRow, entryId) +
         '</div></div>'
     );
 }
+
 
 function syncCorrEntryCardHeaders() {
     var cards = document.querySelectorAll('#corrEntriesRoot .corr-entry-card');
@@ -3649,10 +4192,9 @@ function onCorrEntryModeChange(entryId) {
 function onCorrEntryInstPickChange(entryId) {
     var card = document.querySelector('.corr-entry-card[data-entry-id="' + entryId + '"]');
     if (!card) return;
-    var sel = card.querySelector('.js-corr-inst-select');
     var mount = card.querySelector('.js-corr-modify-mount');
-    if (!sel || !mount) return;
-    var id = (sel.value || '').trim();
+    if (!mount) return;
+    var id = getCorrEntryInstId(card);
     if (!id) {
         mount.innerHTML = '<p class="muted" style="font-size:13px;">请先选择关联实例。</p>';
         return;
@@ -3707,22 +4249,27 @@ function applyCorrectionFieldsToRowScoped(r, entryId) {
         else if (s || e) r.usageDuration = (s || '…') + ' ~ ' + (e || '…');
     }
     var kind = getCorrectionResourceKind(r);
-    if (kind === 'vm') {
-        var cpuEl = el('corrVmCpu');
-        var memEl = el('corrVmMem');
-        var cpu = cpuEl && cpuEl.value !== '' ? String(cpuEl.value).trim() : '';
-        var mem = memEl && memEl.value !== '' ? String(memEl.value).trim() : '';
-        if (cpu || mem) {
-            var cpuPart = cpu ? cpu + ' vCPU' : '';
-            var memPart = mem ? mem + ' GB' : '';
-            r.quota = [cpuPart, memPart].filter(Boolean).join(' / ');
+    if (corrShowSpecNotUsage(kind)) {
+        var specSel = el('corrSpecSelect');
+        if (specSel) {
+            var specVal = (specSel.value || '').trim();
+            if (specVal) {
+                r.spec = specVal;
+                var match = detailData.find(function (x) {
+                    return x.spec === r.spec && getCorrectionResourceKind(x) === kind;
+                });
+                if (match) {
+                    if (match.specCluster) r.specCluster = match.specCluster;
+                    if (match.config) r.config = match.config;
+                }
+            }
         }
-    } else if (kind === 'pm') {
-        var selPm = el('corrPmModel');
-        if (selPm && selPm.value) r.quota = '机型：' + selPm.value;
     } else {
-        var g = el('corrSpecGeneric');
-        if (g && (g.value || '').trim()) r.quota = (g.value || '').trim();
+        var usageEl = el('corrUsageQty');
+        if (usageEl) {
+            var uv = (usageEl.value || '').trim();
+            if (uv) r.quota = uv;
+        }
     }
     var st = el('corrInstState');
     if (st) {
@@ -3731,11 +4278,6 @@ function applyCorrectionFieldsToRowScoped(r, entryId) {
             r.instState = sv;
             if (sv === '作废') r.status = 'voided';
         }
-    }
-    var note = el('corrExtraNote');
-    if (note) {
-        var nv = (note.value || '').trim();
-        if (nv) r.instanceStateInfo = nv;
     }
 }
 
@@ -3784,51 +4326,45 @@ function finalizeAdminDisputeProcessing() {
         return;
     }
     var dCtx = d;
+    dCtx.instanceDiffs = [];
+    dCtx.instanceSnapshotBefore = null;
+    dCtx.instanceSnapshotAfter = null;
     var entries = [];
     var summaries = [];
     for (var ci = 0; ci < cards.length; ci++) {
         var card = cards[ci];
         var entryId = card.getAttribute('data-entry-id');
-        var modeEl = card.querySelector('input[name="corrEditorMode-' + entryId + '"]:checked');
-        var mode = modeEl ? modeEl.value : 'modify';
-        if (mode === 'modify') {
-            var sel = card.querySelector('.js-corr-inst-select');
-            var id = sel && sel.value ? sel.value.trim() : '';
-            if (!id) {
-                showToast('处理数据 ' + (ci + 1) + '：请选择关联实例');
-                return;
-            }
-            var r = detailData.find(function (x) { return x.id === id; });
-            if (!r) {
-                showToast('处理数据 ' + (ci + 1) + '：未找到所选实例');
-                return;
-            }
-            var snapBefore = snapshotInstanceForDisputeDisplay(r, dCtx);
-            applyCorrectionFieldsToRowScoped(r, entryId);
-            if (r.status !== 'voided') r.status = 'confirmed';
-            recordDisputeInstanceDiff(dCtx, snapBefore, snapshotInstanceForDisputeDisplay(r, dCtx));
-            var sum = '修正实例「' + (r.name || id) + '」用量信息';
-            entries.push({ mode: 'modify', modeLabel: '修正实例用量', instId: id, summary: sum });
-            summaries.push(sum);
-        } else {
-            var addRoot = card.querySelector('.js-entry-add-root');
-            var addResult = applyAddInstBlocksFromRoot(addRoot);
-            if (addResult.error) {
-                showToast('处理数据 ' + (ci + 1) + '：' + addResult.error);
-                return;
-            }
-            var n = addResult.records.length;
-            var names = addResult.records
-                .map(function (rec) { return rec.name || rec.id; })
-                .slice(0, 3)
-                .join('、');
-            var sum = '新增 ' + n + ' 条实例' + (names ? '（' + names + (n > 3 ? ' 等' : '') + '）' : '');
-            entries.push({ mode: 'add', modeLabel: '新增实例', addCount: n, summary: sum });
-            summaries.push(sum);
+        var id = getCorrEntryInstId(card);
+        if (!id) {
+            showToast('处理数据 ' + (ci + 1) + '：请选择关联实例');
+            return;
         }
+        var r = detailData.find(function (x) { return x.id === id; });
+        if (!r) {
+            showToast('处理数据 ' + (ci + 1) + '：未找到所选实例');
+            return;
+        }
+        var rowBefore = Object.assign({}, r);
+        var snapBefore = snapshotInstanceForDisputeDisplay(rowBefore, dCtx);
+        applyCorrectionFieldsToRowScoped(r, entryId);
+        if (r.status !== 'voided') r.status = 'confirmed';
+        recordDisputeInstanceDiff(dCtx, snapBefore, snapshotInstanceForDisputeDisplay(r, dCtx), {
+            instId: id,
+            instName: r.name || id,
+        });
+        var sum = '修正实例「' + (r.name || id) + '」用量信息';
+        entries.push({ mode: 'modify', modeLabel: '修正', instId: id, summary: sum });
+        summaries.push(sum);
+    }
+    var noteEl = document.getElementById('disputeCompletePostNote');
+    var note = noteEl ? (noteEl.value || '').trim() : '';
+    if (!note) {
+        showToast('请填写处理说明');
+        return;
     }
     d.correctionEntries = entries;
-    d.postNote = summaries.join('；');
+    d.postNote = note;
+    d.postNoteLabel = '处理说明';
     d.type = '已修正';
     appendDisputeProcessLog(
         d,
@@ -3878,8 +4414,10 @@ function openAdminDisputeProcessModal(disputeId, resourceId) {
         '<div class="card-title-sm" style="margin:0;">处理数据</div>' +
         '<button type="button" class="btn btn-sm btn-default" onclick="addAdminCorrEntryCard()">+ 添加一条处理数据</button>' +
         '</div>' +
-        '<p class="muted" style="font-size:12px;margin:8px 0 12px;">每条处理数据可选择<strong>修正实例用量</strong>（须选择关联实例）或<strong>新增实例</strong>，可添加多条后一并提交完结。</p>' +
-        '<div id="corrEntriesRoot"></div>';
+        '<p class="muted" style="font-size:12px;margin:8px 0 12px;">每条处理数据须选择<strong>关联实例</strong>；计费资源由实例规格关联成本池自动带出（只读），云主机/物理机修正规格，其他服务修正用量，可添加多条后一并提交完结。</p>' +
+        '<div id="corrEntriesRoot"></div>' +
+        '<div class="card-title-sm" style="margin:20px 0 8px;">处理说明 <span class="muted" style="font-weight:400;font-size:12px;">（必填，与处理数据分开填写）</span></div>' +
+        '<textarea id="disputeCompletePostNote" rows="3" style="width:100%;box-sizing:border-box;" placeholder="请填写本次异议的处理结论，如核减依据、归属调整说明等"></textarea>';
     addAdminCorrEntryCard(prefillInst || '');
     setAdminDisputeCorrectionFooter();
     openModal('usageCorrectionModal');
@@ -3950,12 +4488,6 @@ function saveUsageCorrection() {
             r.instState = sv;
             if (sv === '作废') r.status = 'voided';
         }
-    }
-
-    const note = document.getElementById('corrExtraNote');
-    if (note) {
-        const nv = (note.value || '').trim();
-        if (nv) r.instanceStateInfo = nv;
     }
 
     if (linkedDisputeIdEarly) {
@@ -4438,10 +4970,9 @@ function buildAddInstanceBlockHtml(disputeRow, taskPrefill, expanded) {
         '<button type="button" class="btn btn-sm btn-default btn-add-inst-remove" onclick="removeAddInstanceBlock(this)">删除</button></div></div>' +
         '<div class="add-inst-block-body">' +
         '<div class="add-inst-owner-section"><div class="add-inst-spec-divider"><span>归属信息</span></div>' +
-        '<div class="form-row"><div class="form-item"><label>实例ID</label>' +
-        '<input type="text" class="js-add-inst-field" data-field="id" value="" placeholder="留空则自动生成" style="background:#f8f9fa;"></div>' +
-        '<div class="form-item"><label>实例名称 *</label>' +
+        '<div class="form-row full"><div class="form-item"><label>实例名称 *</label>' +
         '<input type="text" class="js-add-inst-field" data-field="name" value="" placeholder="' + escHtmlAttr(namePh) + '"></div></div>' +
+        '<input type="hidden" class="js-add-inst-field" data-field="id" value="">' +
         '<div class="form-row">' + buildAddInstSelectFieldInBlock('svc', '服务分类', 'svc', true, d ? '虚机化/虚拟机' : '', exSvc) +
         buildAddInstSelectFieldInBlock('dept', '部门', 'dept', true, deptSel, exDept) + '</div>' +
         '<div class="form-row">' + buildAddInstSelectFieldInBlock('owner', '归属人', 'owner', false, ownerSel, exOwner) +
@@ -4829,11 +5360,6 @@ function showToast(msg) {
     setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2200);
 }
 
-// 账期切换
-document.getElementById('globalBillMonth').addEventListener('change', function() {
-    showToast('账期已切换至 ' + this.value);
-});
-
 // 服务目录折叠（侧栏为服务分类两级树）
 document.getElementById('resServiceSidebarToggle').addEventListener('click', function() {
     const sidebar = document.getElementById('resServiceCategorySidebar');
@@ -4845,6 +5371,8 @@ document.getElementById('resServiceSidebarToggle').addEventListener('click', fun
 // Init
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', ()=>{
+    syncGlobalBillMonthDisplay();
+    seedDisputeDemoSnapshots();
     buildUsageAdvDrawerFields();
     (function bindUsageDetailSearchUI() {
         var btnS = document.getElementById('btnUsageSearch');

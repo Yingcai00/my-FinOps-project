@@ -1,8 +1,8 @@
-<!-- 侧边栏组件（与 usage-management / bill-overview 菜单结构一致） -->
+<!-- 侧边栏：全站统一菜单（与各 html 页一致） -->
 <div class="sidebar">
     <div class="sidebar-header">
         <span>菜单导航</span>
-        <button class="sidebar-collapse-btn">▼</button>
+        <button type="button" class="sidebar-collapse-btn" aria-label="折叠侧栏">▼</button>
     </div>
     <ul class="sidebar-menu" style="list-style:none;padding:0;margin:0;">
         <li><a href="asset-ledger-management.html" class="menu-item">B类资产管理</a></li>
@@ -41,15 +41,7 @@
                 <li><a href="bill-overview.html" class="sub-menu-item">账单分析</a></li>
             </ul>
         </li>
-        <li class="menu-item-container">
-            <a href="usage-push-strategy-management.html" class="menu-item">
-                <span>消息推送</span>
-                <span class="menu-arrow">▼</span>
-            </a>
-            <ul class="sub-menu">
-                <li><a href="usage-push-strategy-management.html" class="sub-menu-item">消息推送</a></li>
-            </ul>
-        </li>
+        <li><a href="usage-push-strategy-management.html" class="menu-item">消息推送</a></li>
         <li><a href="allocation-management.html" class="menu-item">分账管理</a></li>
         <li class="menu-item-container">
             <a href="system-management.html" class="menu-item">

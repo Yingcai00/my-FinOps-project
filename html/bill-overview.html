@@ -6,6 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>FinOps财务运营管理平台 - 账单分析</title>
     <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+    <link rel="stylesheet" href="../css/finops-page-annotations.css">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -159,7 +160,7 @@
             margin-bottom: 20px;
         }
         .stats-grid--primary {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
         }
         @media (max-width: 900px) {
             .stats-grid--primary { grid-template-columns: 1fr; }
@@ -172,8 +173,39 @@
         }
         .stat-box .label { color: #666; font-size: 13px; }
         .stat-box .value { font-size: 22px; font-weight: 600; margin-top: 6px; color: #cf1322; }
-        .stat-box .value--confirmed { color: #389e0d; }
-        .stat-box .value--pending { color: #d46b08; }
+        .stat-box .value--mom-up { color: #cf1322; }
+        .stat-box .value--mom-down { color: #389e0d; }
+        .stat-box .value--mom-flat { color: #666; }
+        .view-switch {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-left: 16px;
+        }
+        .view-switch-label { color: #666; font-size: 13px; }
+        .view-toggle-btn {
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .view-toggle-btn.active {
+            color: #1890ff;
+            border-color: #1890ff;
+            background: #e6f7ff;
+        }
+        .notice-bar {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #0050b3;
+        }
         .stat-box .sub { font-size: 12px; color: #52c41a; margin-top: 4px; }
         .stat-box .sub.sub--muted { color: #999; }
         .section-block { margin-top: 28px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
@@ -513,10 +545,16 @@
             <div class="bill-analysis-page">
                 <section class="card analysis-panel analysis-panel--upper" aria-label="账期、账单统计与费用构成">
                     <div class="bill-overview-head">
-                        <div class="bill-global-bar">
+                        <div class="bill-global-bar" style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;">
                             <div class="field">
                                 <label for="globalBillMonth">账期</label>
                                 <input type="month" id="globalBillMonth" value="2026-05" autocomplete="off">
+                            </div>
+                            <div class="view-switch" id="billAnalysisViewSwitch" role="group" aria-label="账单分析查看视角">
+                                <span class="view-switch-label">查看视角：</span>
+                                <button type="button" class="view-toggle-btn" id="viewAnalysisUser">用户</button>
+                                <button type="button" class="view-toggle-btn" id="viewAnalysisDeptHead">部门负责人</button>
+                                <button type="button" class="view-toggle-btn active" id="viewAnalysisOpsAdmin">运维管理员</button>
                             </div>
                         </div>
                     </div>
@@ -528,17 +566,12 @@
                             <div class="stat-box">
                                 <div class="label">本月账单总额（元）</div>
                                 <div class="value" id="ovTotalBill">128,660.35</div>
-                                <div class="sub" id="ovSubTotal">与当前所选账期一致</div>
+                                <div class="sub" id="ovSubTotal">与当前所选账期、查看视角一致</div>
                             </div>
                             <div class="stat-box">
-                                <div class="label">已确认金额（元）</div>
-                                <div class="value value--confirmed" id="ovConfirmed">118,200.00</div>
-                                <div class="sub">占总额 <span id="ovConfirmedRatio">91.9</span>%</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="label">待确认金额（元）</div>
-                                <div class="value value--pending" id="ovPending">10,460.35</div>
-                                <div class="sub sub--muted">含争议单、待对账项（示意）</div>
+                                <div class="label">环比上月</div>
+                                <div class="value value--mom-up" id="ovMomPct">+5.2%</div>
+                                <div class="sub sub--muted" id="ovMomSub">较上一账期账单总额变动（示意）</div>
                             </div>
                         </div>
                     </div>
@@ -572,23 +605,109 @@
         { value: 'product', label: '按备案产品' }
     ];
 
-    /** 费用趋势分析专用：在通用维度上增加「按总费用」（不用于费用构成环形图） */
-    var TREND_DIMENSION_OPTIONS = DIMENSION_OPTIONS.concat([{ value: 'total', label: '按总费用' }]);
+    /** 账单分析 · 查看视角：user | deptHead | opsAdmin */
+    var currentAnalysisView = 'opsAdmin';
+    /** 部门负责人示意：anchorLevel 1=一级负责人（按下一级=二级部门），2=二级负责人（按下一级=三级/团队） */
+    var analysisDeptHeadProfile = {
+        anchorLevel: 2,
+        anchorName: '基础架构部',
+        l2Children: ['基础架构部', '应用研发部'],
+        childUnits: [
+            { name: '平台组', pct: 38 },
+            { name: '中间件组', pct: 35 },
+            { name: '可靠性组', pct: 27 }
+        ],
+        l2Segments: [
+            { name: '基础架构部', pct: 55 },
+            { name: '应用研发部', pct: 45 }
+        ]
+    };
 
     var BASE_DIMENSION_ITEMS = {
-        department: ['研发中心', '运维中心', '大数据部', '安全合规部'],
+        department: ['研发中心/基础架构部', '研发中心/应用研发部', '运维中心/平台运维部', '大数据部/数据平台部'],
         service: ['云主机 ECS', '对象存储 OSS', '云数据库 RDS', '负载均衡 SLB', 'CDN'],
         product: ['核心交易系统备案', '营销中台备案', '数据中台备案', '日志与审计备案']
     };
 
+    function isAnalysisOpsAdminView() {
+        return currentAnalysisView === 'opsAdmin';
+    }
+    function isAnalysisDeptHeadView() {
+        return currentAnalysisView === 'deptHead';
+    }
+    function isAnalysisUserView() {
+        return currentAnalysisView === 'user';
+    }
+
+    function getAnalysisDimensionOptions() {
+        if (isAnalysisUserView()) {
+            return DIMENSION_OPTIONS.filter(function (o) {
+                return o.value !== 'department';
+            });
+        }
+        return DIMENSION_OPTIONS.slice();
+    }
+
+    function getTrendDimensionOptions() {
+        return getAnalysisDimensionOptions().concat([{ value: 'total', label: '按总费用' }]);
+    }
+
+    /** 部门负责人 · 按部门：统计项为所辖组织的下一级单元 */
+    function getDepartmentItemsForView() {
+        if (isAnalysisOpsAdminView()) {
+            return BASE_DIMENSION_ITEMS.department.slice();
+        }
+        if (isAnalysisDeptHeadView()) {
+            if (analysisDeptHeadProfile.anchorLevel === 1) {
+                return analysisDeptHeadProfile.l2Children.slice();
+            }
+            return analysisDeptHeadProfile.childUnits.map(function (u) {
+                return u.name;
+            });
+        }
+        return [];
+    }
+
     function getEffectiveDimensionItems(dim) {
         if (dim === 'total') return ['总费用'];
-        return BASE_DIMENSION_ITEMS[dim].slice();
+        if (dim === 'department') {
+            if (isAnalysisUserView()) return [];
+            return getDepartmentItemsForView();
+        }
+        return (BASE_DIMENSION_ITEMS[dim] || []).slice();
     }
 
     function getEffectiveCompositionSegments(dim) {
+        if (dim === 'department' && isAnalysisUserView()) {
+            return BASE_COMPOSITION_SEGMENTS.service.slice();
+        }
+        if (dim === 'department' && isAnalysisDeptHeadView()) {
+            if (analysisDeptHeadProfile.anchorLevel === 1) {
+                return analysisDeptHeadProfile.l2Segments.slice();
+            }
+            return analysisDeptHeadProfile.childUnits.slice();
+        }
+        if (dim === 'department') {
+            return BASE_COMPOSITION_SEGMENTS.department.slice();
+        }
         var base = BASE_COMPOSITION_SEGMENTS[dim] || BASE_COMPOSITION_SEGMENTS.service;
         return base.slice();
+    }
+
+    function getDefaultCompositionDim() {
+        if (isAnalysisUserView()) return 'service';
+        return 'department';
+    }
+
+    function sanitizeDimsForView(dims, allowTotal) {
+        var allowed = (allowTotal ? getTrendDimensionOptions() : getAnalysisDimensionOptions()).map(function (o) {
+            return o.value;
+        });
+        var out = dims.slice().filter(function (d) {
+            return allowed.indexOf(d) >= 0;
+        });
+        if (!out.length) out.push(getDefaultCompositionDim());
+        return out;
     }
 
     var BASE_COMPOSITION_SEGMENTS = {
@@ -600,10 +719,10 @@
             { name: '其他', pct: 6 }
         ],
         department: [
-            { name: '研发中心', pct: 35 },
-            { name: '运维中心', pct: 28 },
-            { name: '大数据部', pct: 22 },
-            { name: '安全合规部', pct: 15 }
+            { name: '基础架构部', pct: 32 },
+            { name: '应用研发部', pct: 28 },
+            { name: '平台运维部', pct: 22 },
+            { name: '数据平台部', pct: 18 }
         ],
         product: [
             { name: '核心交易系统备案', pct: 40 },
@@ -617,41 +736,39 @@
 
     /** 各账期统计示意（按账期） */
     var overviewByMonth = {
-        '2026-05': { totalBill: 128660.35, confirmed: 118200, pending: 10460.35 },
-        '2026-04': { totalBill: 122350.8, confirmed: 120000, pending: 2350.8 },
-        '2026-03': { totalBill: 115280.5, confirmed: 115280.5, pending: 0 },
-        '2026-02': { totalBill: 98520.3, confirmed: 98520.3, pending: 0 },
-        '2026-01': { totalBill: 118920.0, confirmed: 118920.0, pending: 0 }
+        '2026-05': { totalBill: 128660.35, deptCount: 12 },
+        '2026-04': { totalBill: 122350.8, deptCount: 12 },
+        '2026-03': { totalBill: 115280.5, deptCount: 11 },
+        '2026-02': { totalBill: 98520.3, deptCount: 11 },
+        '2026-01': { totalBill: 118920.0, deptCount: 11 }
     };
 
     var compositionModuleSeq = 0;
     var trendModuleSeq = 0;
 
-    /** 费用构成各图维度（与下拉同步） */
-    var compositionDims = ['service'];
+    /** 费用构成各图维度（与下拉同步）；运维/部门负责人默认按部门 */
+    var compositionDims = ['department'];
     /** 趋势图配置 */
     var trendChartsSpec = [{ dim: 'service', span: '6' }];
 
     function nextDimForAdd(currentDimValues) {
+        var opts = getAnalysisDimensionOptions();
         var list = currentDimValues.slice();
-        for (var k = 0; k < DIMENSION_OPTIONS.length; k++) {
-            var v = DIMENSION_OPTIONS[k].value;
-            if (list.indexOf(v) < 0) {
-                return v;
-            }
+        for (var k = 0; k < opts.length; k++) {
+            var v = opts[k].value;
+            if (list.indexOf(v) < 0) return v;
         }
-        return DIMENSION_OPTIONS[list.length % DIMENSION_OPTIONS.length].value;
+        return opts[list.length % opts.length].value;
     }
 
     function nextTrendDimForAdd(currentDimValues) {
+        var opts = getTrendDimensionOptions();
         var list = currentDimValues.slice();
-        for (var k = 0; k < TREND_DIMENSION_OPTIONS.length; k++) {
-            var v = TREND_DIMENSION_OPTIONS[k].value;
-            if (list.indexOf(v) < 0) {
-                return v;
-            }
+        for (var k = 0; k < opts.length; k++) {
+            var v = opts[k].value;
+            if (list.indexOf(v) < 0) return v;
         }
-        return TREND_DIMENSION_OPTIONS[list.length % TREND_DIMENSION_OPTIONS.length].value;
+        return opts[list.length % opts.length].value;
     }
 
     function makeChartAddTile(onClick, ariaLabel) {
@@ -672,40 +789,91 @@
         return d.innerHTML;
     }
 
+    function prevMonthKey(monthVal) {
+        var parts = String(monthVal || '2026-05').split('-');
+        var y = parseInt(parts[0], 10) || 2026;
+        var m = parseInt(parts[1], 10) || 5;
+        m -= 1;
+        if (m < 1) {
+            m = 12;
+            y -= 1;
+        }
+        return y + '-' + (m < 10 ? '0' : '') + m;
+    }
+
     function getOverviewPack() {
         var month = document.getElementById('globalBillMonth').value;
-        return overviewByMonth[month] || overviewByMonth['2026-05'] || { totalBill: 0, confirmed: 0, pending: 0 };
+        return overviewByMonth[month] || overviewByMonth['2026-05'] || { totalBill: 0, deptCount: 0 };
     }
 
     function getOverviewPackScoped() {
-        return getOverviewPack();
+        var pack = getOverviewPack();
+        var total = Number(pack.totalBill) || 0;
+        if (isAnalysisUserView()) {
+            return { totalBill: total * 0.12, deptCount: 0 };
+        }
+        if (isAnalysisDeptHeadView()) {
+            return {
+                totalBill: total * 0.38,
+                deptCount:
+                    analysisDeptHeadProfile.anchorLevel === 1
+                        ? analysisDeptHeadProfile.l2Children.length
+                        : analysisDeptHeadProfile.childUnits.length
+            };
+        }
+        return pack;
+    }
+
+    function getStatsScopeHint(pack) {
+        if (isAnalysisUserView()) return '用户视角：仅本人相关费用';
+        if (isAnalysisDeptHeadView()) {
+            return '部门负责人视角：所辖范围 · 下一级部门 ' + (pack.deptCount || 0) + ' 个';
+        }
+        return '运维视角：全组织 · 涉及部门 ' + (pack.deptCount || 0) + ' 个';
     }
 
     function refreshOverviewStats() {
+        var month = document.getElementById('globalBillMonth').value;
         var pack = getOverviewPackScoped();
         var total = Number(pack.totalBill) || 0;
-        var conf = Number(pack.confirmed) || 0;
-        var pend = Number(pack.pending);
-        if (pend == null || isNaN(pend)) pend = Math.max(0, total - conf);
         document.getElementById('ovTotalBill').textContent = total.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
-        document.getElementById('ovConfirmed').textContent = conf.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
-        document.getElementById('ovPending').textContent = pend.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
-        var ratio = total > 0 ? ((conf / total) * 100).toFixed(1) : '0.0';
-        document.getElementById('ovConfirmedRatio').textContent = ratio;
         var subEl = document.getElementById('ovSubTotal');
-        if (subEl) subEl.textContent = '与当前所选账期一致';
+        if (subEl) subEl.textContent = '与当前所选账期一致 · ' + getStatsScopeHint(pack);
+        var prev = overviewByMonth[prevMonthKey(month)];
+        var momEl = document.getElementById('ovMomPct');
+        var momSub = document.getElementById('ovMomSub');
+        if (prev && prev.totalBill > 0 && isAnalysisOpsAdminView()) {
+            var pct = ((total - prev.totalBill) / prev.totalBill) * 100;
+            var sign = pct > 0 ? '+' : '';
+            momEl.textContent = sign + pct.toFixed(1) + '%';
+            momEl.className =
+                'value ' + (pct > 0.05 ? 'value--mom-up' : pct < -0.05 ? 'value--mom-down' : 'value--mom-flat');
+            if (momSub) momSub.textContent = '较 ' + prevMonthKey(month) + ' 账期总额变动（示意）';
+        } else if (prev && prev.totalBill > 0) {
+            var pct2 = ((total - prev.totalBill * (isAnalysisDeptHeadView() ? 0.38 : 0.12)) / (prev.totalBill * (isAnalysisDeptHeadView() ? 0.38 : 0.12))) * 100;
+            momEl.textContent = (pct2 > 0 ? '+' : '') + pct2.toFixed(1) + '%';
+            momEl.className = 'value value--mom-up';
+            if (momSub) momSub.textContent = '当前视角可见范围较上月（示意）';
+        } else {
+            momEl.textContent = '—';
+            momEl.className = 'value value--mom-flat';
+        }
     }
 
     function buildDimensionSelectHtml() {
-        return DIMENSION_OPTIONS.map(function (o) {
-            return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
-        }).join('');
+        return getAnalysisDimensionOptions()
+            .map(function (o) {
+                return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
+            })
+            .join('');
     }
 
     function buildTrendDimensionSelectHtml() {
-        return TREND_DIMENSION_OPTIONS.map(function (o) {
-            return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
-        }).join('');
+        return getTrendDimensionOptions()
+            .map(function (o) {
+                return '<option value="' + escapeHtml(o.value) + '">' + escapeHtml(o.label) + '</option>';
+            })
+            .join('');
     }
 
     function conicFromSegments(segments) {
@@ -1025,10 +1193,54 @@
     }
 
     function initChartSections() {
-        compositionDims = ['service'];
+        compositionDims = [getDefaultCompositionDim()];
         trendChartsSpec = [{ dim: 'service', span: '6' }];
         renderCompositionGrid();
         renderTrendGrid();
+    }
+
+    function setAnalysisView(view) {
+        currentAnalysisView = view;
+        ['viewAnalysisUser', 'viewAnalysisDeptHead', 'viewAnalysisOpsAdmin'].forEach(function (id) {
+            var btn = document.getElementById(id);
+            if (!btn) return;
+            var v =
+                id === 'viewAnalysisUser' ? 'user' : id === 'viewAnalysisDeptHead' ? 'deptHead' : 'opsAdmin';
+            btn.classList.toggle('active', v === view);
+        });
+        compositionDims = sanitizeDimsForView(compositionDims, false);
+        if (isAnalysisDeptHeadView() || isAnalysisOpsAdminView()) {
+            compositionDims = compositionDims.map(function (d) {
+                return d === 'service' && compositionDims.length === 1 ? 'department' : d;
+            });
+            if (compositionDims.indexOf('department') < 0 && !isAnalysisUserView()) {
+                compositionDims = ['department'];
+            }
+        }
+        trendChartsSpec = trendChartsSpec.map(function (s) {
+            return { dim: sanitizeDimsForView([s.dim], true)[0], span: s.span };
+        });
+        refreshOverviewStats();
+        renderCompositionGrid();
+        renderTrendGrid();
+        if (window.FinOpsPageAnnotations && window.FinOpsPageAnnotations.refresh) {
+            window.FinOpsPageAnnotations.refresh();
+        }
+    }
+
+    function bindAnalysisViewSwitch() {
+        var map = [
+            ['viewAnalysisUser', 'user'],
+            ['viewAnalysisDeptHead', 'deptHead'],
+            ['viewAnalysisOpsAdmin', 'opsAdmin']
+        ];
+        map.forEach(function (pair) {
+            var btn = document.getElementById(pair[0]);
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                setAnalysisView(pair[1]);
+            });
+        });
     }
 
     function refreshAllChartModules() {
@@ -1049,12 +1261,15 @@
         refreshAllChartModules();
     });
 
+    bindAnalysisViewSwitch();
     refreshOverviewStats();
     initChartSections();
 })();
     </script>
     <script src="../js/finops-session-header.js" defer></script>
-        <script src="../js/finops-table-ui.js" defer></script>
-<script src="../js/finops-nav-active.js" defer></script>
+    <script src="../js/finops-table-ui.js" defer></script>
+    <script src="../js/finops-nav-active.js" defer></script>
+    <script src="../js/finops-page-annotations.js" defer></script>
+    <script src="../js/finops-annotations-bill-overview.js" defer></script>
 </body>
 </html>

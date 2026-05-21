@@ -41,3 +41,4 @@ alwaysApply: true
 
 - 新建文件时优先落在上表对应目录，避免散落在仓库根目录；**superpowers 生成的文件除外**，按上文「Superpowers 产出」一节处理。
 - 若目录不存在再创建同名目录（与上表中文名一致）。
+- **各模块须有需求文档**；每次对话中的逻辑与交互变更须与代码/原型同步更新需求文档，见 `finops-requirements-sync.mdc`（`alwaysApply`）。

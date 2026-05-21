@@ -6,6 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>FinOps财务运营管理平台 - 账单</title>
     <link rel="stylesheet" href="../css/finops-ui-consistency.css">
+    <link rel="stylesheet" href="../css/finops-page-annotations.css">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1035,7 +1036,7 @@
                 <p class="muted bill-global-month-hint" id="globalBillMonthHint" role="note">
                     确认用量后，每月 <strong>10 日 00:00</strong> 出具并发送<strong>上月</strong>正式账单；发送后账单<strong>不可修改</strong>（数据修正须走用量异议或运营侧流程，示意）。
                     在当前自然月 <strong>10 日 00:00 之前</strong>登录，仅能查看 <strong>N−2 月</strong>及更早账单（N 为当前自然月）；<strong>10 日 00:00（含）起</strong>可查看范围包含<strong>N−1 月</strong>（上月）正式账单。
-                    <strong>一期</strong>已取消「账单确认」机制；<strong>账单 Tab「账单状态」</strong>与月度总览<strong>账期级状态</strong>联动：账期为<strong>出账中</strong>时各行列<strong>统一</strong>显示「出账中」；账期为<strong>未出账</strong>时统一「未出账」；账期为<strong>已出账</strong>时各部门/标签行均为<strong>已出账</strong>。
+                    <strong>账单 Tab「账单状态」</strong>与月度总览<strong>账期级状态</strong>联动：账期为<strong>出账中</strong>时各行列<strong>统一</strong>显示「出账中」；账期为<strong>未出账</strong>时统一「未出账」；账期为<strong>已出账</strong>时各部门/标签行均为<strong>已出账</strong>。
                 </p>
                 <div class="notice-bar" id="billViewNoticeBar" style="margin-top:10px;" role="status">
                     <span id="billViewNoticeText"></span>
@@ -1091,8 +1092,8 @@
                             <div class="export-wrap" id="deptExportWrap">
                                 <button type="button" class="btn btn-default" id="btnDeptExportToggle" aria-expanded="false" aria-haspopup="true">导出</button>
                                 <div class="export-menu" id="deptExportMenu" role="menu">
-                                    <button type="button" role="menuitem" id="btnDeptExportSelected">导出选中（ZIP）</button>
-                                    <button type="button" role="menuitem" id="btnDeptExportAll">导出全部（ZIP）</button>
+                                    <button type="button" role="menuitem" id="btnDeptExportFiltered">导出筛选</button>
+                                    <button type="button" role="menuitem" id="btnDeptExportAll">导出全部</button>
                                 </div>
                             </div>
                         </div>
@@ -1151,7 +1152,13 @@
                                     </div>
                                     <div class="res-stat-actions">
                                         <button type="button" class="btn btn-default" id="btnColSettings">表头设置</button>
-                                        <button type="button" class="btn btn-default" id="btnResExport">导出</button>
+                                        <div class="export-wrap" id="resExportWrap">
+                                            <button type="button" class="btn btn-default" id="btnResExportToggle" aria-expanded="false" aria-haspopup="true">导出</button>
+                                            <div class="export-menu" id="resExportMenu" role="menu">
+                                                <button type="button" role="menuitem" id="btnResExportFiltered">导出筛选</button>
+                                                <button type="button" role="menuitem" id="btnResExportAll">导出全部</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="res-table-panel">
@@ -1216,7 +1223,8 @@
                         <label><input type="radio" name="pushBillScope" value="user"> 指定人员</label>
                     </div>
                     <div id="pushBillFullHint" style="margin:0 0 10px 0;padding:10px 12px;background:#f6ffed;border:1px solid #b7eb8f;border-radius:4px;font-size:12px;line-height:1.55;color:#333;">
-                        全量时一期规则写死：<strong>按二级部门汇总</strong>生成账单摘要，<strong>邮件</strong>发送至各部门<strong>负责人</strong>，正文附<strong>账单查看地址</strong>（无需配置推送策略）。
+                        全量时首期规则：<strong>按二级部门</strong>生成正式账单 <strong>PDF</strong>，<strong>邮件</strong>发送至各部门<strong>负责人</strong>（附件 PDF + 正文平台深链）。
+                        完整向导见 <a href="bill-push-email-pdf-prototype.html" style="color:#1890ff;">推送账单原型</a>。
                     </div>
                     <div id="pushBillDeptPick" style="display:none;">
                         <div class="field" style="margin-bottom:0;">
@@ -1476,8 +1484,101 @@
     var sessionBillUser = {
         name: '张明',
         deptLevel1: '研发中心',
-        deptLevel2: '基础架构部'
+        deptLevel2: '基础架构部',
+        /** 部门负责人所辖组织节点（对接主数据）；二级负责人示例：仅「基础架构部」及下属，不可见上级「研发中心」汇总 */
+        deptHeadOf: '基础架构部'
     };
+    var billDeptHeadScopePathCache = {};
+
+    function findBillDeptTreeNodeByName(nodes, targetName, pathPrefix) {
+        var target = String(targetName || '').trim();
+        if (!target) return null;
+        var hits = [];
+        function walk(ns, prefix) {
+            (ns || []).forEach(function (n) {
+                var p = prefix ? prefix + '/' + n.name : n.name;
+                if (n.name === target) hits.push({ node: n, path: p });
+                walk(n.children, p);
+            });
+        }
+        walk(nodes, pathPrefix);
+        if (!hits.length) return null;
+        var i;
+        for (i = 0; i < hits.length; i++) {
+            var parts = hits[i].path.split('/');
+            if (sessionBillUser.deptLevel2 && parts.length >= 2) {
+                if (
+                    parts[0] === sessionBillUser.deptLevel1 &&
+                    parts[1] === sessionBillUser.deptLevel2
+                ) {
+                    return hits[i];
+                }
+            } else if (sessionBillUser.deptLevel1 && parts[0] === sessionBillUser.deptLevel1) {
+                return hits[i];
+            }
+        }
+        hits.sort(function (a, b) {
+            return b.path.split('/').length - a.path.split('/').length;
+        });
+        return hits[0];
+    }
+
+    function getBillDeptHeadAnchorPath() {
+        var head = String(sessionBillUser.deptHeadOf || '').trim();
+        if (!head) {
+            head = String(sessionBillUser.deptLevel2 || sessionBillUser.deptLevel1 || '').trim();
+        }
+        if (!head) return '';
+        if (!billDeptHeadScopePathCache[head]) {
+            var hit = findBillDeptTreeNodeByName(deptTreeRoot, head, '');
+            billDeptHeadScopePathCache[head] = hit ? hit.path : '';
+        }
+        return billDeptHeadScopePathCache[head];
+    }
+
+    function getBillDeptHeadAnchorParts() {
+        return getBillDeptHeadAnchorPath()
+            .split('/')
+            .map(function (p) {
+                return p.trim();
+            })
+            .filter(Boolean);
+    }
+
+    function deptPathInBillDeptHeadScope(deptPathStr) {
+        var anchor = getBillDeptHeadAnchorPath();
+        if (!anchor) return false;
+        var p = String(deptPathStr || '').trim();
+        if (!p) return false;
+        if (p === anchor) return true;
+        return p.indexOf(anchor + '/') === 0;
+    }
+
+    function resourceRowInBillDeptHeadScope(row) {
+        if (!row) return false;
+        if (row.deptPath) return deptPathInBillDeptHeadScope(row.deptPath);
+        var parts = [row.deptLevel1, row.deptLevel2, row.resourceOwner]
+            .map(function (x) {
+                return x != null ? String(x).trim() : '';
+            })
+            .filter(Boolean);
+        return deptPathInBillDeptHeadScope(parts.join('/'));
+    }
+
+    function deptSubtreeHasBillDeptHeadScope(node, pathPrefix) {
+        var deptPathStr = pathPrefix ? pathPrefix + '/' + node.name : node.name;
+        if (deptPathInBillDeptHeadScope(deptPathStr)) return true;
+        if (
+            (node.users || []).some(function (u) {
+                return deptPathInBillDeptHeadScope(deptPathStr + '/' + u.name);
+            })
+        ) {
+            return true;
+        }
+        return (node.children || []).some(function (ch) {
+            return deptSubtreeHasBillDeptHeadScope(ch, deptPathStr);
+        });
+    }
 
     function isBillOpsAdminView() {
         return currentBillView === 'opsAdmin';
@@ -1492,26 +1593,22 @@
     function resourceRowVisibleForBillView(row) {
         if (isBillOpsAdminView()) return true;
         if (isBillDeptHeadView()) {
-            return String(row.deptLevel2 || '').trim() === sessionBillUser.deptLevel2;
+            return resourceRowInBillDeptHeadScope(row);
         }
         return String(row.resourceOwner || '').trim() === sessionBillUser.name;
     }
 
     function deptPathVisibleForBillView(deptPathStr) {
         if (isBillOpsAdminView()) return true;
+        if (isBillDeptHeadView()) {
+            return deptPathInBillDeptHeadScope(deptPathStr);
+        }
         var parts = String(deptPathStr || '')
             .split('/')
             .map(function (p) {
                 return p.trim();
             })
             .filter(Boolean);
-        if (isBillDeptHeadView()) {
-            if (parts.length === 1) return parts[0] === sessionBillUser.deptLevel1;
-            if (parts.length >= 2) {
-                return parts[0] === sessionBillUser.deptLevel1 && parts[1] === sessionBillUser.deptLevel2;
-            }
-            return false;
-        }
         if (parts.length >= 3) {
             return (
                 parts[0] === sessionBillUser.deptLevel1 &&
@@ -1530,6 +1627,9 @@
                 return deptPathVisibleForBillView(deptPathStr);
             }
             return false;
+        }
+        if (isBillDeptHeadView()) {
+            return deptSubtreeHasBillDeptHeadScope(node, pathPrefix);
         }
         if (deptPathVisibleForBillView(deptPathStr)) return true;
         if (
@@ -1577,17 +1677,18 @@
             }
         } else if (isBillDeptHeadView()) {
             billStatMode = 'dept';
-            billDeptFilters.l1 = sessionBillUser.deptLevel1;
-            billDeptFilters.l2 = sessionBillUser.deptLevel2;
+            var anchorParts = getBillDeptHeadAnchorParts();
+            billDeptFilters.l1 = anchorParts[0] || '';
+            billDeptFilters.l2 = anchorParts.length >= 2 ? anchorParts[1] : '';
             if (ownEl && !ownEl.disabled) {
                 billDeptFilters.owner = String(ownEl.value || '').trim();
             } else {
                 billDeptFilters.owner = billDeptFilters.owner || '';
             }
-            if (l1El) l1El.value = sessionBillUser.deptLevel1;
-            if (l2El) l2El.value = sessionBillUser.deptLevel2;
+            if (l1El) l1El.value = billDeptFilters.l1;
+            if (l2El) l2El.value = billDeptFilters.l2;
             setBillFilterFieldLocked(l1El, true);
-            setBillFilterFieldLocked(l2El, true);
+            setBillFilterFieldLocked(l2El, anchorParts.length >= 2);
             setBillFilterFieldLocked(ownEl, false);
             if (dimSel) {
                 dimSel.value = 'dept';
@@ -1608,8 +1709,9 @@
             resAdvApplied.deptLevel2 = sessionBillUser.deptLevel2;
             resAdvApplied.resourceOwner = sessionBillUser.name;
         } else if (isBillDeptHeadView()) {
-            resAdvApplied.deptLevel1 = sessionBillUser.deptLevel1;
-            resAdvApplied.deptLevel2 = sessionBillUser.deptLevel2;
+            var ap = getBillDeptHeadAnchorParts();
+            resAdvApplied.deptLevel1 = ap[0] || '';
+            resAdvApplied.deptLevel2 = ap.length >= 2 ? ap[1] : '';
         }
         applyResAdvToDrawerInputs();
         applyBillViewScopeToResAdvDrawerLock();
@@ -1617,12 +1719,11 @@
 
     function applyBillViewScopeToResAdvDrawerLock() {
         var lockUserKeys = { deptLevel1: 1, deptLevel2: 1, resourceOwner: 1 };
-        var lockHeadKeys = { deptLevel1: 1, deptLevel2: 1 };
         document.querySelectorAll('#resAdvDrawerBody [data-adv-col]').forEach(function (inp) {
             var k = inp.getAttribute('data-adv-col');
             var lock =
                 (isBillUserView() && Object.prototype.hasOwnProperty.call(lockUserKeys, k)) ||
-                (isBillDeptHeadView() && Object.prototype.hasOwnProperty.call(lockHeadKeys, k));
+                (isBillDeptHeadView() && isBillResAdvTagLocked(k));
             setBillFilterFieldLocked(inp, lock);
         });
     }
@@ -1632,7 +1733,9 @@
             return key === 'deptLevel1' || key === 'deptLevel2' || key === 'resourceOwner';
         }
         if (isBillDeptHeadView()) {
-            return key === 'deptLevel1' || key === 'deptLevel2';
+            var ap = getBillDeptHeadAnchorParts();
+            if (key === 'deptLevel1') return true;
+            if (key === 'deptLevel2') return ap.length >= 2;
         }
         return false;
     }
@@ -1644,10 +1747,15 @@
             el.innerHTML =
                 '<strong>运维管理员视角：</strong>可查看全组织账单、重跑出账、推送账单至部门负责人；账单 / 账单明细 / 资源明细为全量数据。';
         } else if (isBillDeptHeadView()) {
+            var scopeLabel =
+                getBillDeptHeadAnchorPath() ||
+                sessionBillUser.deptHeadOf ||
+                sessionBillUser.deptLevel2 ||
+                sessionBillUser.deptLevel1;
             el.innerHTML =
-                '<strong>部门负责人视角：</strong>仅展示所辖二级部门「' +
-                escapeHtml(sessionBillUser.deptLevel2) +
-                '」及下属用户费用汇总；资源明细为本部门全部资源，可按用户筛选。';
+                '<strong>部门负责人视角：</strong>仅展示所辖部门「' +
+                escapeHtml(scopeLabel) +
+                '」及下级部门/用户账单汇总；<strong>不可查看上级部门</strong>账单（如二级负责人不展示一级部门汇总行）。资源明细为所辖范围全部资源，可按下属用户筛选。';
         } else {
             el.innerHTML =
                 '<strong>用户视角：</strong>仅展示本人（' +
@@ -1679,6 +1787,7 @@
         renderMultiTable();
         renderResQueryTags();
         renderResourceTable();
+        finopsAnnRefresh();
     }
 
     function getBillTabResourceRowsForMonth() {
@@ -1707,16 +1816,25 @@
         var prevL1 = billDeptFilters.l1;
         var prevL2 = billDeptFilters.l2;
         l1Sel.innerHTML = '<option value="">全部</option>';
+        var anchorParts = isBillDeptHeadView() ? getBillDeptHeadAnchorParts() : [];
         deptTreeRoot.forEach(function (n) {
-            if (!isBillOpsAdminView() && n.name !== sessionBillUser.deptLevel1) return;
+            if (isBillDeptHeadView()) {
+                if (anchorParts[0] && n.name !== anchorParts[0]) return;
+                if (!deptSubtreeHasBillDeptHeadScope(n, '')) return;
+            } else if (!isBillOpsAdminView() && n.name !== sessionBillUser.deptLevel1) return;
             l1Sel.innerHTML += '<option value="' + escapeHtml(n.name) + '">' + escapeHtml(n.name) + '</option>';
         });
         l2Sel.innerHTML = '<option value="">全部</option>';
         deptTreeRoot.forEach(function (n1) {
-            if (!isBillOpsAdminView() && n1.name !== sessionBillUser.deptLevel1) return;
+            if (isBillDeptHeadView()) {
+                if (anchorParts[0] && n1.name !== anchorParts[0]) return;
+            } else if (!isBillOpsAdminView() && n1.name !== sessionBillUser.deptLevel1) return;
             if (prevL1 && n1.name !== prevL1) return;
             (n1.children || []).forEach(function (n2) {
-                if (!isBillOpsAdminView() && n2.name !== sessionBillUser.deptLevel2) return;
+                var n2Path = n1.name + '/' + n2.name;
+                if (isBillDeptHeadView()) {
+                    if (!deptPathInBillDeptHeadScope(n2Path)) return;
+                } else if (!isBillOpsAdminView() && n2.name !== sessionBillUser.deptLevel2) return;
                 l2Sel.innerHTML +=
                     '<option value="' + escapeHtml(n2.name) + '">' + escapeHtml(n2.name) + '</option>';
             });
@@ -2614,6 +2732,7 @@
         var useTag2 = billAllocTagAxis === 'tag2';
         var map = {};
         rows.forEach(function (row) {
+            if (!resourceRowVisibleForBillView(row)) return;
             var raw = useTag2
                 ? row.tag2 != null
                     ? String(row.tag2)
@@ -2647,8 +2766,7 @@
         if (!thead || !tbody) return;
         var colLabel = billAllocTagAxis === 'tag2' ? '分账标签2（V2.0扩展）' : '分账标签1（V2.0扩展）';
         thead.innerHTML =
-            '<tr><th style="width:42px;"><input type="checkbox" id="deptSelectAll" title="全选本页可见行"></th>' +
-            '<th>' +
+            '<tr><th>' +
             colLabel +
             '</th><th>费用（元）</th><th>环比</th><th>账期</th>' +
             billStatusTheadCellHtml() +
@@ -2676,11 +2794,6 @@
                     '" data-v="' +
                     escapeHtml(dv) +
                     '">' +
-                    '<td><input type="checkbox" class="js-tag-check" data-axis="' +
-                    escapeHtml(r.axis) +
-                    '" data-v="' +
-                    escapeHtml(dv) +
-                    '"></td>' +
                     '<td>' +
                     escapeHtml(dv) +
                     '</td><td class="amount">' +
@@ -2704,15 +2817,14 @@
         var tbody = document.getElementById('deptBillTableBody');
         if (!thead || !tbody) return;
         thead.innerHTML =
-            '<tr><th style="width:42px;"><input type="checkbox" id="deptSelectAll" title="全选本页可见行"></th>' +
-            '<th>部门/用户</th><th>层级</th><th>费用（元）</th><th>环比</th><th>账期</th>' +
+            '<tr><th>部门/用户</th><th>层级</th><th>费用（元）</th><th>环比</th><th>账期</th>' +
             billStatusTheadCellHtml() +
             '<th>操作</th></tr>';
         readBillDeptFiltersFromDom();
         var bodyHtml = renderDeptBillRows(deptTreeRoot, true, '', false);
         if (!bodyHtml.trim()) {
             bodyHtml =
-                '<tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">无符合筛选条件的部门数据</td></tr>';
+                '<tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">无符合筛选条件的部门数据</td></tr>';
         }
         tbody.innerHTML = bodyHtml;
     }
@@ -2739,6 +2851,7 @@
         syncBillDimToolbar();
         if (billStatMode === 'tag') renderTagBillTable();
         else renderDeptBillTable();
+        finopsAnnRefresh();
     }
 
     function billListTagFilterToTagRestrict(f) {
@@ -2904,9 +3017,6 @@
             '"' +
             (isUser ? ' data-row-type="user"' : '') +
             '>' +
-            '<td><input type="checkbox" class="js-dept-check" data-dept-path="' +
-            escapeHtml(deptPathStr) +
-            '"></td>' +
             '<td><div class="dept-cell" style="padding-left:' +
             indentPx +
             'px">' +
@@ -2983,6 +3093,44 @@
             return html;
         }
 
+        if (isBillDeptHeadView()) {
+            (nodes || []).forEach(function (node) {
+                var deptPathStr = pathPrefix ? pathPrefix + '/' + node.name : node.name;
+                if (!deptNodeVisibleInBillFilters(node, pathPrefix)) return;
+                if (!deptSubtreeHasBillDeptHeadScope(node, pathPrefix)) return;
+                var children = node.children || [];
+                var userList = node.users || [];
+                var inScope = deptPathInBillDeptHeadScope(deptPathStr);
+                if (!inScope) {
+                    if (children.length) {
+                        html += renderDeptBillRows(children, true, deptPathStr, false);
+                    }
+                    return;
+                }
+                var hasChildDepts = children.length > 0;
+                var hasUsers = node.level === 2 && userList.length > 0;
+                var hasChildren = hasChildDepts || hasUsers;
+                var expanded = isDeptExpanded(node);
+                var indent = (node.level - 1) * 18;
+                html += buildDeptBillRowHtml(
+                    node,
+                    deptPathStr,
+                    indent,
+                    hasChildren,
+                    expanded,
+                    dash,
+                    billStatusText
+                );
+                if (hasChildDepts && expanded) {
+                    html += renderDeptBillRows(children, true, deptPathStr, false);
+                }
+                if (hasUsers && expanded) {
+                    html += renderVisibleUserBillRows(userList, deptPathStr, 36, dash, billStatusText);
+                }
+            });
+            return html;
+        }
+
         var visibleDeptItems = [];
         (nodes || []).forEach(function (node) {
             var deptPathStr = pathPrefix ? pathPrefix + '/' + node.name : node.name;
@@ -3011,48 +3159,49 @@
         return html;
     }
 
-    function getCheckedDeptPaths() {
-        var out = [];
-        document.querySelectorAll('#deptBillTableBody .js-dept-check:checked').forEach(function (cb) {
-            out.push(cb.getAttribute('data-dept-path') || '');
-        });
-        return out.filter(Boolean);
-    }
-
-    function getCheckedTagBillRows() {
-        var out = [];
-        document.querySelectorAll('#deptBillTableBody .js-tag-check:checked').forEach(function (cb) {
-            out.push({
-                axis: cb.getAttribute('data-axis') || billAllocTagAxis,
-                v: cb.getAttribute('data-v') || ''
-            });
-        });
-        return out;
-    }
-
-    function zipExportHint(mode) {
-        var month = document.getElementById('globalBillMonth').value;
-        var n;
-        var unit;
+    function countBillTabExportRows(mode) {
         if (billStatMode === 'tag') {
-            unit = '标签取值行数';
-            n = mode === 'selected' ? getCheckedTagBillRows().length : '全部';
-        } else {
-            unit = '部门/用户行数';
-            n = mode === 'selected' ? getCheckedDeptPaths().length : '全部';
+            return aggregateTagBillRows().length;
         }
+        if (mode === 'filtered') {
+            return document.querySelectorAll(
+                '#deptBillTableBody tr[data-jump-dept-path], #deptBillTableBody tr[data-axis]'
+            ).length;
+        }
+        var saved = {
+            l1: billDeptFilters.l1,
+            l2: billDeptFilters.l2,
+            owner: billDeptFilters.owner
+        };
+        if (isBillDeptHeadView()) {
+            var ap = getBillDeptHeadAnchorParts();
+            billDeptFilters = { l1: ap[0] || '', l2: ap.length >= 2 ? ap[1] : '', owner: '' };
+        } else {
+            billDeptFilters = { l1: '', l2: '', owner: '' };
+        }
+        var html = renderDeptBillRows(deptTreeRoot, true, '', false);
+        billDeptFilters = saved;
+        return (html.match(/<tr class="/g) || []).length;
+    }
+
+    function billTabExportHint(mode) {
+        var month = document.getElementById('globalBillMonth').value;
+        var n = countBillTabExportRows(mode);
+        var unit = billStatMode === 'tag' ? '标签取值行数' : '部门/用户行数';
         alert(
-            '【ZIP 导出 · 原型】\n模式：' +
-                (mode === 'selected' ? '导出选中' : '导出全部') +
+            '【账单 Tab 导出 · 原型】\n模式：' +
+                (mode === 'filtered' ? '导出筛选' : '导出全部') +
                 '\n统计视图：' +
-                (billStatMode === 'tag' ? '按分账标签（V2.0扩展）（' + (billAllocTagAxis === 'tag2' ? '标签2' : '标签1') + '）' : '按部门') +
+                (billStatMode === 'tag'
+                    ? '按分账标签（V2.0扩展）（' + (billAllocTagAxis === 'tag2' ? '标签2' : '标签1') + '）'
+                    : '按部门') +
                 '\n账期：' +
                 month +
                 '\n' +
                 unit +
                 '：' +
                 n +
-                '\n\n对接后端后将下载 ZIP（内含各部门或标签维度账单文件等）。'
+                '\n\n「导出筛选」= 当前列表可见行（含一级/二级/用户筛选）。\n「导出全部」= 当前视角下本账期所辖范围全量（不含部门筛选，仍受查看视角限制）。\n\n对接后端后将下载 ZIP（内含各部门正式 PDF 等）。'
         );
     }
 
@@ -3064,6 +3213,21 @@
                 '\n账期：' +
                 month +
                 '\n\n对接后端后将下载正式 PDF 文件（含生成时间、版式与印章区）。\n本环境不提供 CSV/Excel 账单导出。'
+        );
+    }
+
+    function resExportHint(mode) {
+        var month = document.getElementById('globalBillMonth').value;
+        var rows =
+            mode === 'filtered' ? getFilteredRowsForScope() : getBillTabResourceRowsForMonth().filter(resourceRowVisibleForBillView);
+        alert(
+            '【资源明细导出 · 原型】\n模式：' +
+                (mode === 'filtered' ? '导出筛选' : '导出全部') +
+                '\n账期：' +
+                month +
+                '\n导出行数：' +
+                rows.length +
+                '\n\n「导出全部」= 当前视角下本账期全部资源明细。\n「导出筛选」= 叠加当前搜索、高级筛选、服务分类与部门范围等条件。\n\n对接后端后将生成 PDF/Excel 下载任务。'
         );
     }
 
@@ -3083,6 +3247,7 @@
             consumeResourceBillContext();
             renderResourceTable();
         }
+        finopsAnnRefresh();
     }
 
     function renderDimPills() {
@@ -3688,6 +3853,10 @@
         var tgl = document.getElementById('btnResAdvToggle');
         tgl.setAttribute('aria-expanded', 'true');
         tgl.textContent = '收起高级筛选';
+        finopsAnnOnModalChange();
+        requestAnimationFrame(function () {
+            finopsAnnRefresh();
+        });
     }
 
     function closeResAdvDrawer() {
@@ -3698,6 +3867,10 @@
         var tgl = document.getElementById('btnResAdvToggle');
         tgl.setAttribute('aria-expanded', 'false');
         tgl.textContent = '高级筛选';
+        finopsAnnOnModalChange();
+        requestAnimationFrame(function () {
+            finopsAnnRefresh();
+        });
     }
 
     function buildTagSelect(rowId, key, current) {
@@ -3814,6 +3987,10 @@
             '<p style="margin-bottom:12px;">实例 <strong>' + escapeHtml(row ? row.instanceId : id) + '</strong> 使用率聚合示意（<strong>聚合规则待业务确定</strong>）：</p>' +
             '<ul style="padding-left:20px;line-height:2;"><li>CPU 利用率：58%</li><li>内存利用率：64%</li><li>磁盘利用率：72%</li></ul>';
         document.getElementById('usageModal').classList.add('on');
+        finopsAnnOnModalChange();
+        requestAnimationFrame(function () {
+            finopsAnnRefresh();
+        });
     }
 
     function openColSettings() {
@@ -3844,6 +4021,10 @@
             .filter(Boolean)
             .join('');
         document.getElementById('colModal').classList.add('on');
+        finopsAnnOnModalChange();
+        requestAnimationFrame(function () {
+            finopsAnnRefresh();
+        });
     }
 
     function applyColSettings() {
@@ -3862,6 +4043,31 @@
         });
         document.getElementById('colModal').classList.remove('on');
         renderResourceTable();
+        finopsAnnOnModalChange();
+        requestAnimationFrame(function () {
+            finopsAnnRefresh();
+        });
+    }
+
+    function finopsAnnRefresh() {
+        if (window.FinOpsPageAnnotations && typeof window.FinOpsPageAnnotations.refresh === 'function') {
+            window.FinOpsPageAnnotations.refresh();
+        }
+    }
+
+    function finopsAnnOnModalChange() {
+        if (window.FinOpsPageAnnotations && typeof window.FinOpsPageAnnotations.onModalChange === 'function') {
+            window.FinOpsPageAnnotations.onModalChange();
+        }
+    }
+
+    function billCloseModal(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.remove('on');
+        finopsAnnOnModalChange();
+        requestAnimationFrame(function () {
+            finopsAnnRefresh();
+        });
     }
 
     document.getElementById('mainTabs').addEventListener('click', function (e) {
@@ -3947,18 +4153,6 @@
         }
     });
 
-    document.querySelector('.bill-content-card').addEventListener('change', function (e) {
-        if (e.target.id === 'deptSelectAll') {
-            var checked = e.target.checked;
-            document.querySelectorAll('#deptBillTableBody .js-dept-check').forEach(function (cb) {
-                cb.checked = checked;
-            });
-            document.querySelectorAll('#deptBillTableBody .js-tag-check').forEach(function (cb) {
-                cb.checked = checked;
-            });
-        }
-    });
-
     document.getElementById('billDimSelect').addEventListener('change', function () {
         var v = this.value;
         if (!isBillOpsAdminView() && v === 'tag') {
@@ -4013,16 +4207,13 @@
             var id = tgl.getAttribute('data-id');
             deptExpanded[id] = !isDeptExpanded({ id: id, level: parseInt(tgl.getAttribute('data-level'), 10) });
             renderBillPanel();
-            var sa = document.getElementById('deptSelectAll');
-            if (sa) sa.checked = false;
             return;
         }
         var toMulti = e.target.closest('.js-dept-to-multi');
         if (toMulti) {
             e.preventDefault();
             billListTagFilter = null;
-            var paths = getCheckedDeptPaths();
-            if (!paths.length) paths = [toMulti.getAttribute('data-dept-path') || ''];
+            var paths = [toMulti.getAttribute('data-dept-path') || ''];
             multiDeptScope = paths;
             switchTab('multi');
             return;
@@ -4031,10 +4222,9 @@
         if (toRes) {
             e.preventDefault();
             billListTagFilter = null;
-            var pathsR = getCheckedDeptPaths();
             var trRes = toRes.closest('tr');
             var rowPath = toRes.getAttribute('data-dept-path') || '';
-            if (!pathsR.length) pathsR = [rowPath];
+            var pathsR = [rowPath];
             var periodMonth = document.getElementById('globalBillMonth').value;
             var ctxRes;
             if (pathsR.length === 1) {
@@ -4059,13 +4249,8 @@
         if (toTagMulti) {
             e.preventDefault();
             multiDeptScope = null;
-            var chkTags = getCheckedTagBillRows();
-            if (chkTags.length > 1) {
-                alert('示意：进入账单明细时，请仅勾选一个标签取值，或使用未勾选时的当前行。');
-                return;
-            }
-            var ax = chkTags.length === 1 ? chkTags[0].axis : toTagMulti.getAttribute('data-axis') || 'tag1';
-            var val = chkTags.length === 1 ? chkTags[0].v : toTagMulti.getAttribute('data-v') || '';
+            var ax = toTagMulti.getAttribute('data-axis') || 'tag1';
+            var val = toTagMulti.getAttribute('data-v') || '';
             billListTagFilter =
                 ax === 'tag2' ? { kind: 'axis2', v: val } : { kind: 'axis1', v: val };
             switchTab('multi');
@@ -4074,13 +4259,8 @@
         var toTagRes = e.target.closest('.js-tag-to-resource');
         if (toTagRes) {
             e.preventDefault();
-            var rowsChk = getCheckedTagBillRows();
-            if (rowsChk.length > 1) {
-                alert('示意：请仅勾选一个标签取值再查看资源明细，或使用未勾选时的当前行。');
-                return;
-            }
-            var axR = rowsChk.length === 1 ? rowsChk[0].axis : toTagRes.getAttribute('data-axis') || 'tag1';
-            var valR = rowsChk.length === 1 ? rowsChk[0].v : toTagRes.getAttribute('data-v') || '';
+            var axR = toTagRes.getAttribute('data-axis') || 'tag1';
+            var valR = toTagRes.getAttribute('data-v') || '';
             var periodMonthT = document.getElementById('globalBillMonth').value;
             var dimJump = axR === 'tag2' ? 'billTag2' : 'billTag1';
             var jl =
@@ -4117,40 +4297,26 @@
         if (pushBillDeptMsApi) pushBillDeptMsApi.setValues([]);
         if (pushBillUserMsApi) pushBillUserMsApi.setValues([]);
 
-        var selectAll = document.getElementById('deptSelectAll');
-
         if (preset.fromTagRow) {
             if (fullRb) fullRb.checked = true;
-            document.querySelectorAll('#deptBillTableBody .js-tag-check').forEach(function (cb) {
-                cb.checked = cb.getAttribute('data-axis') === preset.axis && cb.getAttribute('data-v') === preset.v;
-            });
-            document.querySelectorAll('#deptBillTableBody .js-dept-check').forEach(function (cb) {
-                cb.checked = false;
-            });
-            if (selectAll) selectAll.checked = false;
         } else if (preset.fromDeptRow) {
             if (deptRb) deptRb.checked = true;
             var path = preset.deptPath || '';
             if (pushBillDeptMsApi && path) {
                 pushBillDeptMsApi.setValues([path]);
             }
-            document.querySelectorAll('#deptBillTableBody .js-dept-check').forEach(function (cb) {
-                cb.checked = (cb.getAttribute('data-dept-path') || '') === path;
-            });
-            document.querySelectorAll('#deptBillTableBody .js-tag-check').forEach(function (cb) {
-                cb.checked = false;
-            });
-            if (selectAll) selectAll.checked = false;
-        } else {
-            if (selectAll) selectAll.checked = false;
         }
 
         syncPushBillScopePickers();
         document.getElementById('pushBillModal').classList.add('on');
+        finopsAnnOnModalChange();
+        requestAnimationFrame(function () {
+            finopsAnnRefresh();
+        });
     }
 
     function closePushBillModal() {
-        document.getElementById('pushBillModal').classList.remove('on');
+        billCloseModal('pushBillModal');
     }
 
     function submitPushBill() {
@@ -4231,14 +4397,18 @@
     });
     document.addEventListener('click', function (e) {
         if (!e.target.closest('#deptExportWrap')) document.getElementById('deptExportWrap').classList.remove('open');
+        if (!e.target.closest('#resExportWrap')) {
+            var rew = document.getElementById('resExportWrap');
+            if (rew) rew.classList.remove('open');
+        }
     });
-    document.getElementById('btnDeptExportSelected').addEventListener('click', function () {
+    document.getElementById('btnDeptExportFiltered').addEventListener('click', function () {
         document.getElementById('deptExportWrap').classList.remove('open');
-        zipExportHint('selected');
+        billTabExportHint('filtered');
     });
     document.getElementById('btnDeptExportAll').addEventListener('click', function () {
         document.getElementById('deptExportWrap').classList.remove('open');
-        zipExportHint('all');
+        billTabExportHint('all');
     });
 
     document.getElementById('resTbody').addEventListener('click', function (e) {
@@ -4319,18 +4489,29 @@
         if (e.key === 'Escape' && document.getElementById('resAdvDrawer').classList.contains('on')) closeResAdvDrawer();
         if (e.key === 'Escape') {
             document.getElementById('deptExportWrap').classList.remove('open');
+            var resEw = document.getElementById('resExportWrap');
+            if (resEw) resEw.classList.remove('open');
             if (document.getElementById('pushBillModal').classList.contains('on')) closePushBillModal();
         }
     });
     document.getElementById('btnColSettings').addEventListener('click', openColSettings);
-    document.getElementById('btnResExport').addEventListener('click', function () {
-        exportPdfHint('资源明细 PDF（当前筛选与表头设置将写入 PDF）');
+    document.getElementById('btnResExportToggle').addEventListener('click', function (e) {
+        e.stopPropagation();
+        document.getElementById('resExportWrap').classList.toggle('open');
+    });
+    document.getElementById('btnResExportFiltered').addEventListener('click', function () {
+        document.getElementById('resExportWrap').classList.remove('open');
+        resExportHint('filtered');
+    });
+    document.getElementById('btnResExportAll').addEventListener('click', function () {
+        document.getElementById('resExportWrap').classList.remove('open');
+        resExportHint('all');
     });
 
-    document.getElementById('usageModalClose').addEventListener('click', function () { document.getElementById('usageModal').classList.remove('on'); });
-    document.getElementById('usageModalFooterClose').addEventListener('click', function () { document.getElementById('usageModal').classList.remove('on'); });
-    document.getElementById('colModalClose').addEventListener('click', function () { document.getElementById('colModal').classList.remove('on'); });
-    document.getElementById('colModalCancel').addEventListener('click', function () { document.getElementById('colModal').classList.remove('on'); });
+    document.getElementById('usageModalClose').addEventListener('click', function () { billCloseModal('usageModal'); });
+    document.getElementById('usageModalFooterClose').addEventListener('click', function () { billCloseModal('usageModal'); });
+    document.getElementById('colModalClose').addEventListener('click', function () { billCloseModal('colModal'); });
+    document.getElementById('colModalCancel').addEventListener('click', function () { billCloseModal('colModal'); });
     document.getElementById('colModalApply').addEventListener('click', applyColSettings);
     (function bindColCheckListDnD() {
         var list = document.getElementById('colCheckList');
@@ -4408,10 +4589,13 @@
     if (ih === 'resource') switchTab('resource');
     else if (ih === 'multi') switchTab('multi');
     else switchTab('bill');
+    finopsAnnRefresh();
 })();
     </script>
     <script src="../js/finops-session-header.js" defer></script>
     <script src="../js/finops-table-ui.js" defer></script>
     <script src="../js/finops-nav-active.js" defer></script>
+    <script src="../js/finops-page-annotations.js" defer></script>
+    <script src="../js/finops-annotations-bill-management.js" defer></script>
 </body>
 </html>

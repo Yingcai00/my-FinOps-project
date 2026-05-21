@@ -199,7 +199,6 @@
             font-size: 14px;
             margin-top: 8px;
         }
-        #objInstWrapMob.hidden { display: none; }
         .sheet textarea {
             width: 100%;
             min-height: 72px;
@@ -209,7 +208,6 @@
             font-size: 14px;
             margin-top: 8px;
         }
-        .svc-sub { font-size: 13px; font-weight: 600; margin: 12px 0 6px; color: #333; }
     </style>
 </head>
 <body>
@@ -421,55 +419,12 @@
             .join('');
     }
 
-    function renderObjSheet() {
-        var el = document.getElementById('objListMob');
-        el.innerHTML = groupByService(rows)
-            .map(function (g) {
-                var lines = g.items
-                    .map(function (r) {
-                        if (r.status !== 'pending') {
-                            return (
-                                '<div class="chk-line disabled">' +
-                                '<input type="checkbox" disabled>' +
-                                '<div><div>' +
-                                r.name +
-                                '</div><div class="chk-meta">' +
-                                (r.status === 'done' ? '已确认' : '已提交异议，不可再选') +
-                                '</div></div></div>'
-                            );
-                        }
-                        return (
-                            '<label class="chk-line">' +
-                            '<input type="checkbox" class="mob-obj-chk" value="' +
-                            r.id +
-                            '">' +
-                            '<div><div style="font-weight:500;">' +
-                            r.name +
-                            '</div><div class="chk-meta mono">' +
-                            r.id +
-                            '</div><div class="chk-meta">' +
-                            r.spec +
-                            '</div></div>' +
-                            '</label>'
-                        );
-                    })
-                    .join('');
-                return '<div class="svc-sub">' + g.svc + '</div>' + lines;
-            })
-            .join('');
-    }
-
     function openSheet() {
         if (!rows.some(function (r) { return r.status === 'pending'; })) {
             alert('当前没有待确认的实例。');
             return;
         }
-        var preIds = selectedMobListIds();
-        renderObjSheet();
         document.getElementById('objNoteMob').value = '';
-        document.querySelectorAll('.mob-obj-chk').forEach(function (c) {
-            c.checked = preIds.indexOf(c.value) >= 0;
-        });
         document.getElementById('objSheet').classList.add('open');
         document.getElementById('objSheet').setAttribute('aria-hidden', 'false');
     }

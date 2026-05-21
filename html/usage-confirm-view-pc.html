@@ -160,7 +160,7 @@
         .modal-bd { padding: 16px 20px; overflow-y: auto; flex: 1; }
         .modal-ft { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
         .modal-bd textarea,
-        .modal-bd select.obj-type-sel {
+        .modal-bd select {
             width: 100%;
             padding: 8px 10px;
             border: 1px solid #d9d9d9;
@@ -169,21 +169,6 @@
             margin-top: 8px;
         }
         .modal-bd textarea { min-height: 72px; }
-        .obj-type-label { font-size: 13px; font-weight: 600; margin-top: 4px; display: block; }
-        #objInstanceWrap.hidden { display: none; }
-        .obj-svc { margin-bottom: 16px; }
-        .obj-svc h4 { font-size: 13px; margin-bottom: 8px; color: #333; }
-        .obj-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #f5f5f5;
-            font-size: 13px;
-        }
-        .obj-row:last-child { border-bottom: none; }
-        .obj-row input { margin-top: 3px; flex-shrink: 0; }
-        .obj-row .meta { color: #666; font-size: 12px; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -348,63 +333,12 @@
         root.innerHTML = html;
     }
 
-    function renderObjModal() {
-        var el = document.getElementById('objCheckRoot');
-        el.innerHTML = groupByService()
-            .map(function (g) {
-                var lines = g.items
-                    .map(function (r) {
-                        if (r.status !== 'pending') {
-                            return (
-                                '<div class="obj-row" style="opacity:.55;">' +
-                                '<input type="checkbox" disabled>' +
-                                '<div><div>' +
-                                r.name +
-                                ' <span class="mono">(' +
-                                r.id +
-                                ')</span></div>' +
-                                '<div class="meta">' +
-                                (r.status === 'done' ? '已确认，不可再选' : '已提交异议，不可再选') +
-                                '</div></div></div>'
-                            );
-                        }
-                        return (
-                            '<label class="obj-row" style="cursor:pointer;">' +
-                            '<input type="checkbox" class="obj-chk" value="' +
-                            r.id +
-                            '">' +
-                            '<div><div>' +
-                            r.name +
-                            ' <span class="mono">(' +
-                            r.id +
-                            ')</span></div>' +
-                            '<div class="meta">' +
-                            r.spec +
-                            ' · ' +
-                            r.start +
-                            ' ～ ' +
-                            r.end +
-                            '</div></div>' +
-                            '</label>'
-                        );
-                    })
-                    .join('');
-                return '<div class="obj-svc"><h4>' + g.svc + '</h4>' + lines + '</div>';
-            })
-            .join('');
-    }
-
     function openObjModal() {
         if (!rows.some(function (r) { return r.status === 'pending'; })) {
             alert('当前没有待确认的实例。');
             return;
         }
-        var preIds = selectedListInstanceIds();
-        renderObjModal();
         document.getElementById('objReason').value = '';
-        document.querySelectorAll('.obj-chk').forEach(function (c) {
-            c.checked = preIds.indexOf(c.value) >= 0;
-        });
         document.getElementById('objModal').classList.add('open');
         document.getElementById('objModal').setAttribute('aria-hidden', 'false');
     }
@@ -412,14 +346,6 @@
     function closeObjModal() {
         document.getElementById('objModal').classList.remove('open');
         document.getElementById('objModal').setAttribute('aria-hidden', 'true');
-    }
-
-    function selectedObjIds() {
-        var out = [];
-        document.querySelectorAll('.obj-chk:checked').forEach(function (c) {
-            out.push(c.value);
-        });
-        return out;
     }
 
     document.getElementById('btnConfirm').addEventListener('click', function () {
